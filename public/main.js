@@ -1,17 +1,146 @@
-// Example: Simple DOMContentLoaded event
-document.addEventListener("DOMContentLoaded", () => {
-    console.log("Frontend JS loaded.");
+/** @format */
 
-    const menuBtn = document.getElementById("menuBtn");
-    const navPopup = document.getElementById("navPopup");
-    if (menuBtn && navPopup) {
-        menuBtn.addEventListener("click", () => {
-            navPopup.classList.toggle("active");
-        });
-        document.addEventListener("click", (e) => {
-            if (!navPopup.contains(e.target) && e.target !== menuBtn) {
-                navPopup.classList.remove("active");
-            }
-        });
-    }
+// Runs when the DOM is fully loaded
+document.addEventListener("DOMContentLoaded", () => {
+	console.log("Frontend JS loaded.");
+
+	// Get references to menu button, nav popup, and main content
+	const menuBtn = document.getElementById("menuBtn");
+	const navPopup = document.getElementById("navPopup");
+	const main = document.querySelector("main");
+	const header = document.querySelector("header");
+
+	// If navigation elements exist, set up menu and navigation event listeners
+	if (menuBtn && navPopup && main) {
+		console.log(
+			"Menu button, navigation popup, and main element found."
+		);
+
+		// Toggle navigation popup on menu button click
+		menuBtn.addEventListener("click", () => {
+			console.log("Menu button clicked.");
+			navPopup.classList.toggle("active");
+			updateFooterScrollState();
+			if (navPopup.classList.contains("active")) {
+				console.log("Navigation popup activated.");
+				main.classList.add("slide-right");
+				main.classList.remove("slide-left");
+			} else {
+				console.log("Navigation popup deactivated.");
+				main.classList.remove("slide-right");
+			}
+		});
+
+		// Close navigation popup when clicking outside of it
+		document.addEventListener("click", (e) => {
+			if (
+				!navPopup.contains(e.target) &&
+				!menuBtn.contains(e.target) &&
+				navPopup.classList.contains("active")
+			) {
+				console.log(
+					"Clicked outside navigation popup. Closing popup."
+				);
+				navPopup.classList.remove("active");
+				main.classList.remove("slide-right");
+				setTimeout(() => {
+					updateFooterScrollState();
+				}, 2000);
+			}
+		});
+
+		// Animate main content and navigate on nav link click
+		navPopup.querySelectorAll("a").forEach((link) => {
+			link.addEventListener("click", function (e) {
+				e.preventDefault();
+				console.log(
+					`Navigation link clicked: ${this.getAttribute(
+						"href"
+					)}`
+				);
+				navPopup.classList.remove("active");
+				main.classList.remove("slide-right");
+				main.classList.add("slide-left");
+				const href = this.getAttribute("href");
+				setTimeout(() => {
+					if (header) {
+						header.classList.remove("shifted-up");
+					}
+					// Add a 0.5s delay before navigating
+					setTimeout(() => {
+						console.log(`Navigating to: ${href}`);
+						window.location.href = href;
+					}, 500);
+				}, 2000); // delay matches transition
+			});
+		});
+	}
+
+	// Shift header up on scroll, return to normal at top
+	window.addEventListener("scroll", () => {
+		if (header) {
+			if (window.scrollY > 0) {
+				console.log("Header shifted up due to scrolling.");
+				header.classList.add("shifted-up");
+			} else {
+				console.log("Header returned to original position.");
+				header.classList.remove("shifted-up");
+			}
+		}
+	});
+
+	// Updates the footer's scroll state based on nav popup and scroll position
+	function updateFooterScrollState() {
+		const footer = document.querySelector("footer");
+		if (!footer) {
+			console.log("Footer element not found.");
+			return;
+		}
+		if (navPopup.classList.contains("active")) {
+			console.log(
+				"Footer shifted down due to active navigation popup."
+			);
+			footer.classList.add("shifted-down");
+			return;
+		}
+		const doc = document.documentElement;
+		const atBottom =
+			Math.abs(
+				window.innerHeight +
+					window.pageYOffset -
+					doc.scrollHeight -
+					0.1
+			) < 2;
+		if (atBottom && !navPopup.classList.contains("active")) {
+			console.log("Footer returned to original position.");
+			footer.classList.remove("shifted-down");
+		} else {
+			console.log("Footer shifted down due to scrolling.");
+			footer.classList.add("shifted-down");
+		}
+	}
+
+	// Listen for scroll and resize to update footer state
+	window.addEventListener("scroll", updateFooterScrollState);
+	window.addEventListener("resize", updateFooterScrollState);
+	updateFooterScrollState();
+
+	// Add pressed effect to all buttons and .button-link links on mousedown/up
+	const pressables = document.querySelectorAll("button, .button-link");
+
+	// Add .button-pressed class on mousedown
+	pressables.forEach((pressable) => {
+		pressable.addEventListener("mousedown", () => {
+			pressable.classList.add("button-pressed");
+		});
+	});
+	// Remove .button-pressed class on mouseup and mouseleave
+	pressables.forEach((pressable) => {
+		pressable.addEventListener("mouseup", () => {
+			pressable.classList.remove("button-pressed");
+		});
+		pressable.addEventListener("mouseleave", () => {
+			pressable.classList.remove("button-pressed");
+		});
+	});
 });

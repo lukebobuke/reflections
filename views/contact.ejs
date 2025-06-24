@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Contact Me - Template App</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="components/contact/contact.css">
+</head>
+<body>
+    <%-include("partials/filters") %>
+    <div id="bgImage"></div>
+    <%-include("partials/header") %>
+    <%- include('partials/navPopup', { currentPage }) %>
+
+    <main class="glass contact-section">
+        <h2>Contact Me</h1>
+        <p>
+            Have questions, feedback, or want to collaborate? Fill out the form below and we'll get back to you!
+        </p>
+        <form>
+            <!-- <label for="name">Name:</label> -->
+            <input class="glass" id="name" name="name" type="text" required placeholder="Your Name">
+            <!-- <label for="email">Email:</label> -->
+            <input class="glass" id="email" name="email" type="email" required placeholder="you@email.com">
+            <!-- <label for="message">Message:</label> -->
+            <textarea class = "glass" id="message" name="message" rows="5" required placeholder="Type your message here..."></textarea>
+            <button class="glass" type="submit"><p class="carved-glass">Send Message</p></button>
+        </form>
+        <section>
+            <h2>Other Ways to Connect</h2>
+            <ul>
+                <li>Email: <a href="mailto:placeholder@email.com">placeholder@email.com</a></li>
+                <li>Twitter: <a href="#">@placeholder</a></li>
+                <li>GitHub: <a href="#">github.com/placeholder</a></li>
+            </ul>
+        </section>
+    </main>
+        <%-include("partials/footer") %>
+    <script src="main.js"></script>
+    <script src="components/contact/contact.js"></script>
+</body>
+</html>

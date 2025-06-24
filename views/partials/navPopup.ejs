@@ -1,0 +1,28 @@
+<!-- @format -->
+
+<nav class="nav-popup glass" id="navPopup" role="navigation" aria-label="Main Navigation">
+	<a
+		href="/index"
+		class="glass button-link <%= currentPage === 'index' ? 'hidden' : '' %>"
+		aria-current="<%= currentPage === 'index' ? 'page' : 'false' %>"
+		><span class="carved-glass">Home</span></a
+	>
+	<a
+		href="/about"
+		class="glass button-link <%= currentPage === 'about' ? 'hidden' : '' %>"
+		aria-current="<%= currentPage === 'about' ? 'page' : 'false' %>"
+		><span class="carved-glass">About</span></a
+	>
+	<a
+		href="/contact"
+		class="glass button-link <%= currentPage === 'contact' ? 'hidden' : '' %>"
+		aria-current="<%= currentPage === 'contact' ? 'page' : 'false' %>"
+		><span class="carved-glass">Contact</span></a
+	>
+	<a
+		href="/users"
+		class="glass button-link <%= currentPage === 'users' ? 'hidden' : '' %>"
+		aria-current="<%= currentPage === 'users' ? 'page' : 'false' %>"
+		><span class="carved-glass">Users</span></a
+	>
+</nav>
