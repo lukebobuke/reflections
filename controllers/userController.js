@@ -1,15 +1,14 @@
 /** @format */
-const User = require("../models/userModel");
+const userModel = require("../models/userModel");
+const bcrypt = require("bcrypt");
 
-// Controller functions for user-related operations
-// These functions handle the logic for rendering views and processing requests
-// related to users. They interact with the User model to fetch or manipulate data.
-
-// Get all users
+//----------------------------------------------------------------------------------------------------
+// #region Get All Users
 // This function fetches all users from the database and renders the user page
-const index = async (req, res) => {
+//----------------------------------------------------------------------------------------------------
+let index = async (req, res) => {
 	try {
-		const result = await User.getAllUsers();
+		const result = await userModel.getAllUsers();
 		const users = result.rows;
 		res.render("userPage", { users, currentPage: "users" });
 	} catch (err) {
@@ -17,11 +16,14 @@ const index = async (req, res) => {
 		res.status(500).send("Internal Server Error");
 	}
 };
+// #endregion
 
-// Create a new user
+//----------------------------------------------------------------------------------------------------
+// #region Create User
 // This function handles the creation of a new user. It validates the input,
 // interacts with the User model to create the user, and handles any errors that may occur.
-const create = async (req, res) => {
+//----------------------------------------------------------------------------------------------------
+const createUser = async (req, res) => {
 	const name = req.body.name?.trim();
 	const email = req.body.email?.trim().toLowerCase();
 
@@ -30,38 +32,86 @@ const create = async (req, res) => {
 	}
 
 	try {
-		await User.createUser({ name, email });
+		const hashedPassword = await bcrypt.hash(req.body.password, 10);
+		console.log("Hashed password:", hashedPassword);
+		await userModel.createUser({ name, email, password: hashedPassword });
 		res.redirect("/users");
 	} catch (err) {
 		if (err.code === "23505") {
 			res.status(400).send("That email already exists.");
+		} else if (err.code === "23502") {
+			res.status(400).send("Name and email are required.");
+		} else if (err.code === "23514") {
+			res.status(400).send("Invalid email format.");
+		} else if (err.code === "22001") {
+			res.status(400).send("Input data is too long.");
+		} else if (err.code === "23503") {
+			res.status(400).send("Invalid foreign key reference.");
 		} else {
 			console.error("Error creating user:", err);
 			res.status(500).send("Internal Server Error");
 		}
 	}
 };
+// #endregion
 
-// Get user by ID
-// This function fetches a user by their ID and renders the user detail page.
-const getUserById = async (req, res) => {
-	const userId = req.params.userId;
+//----------------------------------------------------------------------------------------------------
+// #region Login User
+// This function handles user login. It checks the provided credentials against stored user data.
+// If the credentials are valid, it redirects to the user list page; otherwise, it sends an error response.
+//----------------------------------------------------------------------------------------------------
+const login = async (req, res) => {
+	const { email, password } = req.body;
 	try {
-		const result = await User.getUserById(userId);
-		if (!result) {
-			return res.status(404).send("User not found");
+		const user = await userModel.getUserByEmail(email);
+		console.log("Login attempt for:", email, "User found:", user.id);
+		if (!user) {
+			return res.status(401).send("Invalid email or password");
 		}
-		res.render("userDetail", { user: result });
+		if (!user.password) {
+			console.error("User object missing password property:", user.email);
+			return res.status(500).send("Internal Server Error");
+		}
+		const isMatch = await bcrypt.compare(password, user.password);
+		if (!isMatch) {
+			return res.status(401).send("Invalid email or password");
+		}
+
+		// If the credentials are valid, redirect to the user home page
+		console.log("User logged in successfully:", user);
+		res.render("userHomePage", { currentPage: "userHomePage", user });
 	} catch (err) {
-		console.error("Error fetching user:", err);
+		console.error("Error logging in user:", err);
 		res.status(500).send("Internal Server Error");
 	}
 };
+// #endregion
 
-// Update user
+//----------------------------------------------------------------------------------------------------
+// #region Get User By ID
+// This function fetches a user by their ID and renders the user detail page.
+//----------------------------------------------------------------------------------------------------
+// const getUserById = async (req, res) => {
+// 	const userId = req.params.userId;
+// 	try {
+// 		const result = await userModel.getUserById(userId);
+// 		if (!result) {
+// 			return res.status(404).send("User not found");
+// 		}
+// 		res.render("userDetail", { user: result });
+// 	} catch (err) {
+// 		console.error("Error fetching user:", err);
+// 		res.status(500).send("Internal Server Error");
+// 	}
+// };
+// #endregion
+
+//----------------------------------------------------------------------------------------------------
+// #region Update User
 // This function handles the update of a user's information. It validates the input,
 // interacts with the User model to update the user, and handles any errors that may occur.
 // It also redirects to the user list page after a successful update.
+//----------------------------------------------------------------------------------------------------
 const updateUser = async (req, res) => {
 	const userId = req.params.userId;
 	const { name, email } = req.body;
@@ -71,29 +121,33 @@ const updateUser = async (req, res) => {
 	}
 
 	try {
-		await User.updateUser(userId, { name, email });
+		await userModel.updateUser(userId, { name, email });
 		res.redirect("/users");
 	} catch (err) {
 		console.error("Error updating user:", err);
 		res.status(500).send("Internal Server Error");
 	}
 };
+// #endregion
 
-// Delete user
+//----------------------------------------------------------------------------------------------------
+// #region Delete User
 // This function handles the deletion of a user by their ID. It interacts with the User model
 // to delete the user and handles any errors that may occur. It also redirects to the user
 // list page after a successful deletion.
+//----------------------------------------------------------------------------------------------------
 const deleteUser = async (req, res) => {
 	const userId = req.params.userId;
 	try {
-		await User.deleteUser(userId);
+		await userModel.deleteUser(userId);
 		res.redirect("/users");
 	} catch (err) {
 		console.error("Error deleting user:", err);
 		res.status(500).send("Internal Server Error");
 	}
 };
+// #endregion
 
+//----------------------------------------------------------------------------------------------------
 // Export the controller functions for use in routes
-// This allows the functions to be imported and used in the route definitions.
-module.exports = { index, create, getUserById, updateUser, deleteUser };
+module.exports = { index, login, createUser, updateUser, deleteUser };

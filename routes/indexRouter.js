@@ -26,6 +26,11 @@ indexRouter.get("/index", (req, res) => {
 	res.render("index", { currentPage: "index" });
 });
 
+// User home page route - renders the user home page after login
+indexRouter.get("/userHomePage", (req, res) => {
+	res.render("userHomePage", { currentPage: "userHomePage" });
+});
+
 // Example placeholder for future custom routes
 // indexRouter.get("/example", (req, res) => {
 //     res.send("This is an example route.");

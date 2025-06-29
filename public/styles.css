@@ -5,19 +5,17 @@
  *   
  *   GLOBAL RESETS
  *   TYPOGRAPHY
- *   TRANSITIONS AND TRANSFORMS
+ *   TRANSITIONS AND TRANSFORMSf
  *   REPEATED EFFECTS E.G. GLASS
  *   Z-INDEX
  *   
  * ***********************************************
- * 
- * 
- * /*============================================================
- *     Root Variables
- *   ============================================================
  *
  * @format
  */
+/* ----------------------------------------------------------------------------------------------------*/
+/* #region MARK: Root Variables */
+/* ----------------------------------------------------------------------------------------------------*/
 
 :root {
 	/* Colors */
@@ -54,10 +52,11 @@
 	/* Other */
 	--blur: 5px;
 }
+/*#endregion*/
 
-/* ============================================================
-   Global Reset
-   ============================================================ */
+/* ----------------------------------------------------------------------------------------------------*/
+/* #region MARK: Global Reset */
+/* ----------------------------------------------------------------------------------------------------*/
 * {
 	color: rgba(var(--text-color));
 	font-family: "Segoe UI", Arial, sans-serif;
@@ -83,10 +82,11 @@ a {
 .hidden {
 	display: none !important;
 }
+/* #endregion */
 
-/* ============================================================
-   Body and Background
-   ============================================================ */
+/* ----------------------------------------------------------------------------------------------------*/
+/* #region MARK: Body and Background */
+/* ----------------------------------------------------------------------------------------------------*/
 body {
 	padding: var(--padding);
 	padding-top: Calc(var(--padding) + var(--header-height));
@@ -105,12 +105,23 @@ body {
 	width: 100vw;
 	height: 100vh;
 	z-index: -10;
-	background: url("/background_bluebeach.png") center center / cover no-repeat;
+	background: url("/background_bluemountains_2.png") center center / cover no-repeat;
 }
+#bg-video {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100vw;
+	height: 100vh;
+	object-fit: cover;
+	z-index: -2;
+	pointer-events: none;
+}
+/* #endregion */
 
-/* ============================================================
-   Glassmorphism Utility
-   ============================================================ */
+/* ----------------------------------------------------------------------------------------------------*/
+/* #region MARK: Glassmorphism Utility */
+/* ----------------------------------------------------------------------------------------------------*/
 .glass {
 	border-radius: var(--radius);
 	box-shadow: 
@@ -118,8 +129,8 @@ body {
 			Calc(var(--hover-distance) + var(--glass-thickness)) var(--blur) rgba(var(--shadow-rgb)),
 		/* top */ inset 0px 1px 1px 0px rgba(255, 255, 255, 0.8), /* right */ inset -1px 0px 1px 0px rgba(255, 255, 255, 0.8),
 		/* bottom */ inset 3px 0px 3px 0px rgba(255, 255, 255, 0.1), /* left */ inset 0px -3px 3px 0px rgba(255, 255, 255, 0.1),
-		/* top right thickened edge */ inset calc(-1 * var(--glass-thickness)) var(--glass-thickness) 4px 0px rgba(200, 200, 200, 0.5),
-		/* bottom left thickened edge */ calc(-1 * var(--glass-thickness)) var(--glass-thickness) 0px 0px rgba(220, 220, 220, 0.5);
+		/* top right thickened edge */ inset calc(-1 * var(--glass-thickness)) var(--glass-thickness) 4px 0px rgba(200, 200, 200, 0.25),
+		/* bottom left thickened edge */ calc(-1 * var(--glass-thickness)) var(--glass-thickness) 0px 0px rgba(220, 220, 220, 0.25);
 	backdrop-filter: blur(var(--blur));
 	-webkit-backdrop-filter: blur(var(--blur));
 	background: 
@@ -146,10 +157,11 @@ body {
 	filter: url(#glassCarveBevel);
 	opacity: 1;
 }
+/* #endregion */
 
-/* ============================================================
-    Header, Main, and Footer
-   ============================================================ */
+/* ----------------------------------------------------------------------------------------------------*/
+/* #region MARK: Header, Main, and Footer */
+/* ----------------------------------------------------------------------------------------------------*/
 header {
 	position: fixed !important;
 	height: var(--header-height);
@@ -162,21 +174,21 @@ header {
 	padding: var(--padding);
 }
 
-.menu-btn {
-	font-size: 3rem;
-	/* background: none; */
-	border: none;
-	width: 4rem;
-	height: 4rem;
+.menu-button i {
+	color: rgba(var(--text-color));
+	font-size: 2rem;
+	/* text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5); */
+}
+
+.menu-button {
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	cursor: pointer;
-	box-shadow: none;
+	padding: 1rem;
 	position: relative;
 }
 
-.menu-btn:hover {
+.menu-button:hover {
 	background: rgba(255, 255, 255, 0.1);
 }
 
@@ -221,9 +233,17 @@ footer {
 	justify-content: space-between;
 }
 
-/* ============================================================
-   Forms & Inputs
-   ============================================================ */
+.header-actions {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	gap: 1rem;
+}
+/* #endregion */
+
+/* ----------------------------------------------------------------------------------------------------*/
+/* #region MARK: Forms & Inputs */
+/* ----------------------------------------------------------------------------------------------------*/
 form {
 	display: flex;
 	flex-direction: row;
@@ -260,10 +280,11 @@ button:hover,
 .button-link:hover {
 	background: rgba(255, 255, 255, 0.1);
 }
+/* #endregion */
 
-/* ============================================================
-   Typography
-   ============================================================ */
+/* ----------------------------------------------------------------------------------------------------*/
+/* #region MARK: Typography */
+/* ----------------------------------------------------------------------------------------------------*/
 h1 {
 	font-size: 4rem;
 }
@@ -281,11 +302,11 @@ ul,
 ol {
 	margin-bottom: 1.5rem;
 }
+/* #endregion */
 
-/* ============================================================
-   Animation and Transition
-   ============================================================ */
-
+/* ----------------------------------------------------------------------------------------------------*/
+/* #region MARK: Animation and Transition */
+/* ----------------------------------------------------------------------------------------------------*/
 main {
 	transition: transform var(--transition-slow) cubic-bezier(var(--big-bezier));
 }
@@ -303,7 +324,7 @@ footer {
 	transition: transform 0.3s cubic-bezier(var(--small-bezier));
 }
 
-.menu-btn {
+.menu-button {
 	transition: background var(--transition-fast);
 }
 
@@ -331,11 +352,11 @@ button,
 		transform: translateX(0);
 	}
 }
+/* #endregion */
 
-/* ============================================================
-   Z Axis
-============================================================ */
-
+/* ----------------------------------------------------------------------------------------------------*/
+/* #region MARK: Z Axis */
+/* ----------------------------------------------------------------------------------------------------*/
 .shifted-up {
 	transform: translateX(Calc(var(--glass-thickness) + var(--hover-distance)))
 		translateY(Calc(-1 * (var(--glass-thickness) + var(--hover-distance))));
@@ -385,3 +406,8 @@ footer.shifted-down {
 body {
 	z-index: -1;
 }
+
+body {
+	z-index: -1;
+}
+/* #endregion */

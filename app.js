@@ -1,57 +1,81 @@
 /** @format */
 
-//get port from env file
-const port = process.env.PORT || 3000;
-
-//import modules
+// ----------------------------------------------------------------------------------------------------
+// #region Imports
+// ----------------------------------------------------------------------------------------------------
+// Import modules, middleware, routers, and database connection.
 const express = require("express");
 const app = express();
 require("dotenv").config();
 const path = require("node:path");
 const cors = require("cors");
 const db = require("./models/db");
-
-//import custom middleware
 const logger = require("./middleware/logger");
 const errorHandler = require("./middleware/errorHandler");
-
-//import routers
 const indexRouter = require("./routes/indexRouter");
-const userRouter = require("./routes/userRouter");
+const loginRouter = require("./routes/loginRouter");
+// #endregion
+// ----------------------------------------------------------------------------------------------------
 
+// ----------------------------------------------------------------------------------------------------
+// #region Port Setup
+// ----------------------------------------------------------------------------------------------------
+// Get port from env file
+const port = process.env.PORT || 3000;
+// #endregion
+// ----------------------------------------------------------------------------------------------------
 
-//use EJS as template engine
+// ----------------------------------------------------------------------------------------------------
+// #region View Engine
+// ----------------------------------------------------------------------------------------------------
+// Use EJS as template engine
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "ejs");
+// ----------------------------------------------------------------------------------------------------
+// #endregion
+// ----------------------------------------------------------------------------------------------------
 
-
-//serve public files
+// ----------------------------------------------------------------------------------------------------
+// #region Static Files
+// ----------------------------------------------------------------------------------------------------
+// Serve public files
 app.use(express.static(__dirname + "/public"));
+// ----------------------------------------------------------------------------------------------------
+// #endregion
+// ----------------------------------------------------------------------------------------------------
 
+// ----------------------------------------------------------------------------------------------------
+// #region DB Test Connection
+// ----------------------------------------------------------------------------------------------------
 // This is a test connection to the database. It connects to the database and runs a simple query to check if the connection is successful.
 // If successful, it logs the current date and time from the database.
-db.pool.connect()
-	.then(client => {
-		return client.query("SELECT NOW()")
-			.then(res => {
+db.pool
+	.connect()
+	.then((client) => {
+		return client
+			.query("SELECT NOW()")
+			.then((res) => {
 				console.log("Connected to the database:", res.rows);
 				client.release();
 			})
-			.catch(err => {
+			.catch((err) => {
 				console.error("Error executing query:", err);
 				client.release();
 			});
 	})
-	.catch(err => {
+	.catch((err) => {
 		console.error("Error connecting to the database:", err);
 	});
+// #endregion
+// ----------------------------------------------------------------------------------------------------
 
-//middleware
+// ----------------------------------------------------------------------------------------------------
+// #region Middleware
+// ----------------------------------------------------------------------------------------------------
+// Middleware: CORS, JSON parsing, URL encoding, and static files with CORS headers
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
-//serve public files with CORS headers
 app.use(
 	express.static(path.join(__dirname, "public"), {
 		setHeaders: (res, path) => {
@@ -59,24 +83,45 @@ app.use(
 		},
 	})
 );
+// #endregion
+// ----------------------------------------------------------------------------------------------------
 
-//app-level custom middleware
+// ----------------------------------------------------------------------------------------------------
+// #region App-level Middleware
+// ----------------------------------------------------------------------------------------------------
+// App-level custom middleware: logger and error handler
 app.use(logger);
 app.use(errorHandler);
+// #endregion
+// ----------------------------------------------------------------------------------------------------
 
-//use routers
-// This is where the routers are mounted to the app. The userRouter handles all requests to /users
-app.use("/users", userRouter);
+// ----------------------------------------------------------------------------------------------------
+// #region Routers
+// ----------------------------------------------------------------------------------------------------
+// Use routers: The loginRouter handles all requests to /login
+app.use("/login", loginRouter);
 app.use("/", indexRouter);
+// #endregion
+// ----------------------------------------------------------------------------------------------------
 
-//serve 404 page
+// ----------------------------------------------------------------------------------------------------
+// #region 404 Handler
+// ----------------------------------------------------------------------------------------------------
+// Serve 404 page
 app.use((req, res) => {
 	res.status(404).sendFile(path.join(__dirname, "public", "404.html")); // Fixed path concatenation
 });
+// #endregion
+// ----------------------------------------------------------------------------------------------------
 
-//bootstrap server
+// ----------------------------------------------------------------------------------------------------
+// #region Server Bootstrap
+// ----------------------------------------------------------------------------------------------------
+// Bootstrap server: Start listening and handle startup errors
 app.listen(port, () => {
 	console.log(`My first Express app! Listening on port ${port}`);
 }).on("error", (err) => {
 	console.error("Failed to start server:", err); // Added error handling for server startup
 });
+// #endregion
+// ----------------------------------------------------------------------------------------------------

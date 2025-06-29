@@ -4,9 +4,13 @@
     <meta charset="UTF-8">
     <title>Template App - Home</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
+    <video autoplay muted loop playsinline id="bg-video" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; object-fit: cover; z-index: -11; pointer-events: none;">
+        <source src="/background_smoke2.mp4" type="video/mp4">
+    </video>
     <%-include("partials/filters")%> 
     <div id="bgImage"></div>
     <%-include("partials/header") %>

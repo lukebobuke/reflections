@@ -1,0 +1,42 @@
+<!-- @format -->
+
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<title>Template App - Home</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<link
+			rel="stylesheet"
+			href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
+			integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg=="
+			crossorigin="anonymous"
+			referrerpolicy="no-referrer" />
+		<link rel="stylesheet" href="/styles.css" />
+	</head>
+	<body>
+		<%-include("partials/filters")%>
+		<div id="bgImage"></div>
+		<%-include("partials/header") %> <%- include('partials/navPopup', { currentPage }) %>
+		<main class="glass">
+			<h2>Welcome, <%= user.name %>!</h2>
+			<p>Your email: <%= user.email %></p>
+			<p>
+				This is a paragraph.<br />
+				Hope you enjoy!
+			</p>
+
+			<section>
+				<h2>Heading</h2>
+				<ul>
+					<li>Dummy item 1</li>
+					<li>Dummy item 2</li>
+					<li>Dummy item 3</li>
+				</ul>
+			</section>
+		</main>
+		<%-include("partials/footer") %>
+		<script src="https://cdn.jsdelivr.net/npm/dom-to-image@2.6.0/src/dom-to-image.min.js"></script>
+		<script src="main.js"></script>
+	</body>
+</html>

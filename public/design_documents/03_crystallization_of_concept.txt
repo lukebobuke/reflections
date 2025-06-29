@@ -1,0 +1,67 @@
+Pages
+
+    Login page
+
+    Create user (sign-up) page
+
+    Home page for visitors who aren’t logged in
+
+    Landing page after user logs in
+
+    Shard definition page (user form for text, tint, glow)
+
+    Final sculpture viewing page (view generated 3D model, analysis, download options)
+
+Core System & Data Backbone
+
+    Create routes, controllers, and models for shards
+
+    Design shard schema: text, tint, glow, timestamps, user association
+
+    Facet (shard) data generates prompt for 3D model AI
+
+    Backend logic to lock shards after creation (annealed state)
+
+Design Language & Visual Framework
+
+    Implement shard aesthetic framework: tint, reflection, glow logic
+
+    Recessed button components with engraved text and depth behavior
+
+    Embossed headers
+
+    Overlapping panes or shard scattering visuals
+
+    Thicker vs thinner shard cues for permanence vs ephemerality
+
+    Hover-based wipes
+
+    Hover reflections (anime flicker)
+
+    Webcam face reflection overlay into glass elements
+
+    Tint personalization during onboarding
+
+3D Model & Sculpture Generation
+
+    Develop logic to generate prompt from shard data for 3D model AI
+
+    Display returned 3D sculpture on final viewing page
+
+    Create analysis messaging describing conceptual/emotional sculpture themes
+
+    Enable sculpture download as 3D-printable file
+
+Strict MVP Path
+
+If focusing strictly on core expression:
+
+    Shard creation (text, tint, glow)
+
+    Backend to store and lock shards
+
+    Generation of AI 3D sculpture prompt
+
+    Sculpture viewing page (final integrated form)
+
+    Basic shard aesthetic and minimal design language

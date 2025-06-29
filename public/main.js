@@ -3,21 +3,26 @@
 // Runs when the DOM is fully loaded
 document.addEventListener("DOMContentLoaded", () => {
 	console.log("Frontend JS loaded.");
-
+	//----------------------------------------------------------------------------------------------------
+	// #region Menu/Nav Setup
 	// Get references to menu button, nav popup, and main content
-	const menuBtn = document.getElementById("menuBtn");
+	//----------------------------------------------------------------------------------------------------
+	const menuButton = document.querySelector(".menu-button");
 	const navPopup = document.getElementById("navPopup");
 	const main = document.querySelector("main");
 	const header = document.querySelector("header");
+	// #endregion
+
+	//----------------------------------------------------------------------------------------------------
+	// #region Nav Popup Toggle
+	// Toggle navigation popup on menu button click
+	//----------------------------------------------------------------------------------------------------
 
 	// If navigation elements exist, set up menu and navigation event listeners
-	if (menuBtn && navPopup && main) {
-		console.log(
-			"Menu button, navigation popup, and main element found."
-		);
+	if (menuButton && navPopup && main) {
+		console.log("Menu button, navigation popup, and main element found.");
 
-		// Toggle navigation popup on menu button click
-		menuBtn.addEventListener("click", () => {
+		menuButton.addEventListener("click", () => {
 			console.log("Menu button clicked.");
 			navPopup.classList.toggle("active");
 			updateFooterScrollState();
@@ -31,16 +36,11 @@ document.addEventListener("DOMContentLoaded", () => {
 			}
 		});
 
+		// #region Nav Popup Outside Click
 		// Close navigation popup when clicking outside of it
 		document.addEventListener("click", (e) => {
-			if (
-				!navPopup.contains(e.target) &&
-				!menuBtn.contains(e.target) &&
-				navPopup.classList.contains("active")
-			) {
-				console.log(
-					"Clicked outside navigation popup. Closing popup."
-				);
+			if (!navPopup.contains(e.target) && !menuButton.contains(e.target) && navPopup.classList.contains("active")) {
+				console.log("Clicked outside navigation popup. Closing popup.");
 				navPopup.classList.remove("active");
 				main.classList.remove("slide-right");
 				setTimeout(() => {
@@ -48,16 +48,14 @@ document.addEventListener("DOMContentLoaded", () => {
 				}, 2000);
 			}
 		});
+		// #endregion
 
+		// #region Nav Link Animation
 		// Animate main content and navigate on nav link click
 		navPopup.querySelectorAll("a").forEach((link) => {
 			link.addEventListener("click", function (e) {
 				e.preventDefault();
-				console.log(
-					`Navigation link clicked: ${this.getAttribute(
-						"href"
-					)}`
-				);
+				console.log(`Navigation link clicked: ${this.getAttribute("href")}`);
 				navPopup.classList.remove("active");
 				main.classList.remove("slide-right");
 				main.classList.add("slide-left");
@@ -74,9 +72,14 @@ document.addEventListener("DOMContentLoaded", () => {
 				}, 2000); // delay matches transition
 			});
 		});
+		// #endregion
 	}
+	// #endregion
 
+	//----------------------------------------------------------------------------------------------------
+	// #region Header Scroll
 	// Shift header up on scroll, return to normal at top
+	//----------------------------------------------------------------------------------------------------
 	window.addEventListener("scroll", () => {
 		if (header) {
 			if (window.scrollY > 0) {
@@ -88,8 +91,12 @@ document.addEventListener("DOMContentLoaded", () => {
 			}
 		}
 	});
+	// #endregion
 
+	//----------------------------------------------------------------------------------------------------
+	// #region Footer Scroll State
 	// Updates the footer's scroll state based on nav popup and scroll position
+	//----------------------------------------------------------------------------------------------------
 	function updateFooterScrollState() {
 		const footer = document.querySelector("footer");
 		if (!footer) {
@@ -97,20 +104,12 @@ document.addEventListener("DOMContentLoaded", () => {
 			return;
 		}
 		if (navPopup.classList.contains("active")) {
-			console.log(
-				"Footer shifted down due to active navigation popup."
-			);
+			console.log("Footer shifted down due to active navigation popup.");
 			footer.classList.add("shifted-down");
 			return;
 		}
 		const doc = document.documentElement;
-		const atBottom =
-			Math.abs(
-				window.innerHeight +
-					window.pageYOffset -
-					doc.scrollHeight -
-					0.1
-			) < 2;
+		const atBottom = Math.abs(window.innerHeight + window.pageYOffset - doc.scrollHeight - 0.1) < 2;
 		if (atBottom && !navPopup.classList.contains("active")) {
 			console.log("Footer returned to original position.");
 			footer.classList.remove("shifted-down");
@@ -119,13 +118,21 @@ document.addEventListener("DOMContentLoaded", () => {
 			footer.classList.add("shifted-down");
 		}
 	}
+	// #endregion
 
+	//----------------------------------------------------------------------------------------------------
+	// #region Footer Event Listeners
 	// Listen for scroll and resize to update footer state
+	//----------------------------------------------------------------------------------------------------
 	window.addEventListener("scroll", updateFooterScrollState);
 	window.addEventListener("resize", updateFooterScrollState);
 	updateFooterScrollState();
+	// #endregion
 
+	//----------------------------------------------------------------------------------------------------
+	// #region Button Pressed Effect
 	// Add pressed effect to all buttons and .button-link links on mousedown/up
+	//----------------------------------------------------------------------------------------------------
 	const pressables = document.querySelectorAll("button, .button-link");
 
 	// Add .button-pressed class on mousedown
@@ -143,4 +150,5 @@ document.addEventListener("DOMContentLoaded", () => {
 			pressable.classList.remove("button-pressed");
 		});
 	});
+	// #endregion
 });

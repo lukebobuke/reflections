@@ -1,0 +1,91 @@
+Transparency & Obscuring (seeing but not touching)
+
+    YES Locked content
+
+    LATER Upcoming content/features
+
+    NO Admin-only dashboards
+
+    YES Overlapping panes merging content visually
+
+Etching & Engraving (permanence, carving)
+
+    YES Engraved text on recessed buttons
+
+    NO Etched watermarks
+
+    NO Section dividers, numerals, large page labels
+
+Embossing (raised surface, light catch)
+
+    YES Headers — embossing instead of etching, gives prominence but stays readable
+
+Fracturing & Shattering (breaking, recombining)
+
+    LATER Dynamic content assembly
+
+    MAYBE Collage features
+
+    LATER Pane breaking into smaller pieces
+
+    YES A scattering of glass elements with unique shapes
+
+Stacking & Layering (depth, hierarchy)
+
+    LATER Stacked notifications
+
+    YES Stacked without spacing = locked content
+
+    LATER Multi-pane slide-through stacks
+
+Thickness & Weight (importance, stability)
+
+    YES Thicker panes = heavy, permanent
+
+    YES Thinner panes = ephemeral actions
+
+    YES Hover depth = readiness ? becomes recess depth with buttons
+
+Reveal & Mystery (fog, frosting, partial view)
+
+    LATER Frosted masks
+
+    YES Hover-based wipes
+
+Reflection & Illusion (light play, emotional polish)
+
+    YES Hover-based reflections (anime glasses flicker)
+
+    Light sweep glint on hover — untagged, future optional
+
+    LATER Webcam capture of user's face overlaid onto glass elements
+
+Tints & Personalization (emotional, user-owned glass)
+
+    YES User-selected glass tint
+
+Elasticity & Stretch (non-glass behavior)
+
+    NO Glass stretching
+
+Sound, Hairline Cracks, Refraction, etc. (extra illusions)
+
+    LATER Sound
+
+    LATER Hairline cracks
+
+    LATER Refraction
+
+Fusion & Molten Flow (integration, reshaping)
+
+    YES Facet information added to database, then used as input for 3D model generation
+
+Tint & Alchemy (personal emotional additives)
+
+    YES User-defined tints from onboarding (emotional flavor)
+
+    YES Fusion of tints into evolving inner palette
+
+Illumination & Inner Glow (focused heat, clarity)
+
+    YES Glow added to glass shards with special significance
