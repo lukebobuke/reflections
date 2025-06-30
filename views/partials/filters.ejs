@@ -38,5 +38,43 @@
                 <feMergeNode in="upperRightShadow"/>
             </feMerge>
         </filter>
+        <filter id="glassEmboss" x="-50%" y="-50%" width="200%" height="200%">
+            <!-- Outer shadow -->
+            <feDropShadow dx="-2" dy="2" stdDeviation="0" flood-color="black" flood-opacity="0.6" result="outerRaw"/>
+            <feMorphology in="SourceAlpha" operator="dilate" radius="1" result="expandedAlpha"/>
+            <feComposite in="outerRaw" in2="expandedAlpha" operator="out" result="outerMasked"/>
+
+            <!-- Upper Right Inner Edge -->
+            <feConvolveMatrix in="SourceAlpha" order="3"
+                kernelMatrix="0 1 2 -1 -1 1 -2 -1 0" divisor="5" result="bevelEdges"/>
+            <feFlood flood-color="white" flood-opacity="1" result="light"/>
+            <feComposite in="light" in2="bevelEdges" operator="in" result="upperRightBevel"/>
+
+            <!-- Lower Left Inner Edge -->
+            <feConvolveMatrix in="SourceAlpha" order="3"
+                kernelMatrix="0 -1 -2 1 -1 -1 2 1 0" divisor="5" result="bevelEdges"/>
+            <feFlood flood-color="black" flood-opacity=".8" result="light"/>
+            <feComposite in="light" in2="bevelEdges" operator="in" result="lowerLeftHighlight"/>
+
+            <!-- Lower Left Inner Highlight -->
+            <feConvolveMatrix in="SourceAlpha" order="3"
+                kernelMatrix="-6 -1 -2 1 -1 -1 2 1 -6" divisor="1" result="bevelEdges"/>
+            <feFlood flood-color="black" flood-opacity="1" result="light"/>
+            <feComposite in="light" in2="bevelEdges" operator="in" result="lowerLeftBevel"/>
+
+            <!-- Upper Right Inner Shadow -->
+            <feConvolveMatrix in="SourceAlpha" order="3"
+                kernelMatrix="-2 1 2 -1 -1 1 -2 -1 -2" divisor="3" result="bevelEdges"/>
+            <feFlood flood-color="white" flood-opacity=".8" result="light"/>
+            <feComposite in="light" in2="bevelEdges" operator="in" result="upperRightShadow"/>
+
+            <feMerge>
+                <!-- Optional: <feMergeNode in="outerMasked"/> -->
+                <feMergeNode in="upperRightBevel"/>
+                <feMergeNode in="lowerLeftBevel"/>
+                <feMergeNode in="lowerLeftHighlight"/>
+                <feMergeNode in="upperRightShadow"/>
+            </feMerge>
+        </filter>
     </defs>
 </svg>

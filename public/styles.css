@@ -157,6 +157,11 @@ body {
 	filter: url(#glassCarveBevel);
 	opacity: 1;
 }
+
+.embossed-glass {
+	filter: url(#glassEmboss);
+	opacity: 1;
+}
 /* #endregion */
 
 /* ----------------------------------------------------------------------------------------------------*/

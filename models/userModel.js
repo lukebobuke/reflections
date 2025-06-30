@@ -21,4 +21,9 @@ const getUserByEmail = async (email) => {
 	return user.rows[0]; // returns an object with all columns as properties
 };
 
-module.exports = { getAllUsers, createUser, getUserByEmail, };
+async function getUserById(userId) {
+	const result = await db.query("SELECT * FROM users WHERE id = $1", [userId]);
+	return result.rows[0]; // <-- must return the user object, not result
+}
+
+module.exports = { getAllUsers, createUser, getUserByEmail, getUserById };

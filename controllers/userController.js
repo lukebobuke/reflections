@@ -3,20 +3,20 @@ const userModel = require("../models/userModel");
 const bcrypt = require("bcrypt");
 
 //----------------------------------------------------------------------------------------------------
-// #region Get All Users
-// This function fetches all users from the database and renders the user page
+// #region render pages
 //----------------------------------------------------------------------------------------------------
-let index = async (req, res) => {
-	try {
-		const result = await userModel.getAllUsers();
-		const users = result.rows;
-		res.render("userPage", { users, currentPage: "users" });
-	} catch (err) {
-		console.error("Error fetching users:", err);
-		res.status(500).send("Internal Server Error");
-	}
+
+const renderLoginPage = (req, res) => {
+	res.render("loginPage", { currentPage: "login" });
 };
+
+const renderSignupPage = (req, res) => {
+	res.render("signupPage", { currentPage: "signup" });
+};
+
+//----------------------------------------------------------------------------------------------------
 // #endregion
+//----------------------------------------------------------------------------------------------------
 
 //----------------------------------------------------------------------------------------------------
 // #region Create User
@@ -35,7 +35,10 @@ const createUser = async (req, res) => {
 		const hashedPassword = await bcrypt.hash(req.body.password, 10);
 		console.log("Hashed password:", hashedPassword);
 		await userModel.createUser({ name, email, password: hashedPassword });
-		res.redirect("/users");
+		// Wait for user to be created, then fetch the user object
+		const user = await userModel.getUserByEmail(email);
+		req.session.userId = user.id;
+		res.redirect("/dashboard");
 	} catch (err) {
 		if (err.code === "23505") {
 			res.status(400).send("That email already exists.");
@@ -53,7 +56,9 @@ const createUser = async (req, res) => {
 		}
 	}
 };
+//----------------------------------------------------------------------------------------------------
 // #endregion
+//----------------------------------------------------------------------------------------------------
 
 //----------------------------------------------------------------------------------------------------
 // #region Login User
@@ -76,35 +81,18 @@ const login = async (req, res) => {
 		if (!isMatch) {
 			return res.status(401).send("Invalid email or password");
 		}
-
-		// If the credentials are valid, redirect to the user home page
+		// If the credentials are valid, set the user ID in the session and redirect to the user home page
+		req.session.userId = user.id;
 		console.log("User logged in successfully:", user);
-		res.render("userHomePage", { currentPage: "userHomePage", user });
+		res.render("dashboardPage", { currentPage: "dashboard", user });
 	} catch (err) {
 		console.error("Error logging in user:", err);
 		res.status(500).send("Internal Server Error");
 	}
 };
-// #endregion
-
 //----------------------------------------------------------------------------------------------------
-// #region Get User By ID
-// This function fetches a user by their ID and renders the user detail page.
-//----------------------------------------------------------------------------------------------------
-// const getUserById = async (req, res) => {
-// 	const userId = req.params.userId;
-// 	try {
-// 		const result = await userModel.getUserById(userId);
-// 		if (!result) {
-// 			return res.status(404).send("User not found");
-// 		}
-// 		res.render("userDetail", { user: result });
-// 	} catch (err) {
-// 		console.error("Error fetching user:", err);
-// 		res.status(500).send("Internal Server Error");
-// 	}
-// };
 // #endregion
+//----------------------------------------------------------------------------------------------------
 
 //----------------------------------------------------------------------------------------------------
 // #region Update User
@@ -128,7 +116,9 @@ const updateUser = async (req, res) => {
 		res.status(500).send("Internal Server Error");
 	}
 };
+//----------------------------------------------------------------------------------------------------
 // #endregion
+//----------------------------------------------------------------------------------------------------
 
 //----------------------------------------------------------------------------------------------------
 // #region Delete User
@@ -146,8 +136,10 @@ const deleteUser = async (req, res) => {
 		res.status(500).send("Internal Server Error");
 	}
 };
+//----------------------------------------------------------------------------------------------------
 // #endregion
+//----------------------------------------------------------------------------------------------------
 
 //----------------------------------------------------------------------------------------------------
 // Export the controller functions for use in routes
-module.exports = { index, login, createUser, updateUser, deleteUser };
+module.exports = { login, createUser, updateUser, deleteUser, renderLoginPage, renderSignupPage };

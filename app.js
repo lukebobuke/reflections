@@ -1,8 +1,4 @@
 /** @format */
-
-// ----------------------------------------------------------------------------------------------------
-// #region Imports
-// ----------------------------------------------------------------------------------------------------
 // Import modules, middleware, routers, and database connection.
 const express = require("express");
 const app = express();
@@ -14,8 +10,9 @@ const logger = require("./middleware/logger");
 const errorHandler = require("./middleware/errorHandler");
 const indexRouter = require("./routes/indexRouter");
 const loginRouter = require("./routes/loginRouter");
-// #endregion
-// ----------------------------------------------------------------------------------------------------
+const shardRouter = require("./routes/shardRouter");
+const populateUser = require("./middleware/populateUser");
+const session = require("express-session");
 
 // ----------------------------------------------------------------------------------------------------
 // #region Port Setup
@@ -87,6 +84,24 @@ app.use(
 // ----------------------------------------------------------------------------------------------------
 
 // ----------------------------------------------------------------------------------------------------
+// #region Session Configuration
+// ----------------------------------------------------------------------------------------------------
+// Configure sessions
+app.use(
+	session({
+		secret: "your-secret-key", // change this to something secure
+		resave: false,
+		saveUninitialized: false,
+		cookie: { secure: false }, // set to true if using HTTPS
+	})
+);
+
+// Session middleware must come BEFORE populateUser!
+app.use(populateUser);
+// #endregion
+// ----------------------------------------------------------------------------------------------------
+
+// ----------------------------------------------------------------------------------------------------
 // #region App-level Middleware
 // ----------------------------------------------------------------------------------------------------
 // App-level custom middleware: logger and error handler
@@ -100,6 +115,7 @@ app.use(errorHandler);
 // ----------------------------------------------------------------------------------------------------
 // Use routers: The loginRouter handles all requests to /login
 app.use("/login", loginRouter);
+app.use("/shards", shardRouter);
 app.use("/", indexRouter);
 // #endregion
 // ----------------------------------------------------------------------------------------------------
@@ -114,14 +130,9 @@ app.use((req, res) => {
 // #endregion
 // ----------------------------------------------------------------------------------------------------
 
-// ----------------------------------------------------------------------------------------------------
-// #region Server Bootstrap
-// ----------------------------------------------------------------------------------------------------
 // Bootstrap server: Start listening and handle startup errors
 app.listen(port, () => {
 	console.log(`My first Express app! Listening on port ${port}`);
 }).on("error", (err) => {
 	console.error("Failed to start server:", err); // Added error handling for server startup
 });
-// #endregion
-// ----------------------------------------------------------------------------------------------------

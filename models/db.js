@@ -16,6 +16,8 @@ const pool = new Pool({
 // Query function
 const query = (text, params) => pool.query(text, params);
 
+console.log("Connecting to DB:", process.env.DB_NAME, "as user:", process.env.DB_USER);
+
 module.exports = {
 	pool,
 	query,

@@ -5,17 +5,13 @@ const loginRouter = express.Router();
 const userController = require("../controllers/userController");
 
 // Login page route - renders the login page
-loginRouter.get("/", (req, res) => {
-	res.render("loginPage", { currentPage: "login" });
-});
+loginRouter.get("/", userController.renderLoginPage);
 
 // This route handles updating a user by their ID.
 loginRouter.put("/:userId", userController.updateUser);
 
 // Signup page route - renders the signup page (create this view if needed)
-loginRouter.get("/signup", (req, res) => {
-	res.render("signupPage", { currentPage: "signup" });
-});
+loginRouter.get("/signup", userController.renderSignupPage);
 
 loginRouter.post("/", userController.login);
 
