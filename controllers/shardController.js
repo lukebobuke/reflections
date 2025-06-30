@@ -3,7 +3,7 @@
 const shardModel = require("../models/shardModel");
 
 // ----------------------------------------------------------------------------------------------------
-// #region Render Shards Page
+// #region Render
 // ----------------------------------------------------------------------------------------------------
 const renderShardsPage = async (req, res) => {
 	try {
@@ -21,6 +21,21 @@ const renderShardsPage = async (req, res) => {
 		res.status(500).send("Internal Server Error");
 	}
 };
+
+const renderShardList = async (req, res) => {
+	try {
+		const user = req.user;
+		if (!user || !user.id) return res.status(401).send("Unauthorized");
+		const shards = await shardModel.getShardsByUserId(user.id);
+		res.render("partials/shardList", { shards }, (err, html) => {
+			if (err) return res.status(500).send("Render error");
+			res.send(html);
+		});
+	} catch (err) {
+		res.status(500).send("Server error");
+	}
+};
+
 // #endregion
 // ----------------------------------------------------------------------------------------------------
 
@@ -32,8 +47,16 @@ const createShard = async (req, res) => {
 	const shardData = req.body;
 
 	try {
-		const newShard = await shardModel.createShard(userId, shardData);
-		res.status(201).json(newShard);
+		await shardModel.createShard(userId, shardData);
+		// Immediately render and return the updated shard list partial
+		const shards = await shardModel.getShardsByUserId(userId);
+		res.render("partials/shardList", { shards }, (err, html) => {
+			if (err) {
+				console.error("Error rendering shard list:", err);
+				return res.status(500).send("Render error");
+			}
+			res.send(html);
+		});
 	} catch (error) {
 		console.error("Error creating shard:", error);
 		res.status(500).json({ error: "Internal server error" });
@@ -112,6 +135,7 @@ const deleteShard = async (req, res) => {
 // ----------------------------------------------------------------------------------------------------
 module.exports = {
 	renderShardsPage,
+	renderShardList,
 	createShard,
 	getShardsByUserId,
 	getShardById,

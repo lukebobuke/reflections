@@ -54,22 +54,31 @@ document.addEventListener("DOMContentLoaded", () => {
 		// Animate main content and navigate on nav link click
 		navPopup.querySelectorAll("a").forEach((link) => {
 			link.addEventListener("click", function (e) {
+				const href = this.getAttribute("href");
+				// Prevent navigation to /dashboard or /shards if user is not logged in
+				// const userIsLoggedIn = !!document.body.getAttribute("data-user-logged-in");
+				// if (
+				// 	(href === "/dashboard" || href === "/shards") &&
+				// 	!userIsLoggedIn
+				// ) {
+				// 	e.preventDefault();
+				// 	alert("You must be logged in to access this page.");
+				// 	return;
+				// }
 				e.preventDefault();
-				console.log(`Navigation link clicked: ${this.getAttribute("href")}`);
+				console.log(`Navigation link clicked: ${href}`);
 				navPopup.classList.remove("active");
 				main.classList.remove("slide-right");
 				main.classList.add("slide-left");
-				const href = this.getAttribute("href");
 				setTimeout(() => {
 					if (header) {
 						header.classList.remove("shifted-up");
 					}
-					// Add a 0.5s delay before navigating
 					setTimeout(() => {
 						console.log(`Navigating to: ${href}`);
 						window.location.href = href;
 					}, 500);
-				}, 2000); // delay matches transition
+				}, 2000);
 			});
 		});
 		// #endregion
@@ -151,4 +160,26 @@ document.addEventListener("DOMContentLoaded", () => {
 		});
 	});
 	// #endregion
+
+	const shardForm = document.querySelector("#shard-form form");
+	if (shardForm) {
+		shardForm.addEventListener("submit", async function (e) {
+			e.preventDefault();
+			const formData = new FormData(shardForm);
+			const data = Object.fromEntries(formData.entries());
+			const res = await fetch("/shards", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify(data)
+			});
+			if (res.ok) {
+				// Use the HTML returned directly from the POST response
+				const html = await res.text();
+				document.getElementById("shards-list-container").innerHTML = html;
+				shardForm.reset();
+			} else {
+				alert("Failed to create shard.");
+			}
+		});
+	}
 });

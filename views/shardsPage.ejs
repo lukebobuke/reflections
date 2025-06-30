@@ -1,40 +1,23 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Template App - Home</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <link rel="stylesheet" href="/styles.css">
-</head>
-<body>
-    <%-include("partials/filters")%>
-    <div id="bgImage"></div>
-    <%-include("partials/header") %> <%- include('partials/navPopup', { currentPage }) %>
-    <main>
-        <section id="shard-list">
-            <h2>Your Shards</h2>
-            <ul>
-                <% shards.forEach(shard => { %>
-                    <li>
-                        <h3><%= shard.title %></h3>
-                        <p><%= shard.description %></p>
-                        <button class="edit-button" data-id="<%= shard.id %>">Edit</button>
-                        <button class="delete-button" data-id="<%= shard.id %>">Delete</button>
-                    </li>
-                <% }) %>
-            </ul>
-        </section>
-        <section id="shard-form">
-            <h2>Create New Shard</h2>
-            <form action="/shards" method="POST">
-                <input type="text" name="title" placeholder="Title" required>
-                <textarea name="description" placeholder="Description" required></textarea>
-                <button type="submit">Create Shard</button>
-            </form>
-        </section>
-    </main>
-    <%-include("partials/footer") %>
-    <script src="/main.js"></script>
-</body>
-</html>
+<!-- @format -->
+
+<main class="glass shards-section">
+	<section id="shard-list">
+		<h2>Your Shards</h2>
+		<div>
+			<% shards.forEach(shard => { %>
+			<div>
+				<h3><%= shard.text %></h3>
+				<button class="edit-button" data-id="<%= shard.id %>">Edit</button>
+				<button class="delete-button" data-id="<%= shard.id %>">Delete</button>
+			</div>
+			<% }) %>
+		</div>
+	</section>
+	<section id="shard-form">
+		<h2>Create New Shard</h2>
+		<form action="/shards" method="POST">
+			<input class="glass" type="text" name="text" placeholder="Text" required />
+			<button class="glass" type="submit">Create Shard</button>
+		</form>
+	</section>
+</main>

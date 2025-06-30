@@ -1,19 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Contact Me - Template App</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="components/contact/contact.css">
-</head>
-<body>
-    <%-include("partials/filters") %>
-    <div id="bgImage"></div>
-    <%-include("partials/header") %>
-    <%- include('partials/navPopup', { currentPage }) %>
-
-    <main class="glass contact-section">
+<main class="glass contact-section">
         <h2>Contact Me</h1>
         <p>
             Have questions, feedback, or want to collaborate? Fill out the form below and we'll get back to you!
@@ -36,8 +21,4 @@
             </ul>
         </section>
     </main>
-        <%-include("partials/footer") %>
-    <script src="main.js"></script>
     <script src="components/contact/contact.js"></script>
-</body>
-</html>

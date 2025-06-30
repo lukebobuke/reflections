@@ -12,12 +12,21 @@
 		<button class="glass menu-button" aria-label="Toggle Navigation">
 			<i class="carved-glass fa-solid fa-bars" aria-label="Toggle Navigation"></i>
 		</button>
+		<% if (user) { %>
+		<!-- Hide signup when logged in -->
+		<!-- Show logout button -->
+		<a href="/logout" class="glass button-link" id="logoutBtn">
+			<span class="carved-glass">Log Out</span>
+		</a>
+		<% } else { %>
+		<!-- Show signup and login when not logged in -->
 		<a href="/login/signup" class="glass button-link" id="signupBtn">
 			<span class="carved-glass">Sign Up</span>
 		</a>
 		<a href="/login" class="glass button-link" id="loginBtn">
 			<span class="carved-glass">Login</span>
 		</a>
+		<% } %>
 	</div>
 	<h1 class="embossed-glass"><%= currentPage %></h1>
 </header>

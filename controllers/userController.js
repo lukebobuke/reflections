@@ -7,11 +7,11 @@ const bcrypt = require("bcrypt");
 //----------------------------------------------------------------------------------------------------
 
 const renderLoginPage = (req, res) => {
-	res.render("loginPage", { currentPage: "login" });
+	res.render("loginPage", { currentPage: "login", user: req.user });
 };
 
 const renderSignupPage = (req, res) => {
-	res.render("signupPage", { currentPage: "signup" });
+	res.render("signupPage", { currentPage: "signup", user: req.user });
 };
 
 //----------------------------------------------------------------------------------------------------
@@ -69,7 +69,7 @@ const login = async (req, res) => {
 	const { email, password } = req.body;
 	try {
 		const user = await userModel.getUserByEmail(email);
-		console.log("Login attempt for:", email, "User found:", user.id);
+		console.log("Login attempt for:", email, "User found:", user && user.id);
 		if (!user) {
 			return res.status(401).send("Invalid email or password");
 		}
@@ -84,7 +84,7 @@ const login = async (req, res) => {
 		// If the credentials are valid, set the user ID in the session and redirect to the user home page
 		req.session.userId = user.id;
 		console.log("User logged in successfully:", user);
-		res.render("dashboardPage", { currentPage: "dashboard", user });
+		res.redirect("/dashboard"); //
 	} catch (err) {
 		console.error("Error logging in user:", err);
 		res.status(500).send("Internal Server Error");
