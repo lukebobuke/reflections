@@ -23,7 +23,7 @@ indexRouter.get("/contact", (req, res) => {
 });
 
 indexRouter.get("/index", (req, res) => {
-	res.render("index", { currentPage: "index", user: req.user });
+	res.render("index", { currentPage: "home", user: req.user });
 });
 
 // User home page route - renders the user home page after login/signup

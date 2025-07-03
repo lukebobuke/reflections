@@ -3,12 +3,14 @@
 <main class="glass shards-section">
 	<section id="shard-list">
 		<h2>Your Shards</h2>
-		<div>
+		<div class="shard-list">
 			<% shards.forEach(shard => { %>
-			<div>
-				<h3><%= shard.text %></h3>
-				<button class="edit-button" data-id="<%= shard.id %>">Edit</button>
-				<button class="delete-button" data-id="<%= shard.id %>">Delete</button>
+			<div class="shard-list-item">
+				<h3 class="glass shard-text"><span class="embossed-glass"><%= shard.text %></span></h3>
+				<div class="list-actions">
+					<button class="edit-button glass" data-id="<%= shard.id %>"><span class="carved-glass">Edit</span></button>
+					<button class="delete-button glass" data-id="<%= shard.id %>"><span class="carved-glass">Delete</span></button>
+				</div>
 			</div>
 			<% }) %>
 		</div>
@@ -17,7 +19,7 @@
 		<h2>Create New Shard</h2>
 		<form action="/shards" method="POST">
 			<input class="glass" type="text" name="text" placeholder="Text" required />
-			<button class="glass" type="submit">Create Shard</button>
+			<button class="glass" type="submit"><span class="carved-glass">Create</span></button>
 		</form>
 	</section>
 </main>

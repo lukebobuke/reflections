@@ -170,7 +170,7 @@ document.addEventListener("DOMContentLoaded", () => {
 			const res = await fetch("/shards", {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify(data)
+				body: JSON.stringify(data),
 			});
 			if (res.ok) {
 				// Use the HTML returned directly from the POST response

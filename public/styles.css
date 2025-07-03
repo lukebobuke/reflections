@@ -59,7 +59,7 @@
 /* ----------------------------------------------------------------------------------------------------*/
 * {
 	color: rgba(var(--text-color));
-	font-family: "Segoe UI", Arial, sans-serif;
+	font-family: "Cinzel", Arial, sans-serif;
 	padding: 0;
 	box-sizing: border-box;
 	margin: 0px;
@@ -159,6 +159,11 @@ body {
 }
 
 .embossed-glass {
+	filter: url(#glassEmboss);
+	opacity: 1;
+}
+
+h2 {
 	filter: url(#glassEmboss);
 	opacity: 1;
 }
@@ -285,6 +290,31 @@ button:hover,
 .button-link:hover {
 	background: rgba(255, 255, 255, 0.1);
 }
+
+.shard-list-item {
+	display: flex;
+	flex-direction: row;
+	padding: 1rem;
+	align-items: center;
+	flex: 1;
+}
+
+.list-actions {
+	flex: 1;
+}
+
+.shard-list {
+	display: flex;
+	flex-direction: column;
+	justify-content: baseline;
+	margin-bottom: 2rem;
+	padding: var(--padding);
+}
+
+.shard-text {
+	width: 50%;
+}
+
 /* #endregion */
 
 /* ----------------------------------------------------------------------------------------------------*/
@@ -306,6 +336,10 @@ p {
 ul,
 ol {
 	margin-bottom: 1.5rem;
+}
+
+.shard-text {
+	padding: 0.5rem;
 }
 /* #endregion */
 
