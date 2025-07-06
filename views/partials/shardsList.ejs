@@ -1,0 +1,13 @@
+<!-- @format -->
+
+<div class="shard-list">
+	<% shards.forEach(shard => { %>
+	<div class="shard-list-item">
+		<h3 class="glass shard-text"><span class="embossed-glass"><%= shard.text %></span></h3>
+		<div class="list-actions">
+			<button class="edit-button glass" data-id="<%= shard.id %>"><span class="carved-glass">Edit</span></button>
+			<button class="delete-button glass" data-id="<%= shard.id %>"><span class="carved-glass">Delete</span></button>
+		</div>
+	</div>
+	<% }) %>
+</div>

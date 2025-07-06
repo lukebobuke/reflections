@@ -1,12 +1,17 @@
 /** @format */
 
+import { handleCreateShardClick } from "./shards.js";
+
 // Runs when the DOM is fully loaded
 document.addEventListener("DOMContentLoaded", () => {
 	console.log("Frontend JS loaded.");
+	handleCreateShardClick();
+
 	//----------------------------------------------------------------------------------------------------
 	// #region Menu/Nav Setup
 	// Get references to menu button, nav popup, and main content
 	//----------------------------------------------------------------------------------------------------
+
 	const menuButton = document.querySelector(".menu-button");
 	const navPopup = document.getElementById("navPopup");
 	const main = document.querySelector("main");
@@ -160,26 +165,4 @@ document.addEventListener("DOMContentLoaded", () => {
 		});
 	});
 	// #endregion
-
-	const shardForm = document.querySelector("#shard-form form");
-	if (shardForm) {
-		shardForm.addEventListener("submit", async function (e) {
-			e.preventDefault();
-			const formData = new FormData(shardForm);
-			const data = Object.fromEntries(formData.entries());
-			const res = await fetch("/shards", {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify(data),
-			});
-			if (res.ok) {
-				// Use the HTML returned directly from the POST response
-				const html = await res.text();
-				document.getElementById("shards-list-container").innerHTML = html;
-				shardForm.reset();
-			} else {
-				alert("Failed to create shard.");
-			}
-		});
-	}
 });

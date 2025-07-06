@@ -4,13 +4,11 @@ const express = require("express");
 const shardRouter = express.Router();
 const shardController = require("../controllers/shardController");
 
-// Renders the shard page with user shards
+// Renders the shard page or shard list with user shards
 shardRouter.get("/", shardController.renderShardsPage);
 
 // This route handles the creation of a new shard.
 shardRouter.post("/", shardController.createShard);
-
-shardRouter.post("/", shardController.renderShardList);
 
 // This route handles updating a shard by its ID.
 shardRouter.put("/:shardId", shardController.updateShard);

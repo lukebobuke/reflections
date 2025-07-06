@@ -3,6 +3,23 @@
 const db = require("./db");
 
 // ----------------------------------------------------------------------------------------------------
+// #region Create Shard
+// ----------------------------------------------------------------------------------------------------
+const createShard = async (userId, shardData) => {
+	const values = [userId, shardData.text, shardData.tint, shardData.glow];
+	const query = `
+        INSERT INTO shards (user_id, text, tint, glow)
+        VALUES ($1, $2, $3, $4)
+        RETURNING *
+    `;
+	const result = await db.query(query, values);
+	return result.rows[0];
+};
+// ----------------------------------------------------------------------------------------------------
+// #endregion
+// ----------------------------------------------------------------------------------------------------
+
+// ----------------------------------------------------------------------------------------------------
 // #region Get Shards By User
 // ----------------------------------------------------------------------------------------------------
 const getShardsByUserId = async (userId) => {
@@ -31,36 +48,7 @@ const getShardById = async (shardId) => {
 	}
 	return result.rows[0];
 };
-// #endregion
 // ----------------------------------------------------------------------------------------------------
-
-// ----------------------------------------------------------------------------------------------------
-// #region Create Shard
-// ----------------------------------------------------------------------------------------------------
-const createShard = async (userId, shardData) => {
-	const query = `
-        INSERT INTO shards (user_id, text, tint, glow)
-        VALUES ($1, $2, $3, $4)
-        RETURNING *
-    `;
-	const values = [userId, shardData.text, shardData.tint, shardData.glow];
-	const result = await db.query(query, values);
-	return result.rows[0];
-};
-// #endregion
-// ----------------------------------------------------------------------------------------------------
-
-// ----------------------------------------------------------------------------------------------------
-// #region Delete Shard
-// ----------------------------------------------------------------------------------------------------
-const deleteShard = async (shardId) => {
-	const query = `
-        DELETE FROM shards
-        WHERE id = $1
-    `;
-	const values = [shardId];
-	await db.query(query, values);
-};
 // #endregion
 // ----------------------------------------------------------------------------------------------------
 
@@ -81,6 +69,24 @@ const editShard = async (shardId, shardData) => {
 	}
 	return result.rows[0];
 };
+// ----------------------------------------------------------------------------------------------------
+// #endregion
+// ----------------------------------------------------------------------------------------------------
+
+// ----------------------------------------------------------------------------------------------------
+// #region Delete Shard
+// ----------------------------------------------------------------------------------------------------
+const deleteShard = async (shardId) => {
+	const query = `
+        DELETE FROM shards
+        WHERE id = $1
+        RETURNING *
+    `;
+	const values = [shardId];
+	const result = await db.query(query, values);
+	return result.rows[0]; // Return the deleted shard (or undefined if not found)
+};
+// ----------------------------------------------------------------------------------------------------
 // #endregion
 // ----------------------------------------------------------------------------------------------------
 
@@ -101,7 +107,15 @@ const tarnishShard = async (shardId) => {
 	}
 	return result.rows[0];
 };
+// ----------------------------------------------------------------------------------------------------
 // #endregion
 // ----------------------------------------------------------------------------------------------------
 
-module.exports = { getShardsByUserId, getShardById, createShard, deleteShard, editShard, tarnishShard };
+module.exports = {
+	getShardsByUserId,
+	getShardById,
+	createShard,
+	deleteShard,
+	editShard,
+	tarnishShard,
+};
