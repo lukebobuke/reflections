@@ -53,6 +53,25 @@ const getShardById = async (shardId) => {
 // ----------------------------------------------------------------------------------------------------
 
 // ----------------------------------------------------------------------------------------------------
+// #region Validate Shard User
+// ----------------------------------------------------------------------------------------------------
+const validateShardUser = async (shardId, userId) => {
+	const query = `
+        SELECT * FROM shards
+        WHERE id = $1 AND user_id = $2
+    `;
+	const values = [shardId, userId];
+	const result = await db.query(query, values);
+	if (!result.rows || result.rows.length === 0) {
+		throw new Error("Shard not found or does not belong to user");
+	}
+	return result.rows[0];
+};
+// ----------------------------------------------------------------------------------------------------
+// #endregion
+// ----------------------------------------------------------------------------------------------------
+
+// ----------------------------------------------------------------------------------------------------
 // #region Edit Shard
 // ----------------------------------------------------------------------------------------------------
 const editShard = async (shardId, shardData) => {
@@ -114,6 +133,7 @@ const tarnishShard = async (shardId) => {
 module.exports = {
 	getShardsByUserId,
 	getShardById,
+	validateShardUser,
 	createShard,
 	deleteShard,
 	editShard,

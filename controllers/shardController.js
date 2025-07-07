@@ -21,7 +21,7 @@ const renderShardsPage = async (req, res) => {
 		res.status(500).send("Internal Server Error");
 	}
 };
-
+// ----------------------------------------------------------------------------------------------------
 // #endregion
 // ----------------------------------------------------------------------------------------------------
 
@@ -30,8 +30,8 @@ const renderShardsPage = async (req, res) => {
 // ----------------------------------------------------------------------------------------------------
 const createShard = async (req, res) => {
 	const userId = req.user.id;
-	const shardData = req.body;
 	const user = req.user;
+	const shardData = req.body;
 	try {
 		await shardModel.createShard(userId, shardData);
 		// Get updated list
@@ -42,6 +42,7 @@ const createShard = async (req, res) => {
 		res.status(500).send("Internal server error");
 	}
 };
+// ----------------------------------------------------------------------------------------------------
 // #endregion
 // ----------------------------------------------------------------------------------------------------
 
@@ -57,6 +58,7 @@ const getShardsByUserId = async (userId) => {
 		throw error;
 	}
 };
+// ----------------------------------------------------------------------------------------------------
 // #endregion
 // ----------------------------------------------------------------------------------------------------
 
@@ -72,6 +74,7 @@ const getShardById = async (shardId) => {
 		throw error;
 	}
 };
+// ----------------------------------------------------------------------------------------------------
 // #endregion
 // ----------------------------------------------------------------------------------------------------
 
@@ -90,6 +93,7 @@ const updateShard = async (req, res) => {
 		res.status(500).json({ error: "Internal server error" });
 	}
 };
+// ----------------------------------------------------------------------------------------------------
 // #endregion
 // ----------------------------------------------------------------------------------------------------
 
@@ -97,22 +101,23 @@ const updateShard = async (req, res) => {
 // #region Delete Shard
 // ----------------------------------------------------------------------------------------------------
 const deleteShard = async (req, res) => {
+	const userId = req.user.id;
+	const user = req.user;
 	const shardId = req.params.shardId;
-
 	try {
+		await shardModel.validateShardUser(shardId, userId);
 		await shardModel.deleteShard(shardId);
-		res.status(204).send();
+		const shards = await shardModel.getShardsByUserId(userId);
+		res.render("partials/shardsList", { currentPage: "shards", shards, user, layout: false });
 	} catch (error) {
-		console.error("Error deleting shard:", error);
+		console.error("From shardController, error deleting shard:", error);
 		res.status(500).json({ error: "Internal server error" });
 	}
 };
+// ----------------------------------------------------------------------------------------------------
 // #endregion
 // ----------------------------------------------------------------------------------------------------
 
-// ----------------------------------------------------------------------------------------------------
-// #region Exports
-// ----------------------------------------------------------------------------------------------------
 module.exports = {
 	renderShardsPage,
 	createShard,

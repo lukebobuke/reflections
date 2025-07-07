@@ -10,7 +10,12 @@ async function editShard(shardId, shardData) {
 }
 
 async function deleteShard(shardId) {
-	await fetch(`/shard/${shardId}`, { method: "DELETE" });
+	const response = await fetch(`/shards/${shardId}`, { method: "DELETE" });
+	if (!response.ok) {
+		throw new Error("From shards.js, failed to delete shard");
+	}
+	console.log("Delete shard response:", response);
+	return response.text();
 }
 
 async function createShard(data) {
@@ -20,7 +25,7 @@ async function createShard(data) {
 		body: JSON.stringify(data),
 	});
 	if (!response.ok) {
-		throw new Error("Failed to create shard");
+		throw new Error("From shards.js, failed to create shard");
 	}
 	console.log("Shard creation response:", response);
 	return response.text();
@@ -63,4 +68,32 @@ function handleCreateShardClick() {
 	}
 }
 
-export { handleCreateShardClick };
+function handleDeleteShardClick() {
+	const container = document.querySelector(".shard-list");
+	console.log("Shard list container:", container);
+	if (!container) {
+		console.error("Shard list container not found.");
+		return;
+	}
+	container.addEventListener("click", async function (e) {
+		const button = e.target.closest(".delete-button");
+		if (!button) {
+			console.log("No button found in container.");
+			return;
+		}
+		const shardId = button.dataset.shardId;
+		console.log("Delete button clicked for shard ID:", shardId);
+		if (!shardId) {
+			alert("Shard ID is missing.");
+			return;
+		}
+		try {
+			const html = await deleteShard(shardId);
+			container.innerHTML = html;
+		} catch (error) {
+			alert(error.message);
+		}
+	});
+}
+
+export { handleCreateShardClick, handleDeleteShardClick };

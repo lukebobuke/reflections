@@ -1,11 +1,12 @@
 /** @format */
 
-import { handleCreateShardClick } from "./shards.js";
+import { handleCreateShardClick, handleDeleteShardClick } from "./shards.js";
 
 // Runs when the DOM is fully loaded
 document.addEventListener("DOMContentLoaded", () => {
 	console.log("Frontend JS loaded.");
 	handleCreateShardClick();
+	handleDeleteShardClick();
 
 	//----------------------------------------------------------------------------------------------------
 	// #region Menu/Nav Setup
@@ -97,10 +98,8 @@ document.addEventListener("DOMContentLoaded", () => {
 	window.addEventListener("scroll", () => {
 		if (header) {
 			if (window.scrollY > 0) {
-				console.log("Header shifted up due to scrolling.");
 				header.classList.add("shifted-up");
 			} else {
-				console.log("Header returned to original position.");
 				header.classList.remove("shifted-up");
 			}
 		}
@@ -118,17 +117,14 @@ document.addEventListener("DOMContentLoaded", () => {
 			return;
 		}
 		if (navPopup.classList.contains("active")) {
-			console.log("Footer shifted down due to active navigation popup.");
 			footer.classList.add("shifted-down");
 			return;
 		}
 		const doc = document.documentElement;
 		const atBottom = Math.abs(window.innerHeight + window.pageYOffset - doc.scrollHeight - 0.1) < 2;
 		if (atBottom && !navPopup.classList.contains("active")) {
-			console.log("Footer returned to original position.");
 			footer.classList.remove("shifted-down");
 		} else {
-			console.log("Footer shifted down due to scrolling.");
 			footer.classList.add("shifted-down");
 		}
 	}
