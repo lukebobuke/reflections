@@ -3,10 +3,18 @@
 <div class="shard-list">
 	<% shards.forEach(shard => { %>
 	<div class="shard-list-item">
-		<h3 class="glass shard-text"><span class="embossed-glass"><%= shard.text %></span></h3>
-		<div class="list-actions">
-			<button class="edit-button glass" data-shard-id="<%= shard.id %>"><span class="carved-glass">Edit</span></button>
-			<button class="delete-button glass" data-shard-id="<%= shard.id %>"><span class="carved-glass">Delete</span></button>
+		<div
+			class="glass shard"
+			data-shard-id="<%= shard.id %>"
+			data-shard-text="<%= shard.text %>"
+			data-shard-tint="<%= shard.tint %>"
+			data-shard-glow="<%= shard.glow %>">
+			<%= shard.id %>
+		</div>
+		<div class="glass shard-info hidden popped" data-shard-id="<%= shard.id %>">
+			<span class="embossed-glass">Text: <%= shard.text %></span>
+			<span class="embossed-glass">Tint: <%= shard.tint %></span>
+			<span class="embossed-glass">Glow: <%= shard.glow %></span>
 		</div>
 	</div>
 	<% }) %>

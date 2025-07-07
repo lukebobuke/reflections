@@ -44,11 +44,12 @@
 	--small-bezier: 0.2, 1.5, 0.6, 1.2;
 	/* Z-axis */
 	--glass-thickness: 8px;
-	--glass-thickness-button: 3px;
+	--glass-thickness-button: 2px;
 	--hover-distance: 8px;
 	--pressed-offset: Calc(var(--glass-thickness) - var(--glass-thickness-button));
 	--hover-distance-unpressed: Calc(var(--hover-distance) + var(--glass-thickness) - var(--glass-thickness-button));
 	--hover-distance-pressed: Calc(var(--hover-distance-unpressed) - var(--pressed-offset));
+	--hover-distance-popped: Calc(2 * var(--hover-distance));
 	/* Other */
 	--blur: 5px;
 }
@@ -184,22 +185,26 @@ header {
 	padding: var(--padding);
 }
 
-.menu-button i {
+i {
 	color: rgba(var(--text-color));
 	font-size: 2rem;
 	/* text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5); */
 }
 
-.menu-button {
+.menu-button,
+#show-shard-crud {
 	display: flex;
 	align-items: center;
 	justify-content: center;
 	padding: 1rem;
 	position: relative;
+	width: 4rem;
+	height: 4rem;
 }
 
-.menu-button:hover {
-	background: rgba(255, 255, 255, 0.1);
+.menu-button:hover,
+#show-shard-crud:hover {
+	background: rgba(255, 255, 255, 0.2);
 }
 
 .nav-popup {
@@ -278,7 +283,6 @@ textarea:focus {
 button,
 .button-link {
 	position: relative;
-	background: rgba(var(--btn-rgb));
 	border: none;
 	padding: 0.7rem 1.5rem;
 	cursor: pointer;
@@ -288,33 +292,8 @@ button,
 
 button:hover,
 .button-link:hover {
-	background: rgba(255, 255, 255, 0.1);
+	background: rgba(255, 255, 255, 0.2);
 }
-
-.shard-list-item {
-	display: flex;
-	flex-direction: row;
-	padding: 1rem;
-	align-items: center;
-	flex: 1;
-}
-
-.list-actions {
-	flex: 1;
-}
-
-.shard-list {
-	display: flex;
-	flex-direction: column;
-	justify-content: baseline;
-	margin-bottom: 2rem;
-	padding: var(--padding);
-}
-
-.shard-text {
-	width: 50%;
-}
-
 /* #endregion */
 
 /* ----------------------------------------------------------------------------------------------------*/
@@ -338,11 +317,57 @@ ol {
 	margin-bottom: 1.5rem;
 }
 
-.shard-text {
-	padding: 0.5rem;
-}
 /* #endregion */
 
+/* ----------------------------------------------------------------------------------------------------*/
+/* #region MARK: Shards */
+/* ----------------------------------------------------------------------------------------------------*/
+#shards-section {
+	display: flex;
+	flex-direction: column;
+	gap: var(--padding);
+}
+#shards-list-container {
+	margin-bottom: 2rem;
+	display: flex;
+	flex-direction: column;
+	gap: var(--glass-thickness);
+}
+.shard-list {
+	display: flex;
+	flex-direction: column;
+}
+#shard-crud-container {
+	position: fixed;
+	top: 30%;
+	left: var(--padding);
+	right: var(--padding);
+	text-align: center;
+	padding: var(--padding);
+}
+.shard-info {
+	display: flex;
+	flex-direction: column;
+	gap: var(--glass-thickness);
+	padding: 1rem;
+}
+.shard-list-item {
+	display: flex;
+	margin: 2rem 0;
+	align-items: center;
+	gap: var(--glass-thickness);
+	height: 2.5rem;
+}
+.shard {
+	display: flex;
+	width: 4rem;
+	height: 4rem;
+	align-items: center;
+	justify-content: center;
+}
+.shard:hover {
+	cursor: pointer;
+}
 /* ----------------------------------------------------------------------------------------------------*/
 /* #region MARK: Animation and Transition */
 /* ----------------------------------------------------------------------------------------------------*/
@@ -363,7 +388,8 @@ footer {
 	transition: transform 0.3s cubic-bezier(var(--small-bezier));
 }
 
-.menu-button {
+.menu-button,
+#show-shard-crud {
 	transition: background var(--transition-fast);
 }
 
@@ -379,7 +405,8 @@ textarea {
 }
 
 button,
-.button-link {
+.button-link,
+.shard {
 	transition: background var(--transition-fast), transform 0.3s cubic-bezier(var(--small-bezier)), box-shadow 0.3s cubic-bezier(var(--small-bezier));
 }
 
@@ -406,6 +433,11 @@ button,
 		translateY(Calc(var(--glass-thickness) + var(--hover-distance)));
 }
 
+.popped {
+	transform: translateX(var(--glass-thickness)) translateY(Calc(-1 * var(--glass-thickness)));
+	--hover-distance: var(--hover-distance-popped);
+}
+
 button,
 .button-link {
 	--glass-thickness: var(--glass-thickness-button);
@@ -428,6 +460,10 @@ header.shifted-up {
 
 footer {
 	z-index: 2;
+}
+
+#shard-crud-container {
+	z-index: 3;
 }
 
 main {

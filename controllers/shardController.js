@@ -82,14 +82,17 @@ const getShardById = async (shardId) => {
 // #region Update Shard
 // ----------------------------------------------------------------------------------------------------
 const updateShard = async (req, res) => {
+	const userId = req.user.id;
+	const user = req.user;
 	const shardId = req.params.shardId;
 	const shardData = req.body;
-
 	try {
-		const updatedShard = await shardModel.updateShard(shardId, shardData);
-		res.status(200).json(updatedShard);
+		await shardModel.validateShardUser(shardId, userId);
+		await shardModel.editShard(shardId, shardData); // <-- FIXED: was updateShard
+		const shards = await shardModel.getShardsByUserId(userId);
+		res.render("partials/shardsList", { currentPage: "shards", shards, user, layout: false });
 	} catch (error) {
-		console.error("Error updating shard:", error);
+		console.error("From shardController, error updating shard:", error);
 		res.status(500).json({ error: "Internal server error" });
 	}
 };

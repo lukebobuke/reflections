@@ -1,12 +1,18 @@
 /** @format */
 
-async function editShard(shardId, shardData) {
-	const response = await fetch(`/shard/${shardId}`, {
+async function editShard(shardId, data) {
+	const response = await fetch(`/shards/${shardId}`, {
 		method: "PUT",
 		headers: { "Content-Type": "application/json" },
 		body: JSON.stringify(data),
 	});
-	return response.json();
+	// Debugging: log the response status and body
+	console.log("Edit shard response status:", response.status);
+	const respText = await response.text();
+	if (!response.ok) {
+		throw new Error("From shards.js, failed to update shard");
+	}
+	return respText;
 }
 
 async function deleteShard(shardId) {
@@ -49,51 +55,156 @@ function validateShardData(data) {
 	};
 }
 
-function handleCreateShardClick() {
-	const shardCreationForm = document.querySelector("#shard-creation-form");
-	if (shardCreationForm) {
-		shardCreationForm.addEventListener("submit", async function (e) {
-			e.preventDefault();
-			const formData = new FormData(shardCreationForm);
-			const rawData = Object.fromEntries(formData.entries()); // Convert to plain object
-			try {
-				const validatedData = validateShardData(rawData);
-				const html = await createShard(validatedData); // returns HTML partial
-				document.getElementById("shards-list-container").innerHTML = html;
-				shardCreationForm.reset();
-			} catch (error) {
-				alert(error.message);
-			}
-		});
+function updateShardFormUI() {
+	const form = document.getElementById("shard-crud-form");
+	const submitText = document.getElementById("shard-form-submit-text");
+	const deleteBtn = document.getElementById("shard-form-delete-btn");
+	if (!form || !submitText || !deleteBtn) return;
+	const type = form.dataset.shardFormType;
+	if (type === "edit") {
+		submitText.textContent = "Update Shard";
+		deleteBtn.classList.remove("hidden");
+	} else {
+		submitText.textContent = "Create Shard";
+		deleteBtn.classList.add("hidden");
 	}
 }
 
-function handleDeleteShardClick() {
-	const container = document.querySelector(".shard-list");
-	console.log("Shard list container:", container);
-	if (!container) {
-		console.error("Shard list container not found.");
-		return;
-	}
-	container.addEventListener("click", async function (e) {
-		const button = e.target.closest(".delete-button");
-		if (!button) {
-			console.log("No button found in container.");
-			return;
+// Update UI when switching to edit mode
+function handleShardClick() {
+	const shardContainer = document.getElementById("shards-list-container");
+	const formContainer = document.querySelector("#shard-crud-container");
+	const form = document.querySelector("#shard-crud-form");
+	if (!shardContainer || !formContainer || !form) return;
+
+	shardContainer.addEventListener("click", function (e) {
+		const shard = e.target.closest(".shard");
+		console.log("Shard clicked:", shard);
+		if (shard && shardContainer.contains(shard)) {
+			const shardId = shard.dataset.shardId;
+			form.classList.remove("hidden");
+			formContainer.classList.remove("hidden");
+			form.dataset.shardFormType = "edit";
+			form.dataset.currentShardId = shardId;
+			form.elements["text"].value = shard.dataset.shardText;
+			form.elements["tint"].value = shard.dataset.shardTint;
+			form.elements["glow"].value = shard.dataset.shardGlow;
+			updateShardFormUI();
 		}
-		const shardId = button.dataset.shardId;
-		console.log("Delete button clicked for shard ID:", shardId);
-		if (!shardId) {
-			alert("Shard ID is missing.");
+	});
+}
+
+function handleEditShardClick() {
+	const shardCrudForm = document.querySelector("#shard-crud-form");
+	const shardCrudContainer = document.querySelector("#shard-crud-container");
+	if (!shardCrudForm || !shardCrudContainer) return;
+	shardCrudForm.addEventListener("submit", async function (e) {
+		if (shardCrudForm && shardCrudForm.dataset.shardFormType == "edit") {
+			const shardId = shardCrudForm.dataset.currentShardId;
+			if (!shardId) throw new Error("Shard ID is missing.");
+			e.preventDefault();
+			const formData = new FormData(shardCrudForm);
+			const rawData = Object.fromEntries(formData.entries());
+			try {
+				const validatedData = validateShardData(rawData);
+				const html = await editShard(shardId, validatedData);
+				document.getElementById("shards-list-container").innerHTML = html;
+				shardCrudForm.reset();
+				shardCrudContainer.classList.add("hidden");
+				shardCrudForm.dataset.shardFormType = "create";
+				delete shardCrudForm.dataset.currentShardId;
+				updateShardFormUI();
+			} catch (error) {
+				alert(error.message);
+			}
+		}
+	});
+}
+
+function handleCreateShardClick() {
+	const shardCrudForm = document.querySelector("#shard-crud-form");
+	const shardCrudContainer = document.querySelector("#shard-crud-container");
+	console.log("shardCrudForm:", shardCrudForm);
+	if (!shardCrudForm || !shardCrudContainer) return;
+	shardCrudForm.addEventListener("submit", async function (e) {
+		if (shardCrudForm && shardCrudForm.dataset.shardFormType == "create") {
+			e.preventDefault();
+			const formData = new FormData(shardCrudForm);
+			const rawData = Object.fromEntries(formData.entries());
+			try {
+				const validatedData = validateShardData(rawData);
+				const html = await createShard(validatedData);
+				document.getElementById("shards-list-container").innerHTML = html;
+				shardCrudForm.reset();
+				shardCrudContainer.classList.add("hidden");
+				updateShardFormUI();
+			} catch (error) {
+				alert(error.message);
+			}
+		}
+	});
+}
+
+function handleDeleteShardClick() {
+	const formDeleteButton = document.getElementById("shard-form-delete-btn");
+	const form = document.getElementById("shard-crud-form");
+	const formContainer = document.getElementById("shard-crud-container");
+	if (!formDeleteButton || !form || !formContainer) return;
+	formDeleteButton.addEventListener("click", async function () {
+		const formType = form.dataset.shardFormType;
+		const shardId = form.dataset.currentShardId;
+		if (formType !== "edit" || !shardId) {
+			alert("No shard selected for deletion.");
 			return;
 		}
 		try {
 			const html = await deleteShard(shardId);
-			container.innerHTML = html;
+			document.getElementById("shards-list-container").innerHTML = html;
+			form.reset();
+			formContainer.classList.add("hidden");
+			form.dataset.shardFormType = "create";
+			delete form.dataset.currentShardId;
 		} catch (error) {
 			alert(error.message);
 		}
 	});
 }
 
-export { handleCreateShardClick, handleDeleteShardClick };
+function handleShardHover() {
+	const container = document.getElementById("shards-list-container");
+	if (!container) return;
+
+	container.addEventListener("mouseover", function (e) {
+		const shardElem = e.target.closest(".shard");
+		if (shardElem && container.contains(shardElem)) {
+			const shardId = shardElem.dataset.shardId;
+			if (!shardId) return;
+			const infoElem = container.querySelector(`.shard-info[data-shard-id="${shardId}"]`);
+			if (infoElem) infoElem.classList.remove("hidden");
+			shardElem.classList.add("popped");
+		}
+	});
+
+	container.addEventListener("mouseout", function (e) {
+		const shardElem = e.target.closest(".shard");
+		if (shardElem && container.contains(shardElem)) {
+			const shardId = shardElem.dataset.shardId;
+			if (!shardId) return;
+			const infoElem = container.querySelector(`.shard-info[data-shard-id="${shardId}"]`);
+			if (infoElem) infoElem.classList.add("hidden");
+			shardElem.classList.remove("popped");
+		}
+	});
+}
+
+function handleShowShardCrudClick() {
+	const showButton = document.querySelector("#show-shard-crud");
+	console.log("Show shard crud button:", showButton);
+	const crudContainer = document.querySelector("#shard-crud-container");
+	if (!showButton || !crudContainer) return;
+	showButton.addEventListener("click", () => {
+		crudContainer.classList.remove("hidden");
+	});
+}
+
+export { handleCreateShardClick, handleDeleteShardClick, handleEditShardClick, handleShardHover, handleShowShardCrudClick, handleShardClick };

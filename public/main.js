@@ -1,13 +1,23 @@
 /** @format */
 
-import { handleCreateShardClick, handleDeleteShardClick } from "./shards.js";
+import {
+	handleCreateShardClick,
+	handleShardHover,
+	handleDeleteShardClick,
+	handleShowShardCrudClick,
+	handleShardClick,
+	handleEditShardClick,
+} from "./shards.js";
 
 // Runs when the DOM is fully loaded
 document.addEventListener("DOMContentLoaded", () => {
 	console.log("Frontend JS loaded.");
 	handleCreateShardClick();
 	handleDeleteShardClick();
-
+	handleShardHover();
+	handleShowShardCrudClick();
+	handleShardClick();
+	handleEditShardClick();
 	//----------------------------------------------------------------------------------------------------
 	// #region Menu/Nav Setup
 	// Get references to menu button, nav popup, and main content

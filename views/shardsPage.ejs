@@ -1,17 +1,25 @@
 <!-- @format -->
 
-<main class="glass shards-section">
-	<section id="shard-list">
+<section id="shard-crud-container" class="glass hidden shifted-up">
+	<h2>Create New Shard</h2>
+	<form id="shard-crud-form" data-shard-form-type="create" data-current-shard-id="">
+		<input class="glass" type="text" name="text" placeholder="Text" required />
+		<input class="glass" type="number" name="tint" placeholder="Tint" required />
+		<input class="glass" type="number" name="glow" placeholder="Glow" required />
+		<button class="glass" type="submit">
+			<span class="carved-glass" id="shard-form-submit-text">Create Shard</span>
+		</button>
+		<button class="glass hidden" type="button" id="shard-form-delete-btn">
+			<span class="carved-glass">Delete</span>
+		</button>
+	</form>
+</section>
+<main class="glass" id="shards-section">
+	<button class="glass" id="show-shard-crud" aria-label="Toggle Navigation">
+		<i class="carved-glass fa-solid fa-plus" aria-label="Toggle Navigation"></i>
+	</button>
+	<section id="shards-list-container">
 		<h2>Your Shards</h2>
-		<div id="shards-list-container"><%- include('partials/shardsList', { shards }) %></div>
-	</section>
-	<section>
-		<h2>Create New Shard</h2>
-		<form id="shard-creation-form" class="glass">
-			<input class="glass" type="text" name="text" placeholder="Text" required />
-			<input class="glass" type="number" name="tint" placeholder="Tint" required />
-			<input class="glass" type="number" name="glow" placeholder="Glow" required />
-			<button class="glass" type="submit"><span class="carved-glass">Create</span></button>
-		</form>
+		<%- include('partials/shardsList', { shards }) %>
 	</section>
 </main>
