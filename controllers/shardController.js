@@ -34,10 +34,10 @@ function validateShardData(data) {
 		throw new Error("Invalid shard text");
 	}
 	if (isNaN(tint) || tint < 0 || tint > 8) {
-		throw new Error("Tint must be a number between 0 and 8.");
+		throw new Error("validateShardData in shardController.js:  Tint must be a number between 0 and 8.");
 	}
-	if (isNaN(glow) || glow < 0 || glow > 13) {
-		throw new Error("Glow must be a number between 0 and 13.");
+	if (isNaN(glow) || glow < 0 || glow > 1) {
+		throw new Error("validateShardData in shardController.js:  Glow must be a number between 0 and 1.");
 	}
 	return {
 		text: text.trim(),
