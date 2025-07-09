@@ -26,14 +26,39 @@ const renderShardsPage = async (req, res) => {
 // ----------------------------------------------------------------------------------------------------
 
 // ----------------------------------------------------------------------------------------------------
+// #region Validate Shard Data
+// ----------------------------------------------------------------------------------------------------
+function validateShardData(data) {
+	const { text, tint, glow } = data;
+	if (!text || typeof text !== "string") {
+		throw new Error("Invalid shard text");
+	}
+	if (isNaN(tint) || tint < 0 || tint > 8) {
+		throw new Error("Tint must be a number between 0 and 8.");
+	}
+	if (isNaN(glow) || glow < 0 || glow > 13) {
+		throw new Error("Glow must be a number between 0 and 13.");
+	}
+	return {
+		text: text.trim(),
+		tint: parseInt(tint, 10) || 0,
+		glow: parseInt(glow, 10) || 0,
+	};
+}
+// ----------------------------------------------------------------------------------------------------
+// #endregion
+// ----------------------------------------------------------------------------------------------------
+
+// ----------------------------------------------------------------------------------------------------
 // #region Create Shard
 // ----------------------------------------------------------------------------------------------------
 const createShard = async (req, res) => {
 	const userId = req.user.id;
 	const user = req.user;
 	const shardData = req.body;
+	const validatedShardData = validateShardData(shardData);
 	try {
-		await shardModel.createShard(userId, shardData);
+		await shardModel.createShard(userId, validatedShardData);
 		// Get updated list
 		const shards = await shardModel.getShardsByUserId(userId);
 		res.render("partials/shardsList", { currentPage: "shards", shards, user, layout: false });
@@ -86,9 +111,10 @@ const updateShard = async (req, res) => {
 	const user = req.user;
 	const shardId = req.params.shardId;
 	const shardData = req.body;
+	const validatedShardData = validateShardData(shardData);
 	try {
 		await shardModel.validateShardUser(shardId, userId);
-		await shardModel.editShard(shardId, shardData); // <-- FIXED: was updateShard
+		await shardModel.editShard(shardId, validatedShardData);
 		const shards = await shardModel.getShardsByUserId(userId);
 		res.render("partials/shardsList", { currentPage: "shards", shards, user, layout: false });
 	} catch (error) {
