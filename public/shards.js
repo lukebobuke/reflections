@@ -47,9 +47,12 @@ async function createShard(data) {
 // #region Validation
 // ----------------------------------------------------------------------------------------------------
 function validateShardData(data) {
-	const { text, tint, glow } = data;
+	const { spark, text, tint, glow } = data;
+	if (!spark || typeof spark !== "string") {
+		throw new Error("ValidateShardData in shards.js: Invalid spark text");
+	}
 	if (!text || typeof text !== "string") {
-		throw new Error("Invalid shard text");
+		throw new Error("ValidateShardData in shards.js: Invalid shard text");
 	}
 	if (isNaN(tint) || tint < 0 || tint > 8) {
 		throw new Error("validateShardData in shards.js:  Tint must be a number between 0 and 8.");
@@ -58,6 +61,7 @@ function validateShardData(data) {
 		throw new Error("validateShardData in shards.js:  Glow must be a number between 0 and 1.");
 	}
 	return {
+		spark: spark.trim(),
 		text: text.trim(),
 		tint: parseInt(tint, 10) || 0,
 		glow: parseInt(glow, 10) || 0,
@@ -73,6 +77,7 @@ function validateShardData(data) {
 function updateShardFormUI() {
 	const form = document.getElementById("shard-crud-form");
 	const shardCrudFormTitle = document.getElementById("shard-crud-form-title");
+	const sparkRefresh = document.getElementById("spark-refresh");
 	const submitText = document.getElementById("shard-form-submit-text");
 	const deleteBtn = document.getElementById("shard-form-delete-btn");
 	const glowIcon = document.querySelector("#shard-form-glow-icon");
@@ -82,10 +87,12 @@ function updateShardFormUI() {
 		submitText.textContent = "Update Shard";
 		deleteBtn.classList.remove("hidden");
 		shardCrudFormTitle.textContent = "Edit Shard";
+		sparkRefresh.classList.add("hidden");
 	} else if (type === "create") {
 		submitText.textContent = "Create Shard";
 		deleteBtn.classList.add("hidden");
 		shardCrudFormTitle.textContent = "Create New Shard";
+		sparkRefresh.classList.remove("hidden");
 	}
 	if (form.dataset.glow === "1" || form.dataset.glow === 1) {
 		glowIcon.classList.add("fa-solid");
@@ -106,23 +113,27 @@ function updateShardFormUI() {
 // Update UI when switching to edit mode
 function handleShardClick() {
 	const shardContainer = document.getElementById("shards-list-container");
-	const formContainer = document.querySelector("#shard-crud-container");
+	const shardCrudContainer = document.querySelector("#shard-crud-container");
 	const shardCrudForm = document.querySelector("#shard-crud-form");
-	if (!shardContainer || !formContainer || !shardCrudForm) return;
+	const sparkText = document.querySelector("#spark-text");
+	if (!shardContainer || !shardCrudContainer || !shardCrudForm) return;
 	shardContainer.addEventListener("click", function (e) {
-		const shard = e.target.closest(".shard");
-		if (shard && shardContainer.contains(shard)) {
-			console.log("Shard clicked:", shard);
-			shardCrudForm.dataset.shardFormType = "edit";
-			const shardId = shard.dataset.shardId;
-			shardCrudForm.classList.remove("hidden");
-			formContainer.classList.remove("hidden");
-			shardCrudForm.dataset.currentShardId = shardId;
-			shardCrudForm.elements["text"].value = shard.dataset.shardText;
-			shardCrudForm.elements["tint"].value = shard.dataset.shardTint;
-			shardCrudForm.dataset.glow = shard.dataset.shardGlow;
-			console.log("form:", shardCrudForm);
-			updateShardFormUI();
+		if (shardCrudContainer.classList.contains("hidden")) {
+			const shard = e.target.closest(".shard");
+			if (shard && shardContainer.contains(shard)) {
+				console.log("Shard clicked:", shard);
+				shardCrudForm.dataset.shardFormType = "edit";
+				const shardId = shard.dataset.shardId;
+				shardCrudForm.classList.remove("hidden");
+				shardCrudContainer.classList.remove("hidden");
+				shardCrudForm.dataset.currentShardId = shardId;
+				sparkText.textContent = shard.dataset.shardSpark;
+				shardCrudForm.elements["text"].value = shard.dataset.shardText;
+				shardCrudForm.elements["tint"].value = shard.dataset.shardTint;
+				shardCrudForm.dataset.glow = shard.dataset.shardGlow;
+				console.log("form:", shardCrudForm);
+				updateShardFormUI();
+			}
 		}
 	});
 }
@@ -137,10 +148,11 @@ function handleEditShardClick() {
 			if (!shardId) throw new Error("Shard ID is missing.");
 			e.preventDefault();
 			try {
+				const spark = document.querySelector("#spark-text").textContent;
 				const text = shardCrudForm.elements["text"].value;
 				const tint = shardCrudForm.elements["tint"].value;
 				const glow = shardCrudForm.dataset.glow || "0";
-				const rawData = { text, tint, glow };
+				const rawData = { spark, text, tint, glow };
 				console.log("Raw data for shard edit:", rawData);
 				const validatedData = validateShardData(rawData);
 				const html = await editShard(shardId, validatedData);
@@ -166,12 +178,14 @@ function handleCreateShardClick() {
 		if (shardCrudForm && shardCrudForm.dataset.shardFormType == "create") {
 			e.preventDefault();
 			try {
+				const spark = document.querySelector("#spark-text").textContent;
 				const text = document.querySelector("#shard-form-text").value;
 				const tint = document.querySelector("#shard-form-tint").value;
 				const glow = shardCrudForm.dataset.glow || "0";
-				const rawData = { text, tint, glow };
+				const rawData = { spark, text, tint, glow };
 				console.log("Raw data for shard creation:", rawData);
 				const validatedData = validateShardData(rawData);
+				console.log("Validated data for shard creation:", validatedData);
 				const html = await createShard(validatedData);
 				document.getElementById("shards-list-container").innerHTML = html;
 				shardCrudForm.reset();
@@ -211,19 +225,20 @@ function handleDeleteShardClick() {
 
 function handleShardHover() {
 	const container = document.getElementById("shards-list-container");
-	if (!container) return;
-
+	const shardCrudContainer = document.querySelector("#shard-crud-container");
+	if (!container || !shardCrudContainer) return;
 	container.addEventListener("mouseover", function (e) {
-		const shardElem = e.target.closest(".shard");
-		if (shardElem && container.contains(shardElem)) {
-			const shardId = shardElem.dataset.shardId;
-			if (!shardId) return;
-			const infoElem = container.querySelector(`.shard-info[data-shard-id="${shardId}"]`);
-			if (infoElem) infoElem.classList.remove("hidden");
-			shardElem.classList.add("popped");
+		if (shardCrudContainer.classList.contains("hidden")) {
+			const shardElem = e.target.closest(".shard");
+			if (shardElem && container.contains(shardElem)) {
+				const shardId = shardElem.dataset.shardId;
+				if (!shardId) return;
+				const infoElem = container.querySelector(`.shard-info[data-shard-id="${shardId}"]`);
+				if (infoElem) infoElem.classList.remove("hidden");
+				shardElem.classList.add("popped");
+			}
 		}
 	});
-
 	container.addEventListener("mouseout", function (e) {
 		const shardElem = e.target.closest(".shard");
 		if (shardElem && container.contains(shardElem)) {
@@ -238,16 +253,44 @@ function handleShardHover() {
 
 function handleShowShardCrudClick() {
 	const showButton = document.querySelector("#show-shard-crud");
-	const crudContainer = document.querySelector("#shard-crud-container");
+	const shardCrudContainer = document.querySelector("#shard-crud-container");
 	const shardCrudForm = document.querySelector("#shard-crud-form");
-	if (!showButton || !crudContainer || !shardCrudForm) return;
+	const sparkText = document.querySelector("#spark-text");
+	if (!showButton || !shardCrudContainer || !shardCrudForm || !sparkText) return;
 	showButton.addEventListener("click", () => {
 		shardCrudForm.dataset.shardFormType = "create";
 		shardCrudForm.dataset.currentShardId = "";
 		shardCrudForm.reset();
+		sparkText.textContent = randomSpark(); // Set initial spark text
 		shardCrudForm.dataset.glow = "0"; // Reset glow state
-		crudContainer.classList.remove("hidden");
+		shardCrudContainer.classList.remove("hidden");
 		updateShardFormUI();
+	});
+}
+
+function handleHideShardCrudClick() {
+	const crudContainer = document.querySelector("#shard-crud-container");
+	if (!crudContainer) return;
+	document.addEventListener("click", (e) => {
+		if (
+			!crudContainer.contains(e.target) &&
+			!e.target.closest("#show-shard-crud") &&
+			!e.target.closest("#shard-crud-form") &&
+			!e.target.closest(".shard")
+		) {
+			crudContainer.classList.add("hidden");
+		}
+	});
+}
+
+function handleSparkRefreshClick() {
+	const sparkRefreshButton = document.querySelector("#spark-refresh");
+	const sparkText = document.querySelector("#spark-text");
+	if (!sparkRefreshButton || !sparkText) return;
+
+	sparkRefreshButton.addEventListener("click", () => {
+		sparkText.textContent = randomSpark();
+		console.log("Spark text refreshed:", sparkText.textContent);
 	});
 }
 
@@ -278,12 +321,46 @@ function handleGlowClick() {
 // #endregion
 // ----------------------------------------------------------------------------------------------------
 
+// ----------------------------------------------------------------------------------------------------
+// #region Sparks
+// ----------------------------------------------------------------------------------------------------
+
+function randomSpark() {
+	const sparks = [
+		"Which hue best reflects the emotion you carry today?",
+		"Name a moment that cracked your heart.",
+		"Years later, what memory is still just as clear?",
+		"What is your deepest aspiration?",
+		"Describe a part of yourself that’s been reforged by pressure.",
+		"What makes you glow?",
+		"Which moment do you reflect on daily?",
+		"Has anyone ever made you melt? Are they still in your life?",
+		"If you could etch one truth forever, what would it say?",
+		"Is your home full of light, or dark and moody?",
+		"Which part of you is fragile like glass?",
+		"Name a ritual that smooths your furrowed brow.",
+		"Have you ever broken something beyond repair?",
+		"Some people have a hard exterior, what about you?",
+		"What moment made your path clear?",
+		"With whom are you comfortable being transparent?",
+	];
+	const randomIndex = Math.floor(Math.random() * sparks.length);
+	const randomSpark = sparks[randomIndex];
+	return randomSpark;
+}
+
+// ----------------------------------------------------------------------------------------------------
+// #endregion
+// ----------------------------------------------------------------------------------------------------
+
 export {
 	handleCreateShardClick,
 	handleDeleteShardClick,
 	handleEditShardClick,
 	handleShardHover,
 	handleShowShardCrudClick,
+	handleHideShardCrudClick,
 	handleShardClick,
 	handleGlowClick,
+	handleSparkRefreshClick,
 };

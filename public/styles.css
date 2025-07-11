@@ -39,7 +39,7 @@
 	--footer-height: 6rem;
 	/* Animations */
 	--transition-fast: 0.6s;
-	--transition-slow: 2s;
+	--transition-slow: 1.2s;
 	--big-bezier: 0.8, -0.2, 0.2, 1.2;
 	--small-bezier: 0.2, 1.5, 0.6, 1.2;
 	/* Z-axis */
@@ -266,6 +266,13 @@ form {
 	gap: var(--glass-thickness);
 }
 
+#spark-container {
+	display: flex;
+	gap: 1rem;
+	align-items: center;
+	justify-content: center;
+}
+
 input,
 textarea {
 	width: 100%;
@@ -317,6 +324,10 @@ ol {
 	margin-bottom: 1.5rem;
 }
 
+.spark-text {
+	font-style: italic;
+}
+
 /* #endregion */
 
 /* ----------------------------------------------------------------------------------------------------*/
@@ -350,6 +361,7 @@ ol {
 	flex-direction: column;
 	gap: var(--glass-thickness);
 	padding: 1rem;
+	align-items: center;
 }
 .shard-list-item {
 	display: flex;

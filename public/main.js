@@ -5,9 +5,11 @@ import {
 	handleShardHover,
 	handleDeleteShardClick,
 	handleShowShardCrudClick,
+	handleHideShardCrudClick,
 	handleShardClick,
 	handleEditShardClick,
 	handleGlowClick,
+	handleSparkRefreshClick,
 } from "./shards.js";
 
 // Runs when the DOM is fully loaded
@@ -17,9 +19,11 @@ document.addEventListener("DOMContentLoaded", () => {
 	handleDeleteShardClick();
 	handleShardHover();
 	handleShowShardCrudClick();
+	handleHideShardCrudClick();
 	handleShardClick();
 	handleEditShardClick();
 	handleGlowClick();
+	handleSparkRefreshClick();
 	//----------------------------------------------------------------------------------------------------
 	// #region Menu/Nav Setup
 	// Get references to menu button, nav popup, and main content

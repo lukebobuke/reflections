@@ -6,10 +6,10 @@ const db = require("./db");
 // #region Create Shard
 // ----------------------------------------------------------------------------------------------------
 const createShard = async (userId, shardData) => {
-	const values = [userId, shardData.text, shardData.tint, shardData.glow];
+	const values = [userId, shardData.spark, shardData.text, shardData.tint, shardData.glow];
 	const query = `
-        INSERT INTO shards (user_id, text, tint, glow)
-        VALUES ($1, $2, $3, $4)
+        INSERT INTO shards (user_id, spark, text, tint, glow)
+        VALUES ($1, $2, $3, $4, $5)
         RETURNING *
     `;
 	const result = await db.query(query, values);
@@ -77,11 +77,11 @@ const validateShardUser = async (shardId, userId) => {
 const editShard = async (shardId, shardData) => {
 	const query = `
         UPDATE shards
-        SET text = $1, tint = $2, glow = $3
-        WHERE id = $4
+        SET spark = $1, text = $2, tint = $3, glow = $4
+        WHERE id = $5
         RETURNING *
     `;
-	const values = [shardData.text, shardData.tint, shardData.glow, shardId];
+	const values = [shardData.spark, shardData.text, shardData.tint, shardData.glow, shardId];
 	const result = await db.query(query, values);
 	if (!result.rows || result.rows.length === 0) {
 		throw new Error("Shard not found");

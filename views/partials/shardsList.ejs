@@ -6,14 +6,16 @@
 		<div
 			class="glass shard <%= shard.glow > 0 ? 'glow' : '' %>"
 			data-shard-id="<%= shard.id %>"
+			data-shard-spark="<%= shard.spark %>"
 			data-shard-text="<%= shard.text %>"
 			data-shard-tint="<%= shard.tint %>"
 			data-shard-glow="<%= shard.glow %>">
 			<%= shard.id %>
 		</div>
 		<div class="glass shard-info hidden popped" data-shard-id="<%= shard.id %>">
-			<span class="embossed-glass">Text: <%= shard.text %></span>
-			<span class="embossed-glass">Tint: <%= shard.tint %></span>
+			<span class="spark-text embossed-glass"><%= shard.spark %></span>
+			<span class="embossed-glass"><%= shard.text %></span>
+			<span class="embossed-glass"><%= shard.tint %></span>
 		</div>
 	</div>
 	<% }) %>

@@ -29,7 +29,10 @@ const renderShardsPage = async (req, res) => {
 // #region Validate Shard Data
 // ----------------------------------------------------------------------------------------------------
 function validateShardData(data) {
-	const { text, tint, glow } = data;
+	const { spark, text, tint, glow } = data;
+	if (!spark || typeof spark !== "string") {
+		throw new Error("Invalid spark text");
+	}
 	if (!text || typeof text !== "string") {
 		throw new Error("Invalid shard text");
 	}
@@ -40,6 +43,7 @@ function validateShardData(data) {
 		throw new Error("validateShardData in shardController.js:  Glow must be a number between 0 and 1.");
 	}
 	return {
+		spark: spark.trim(),
 		text: text.trim(),
 		tint: parseInt(tint, 10) || 0,
 		glow: parseInt(glow, 10) || 0,
