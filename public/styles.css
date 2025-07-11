@@ -62,8 +62,13 @@
 	color: rgba(var(--text-color));
 	font-family: "Cinzel", Arial, sans-serif;
 	padding: 0;
+	margin: 0;
 	box-sizing: border-box;
-	margin: 0px;
+}
+
+::selection {
+	color: rgba(white);
+	background: rgba(255, 255, 255, 0.1);
 }
 
 html {
@@ -126,29 +131,15 @@ body {
 .glass {
 	border-radius: var(--radius);
 	box-shadow: 
-			/* big shadow underneath */ Calc(-1 * (var(--hover-distance) + var(--glass-thickness)))
+		/* big shadow underneath */ Calc(-1 * (var(--hover-distance) + var(--glass-thickness)))
 			Calc(var(--hover-distance) + var(--glass-thickness)) var(--blur) rgba(var(--shadow-rgb)),
-		/* top */ inset 0px 1px 1px 0px rgba(255, 255, 255, 0.8), /* right */ inset -1px 0px 1px 0px rgba(255, 255, 255, 0.8),
+		/* top */ inset 0px 1px 1px 0px rgba(255, 255, 255, 0.5), /* right */ inset -1px 0px 1px 0px rgba(255, 255, 255, 0.5),
 		/* bottom */ inset 3px 0px 3px 0px rgba(255, 255, 255, 0.1), /* left */ inset 0px -3px 3px 0px rgba(255, 255, 255, 0.1),
 		/* top right thickened edge */ inset calc(-1 * var(--glass-thickness)) var(--glass-thickness) 4px 0px rgba(200, 200, 200, 0.25),
 		/* bottom left thickened edge */ calc(-1 * var(--glass-thickness)) var(--glass-thickness) 0px 0px rgba(220, 220, 220, 0.25);
 	backdrop-filter: blur(var(--blur));
 	-webkit-backdrop-filter: blur(var(--blur));
-	background: 
-		/* linear-gradient(
-		150deg,
-		rgba(var(--glass-rgb)) 10%,
-		rgba(var(--highlight-rgb)) 15%,
-		rgba(var(--glass-rgb)) 20%,
-		rgba(var(--glass-rgb)) 35%,
-		rgba(var(--highlight-rgb)) 45%,
-		rgba(var(--glass-rgb)) 50%,
-		rgba(var(--glass-rgb)) 65%,
-		rgba(var(--highlight-rgb)) 75%,
-		rgba(var(--glass-rgb)) 80%
-	),  */ rgba(
-		var(--glass-rgb)
-	);
+	background: rgba(var(--glass-rgb));
 	background-attachment: fixed;
 	background-position: fixed;
 	background-size: 100vw 100vh;
@@ -267,12 +258,15 @@ form {
 	flex-direction: column;
 	gap: var(--padding);
 	align-items: center;
+	padding-left: var(--padding);
+	padding-right: var(--padding);
 }
 
 .form-input-container {
 	display: flex;
 	flex-direction: row;
 	gap: var(--glass-thickness);
+	width: 100%;
 }
 
 #spark-container {
@@ -314,7 +308,7 @@ button,
 .button-link {
 	position: relative;
 	border: none;
-	padding: 0.75rem .75rem;
+	padding: 0.75rem 0.75rem;
 	cursor: pointer;
 	font-weight: 600;
 	text-transform: uppercase;

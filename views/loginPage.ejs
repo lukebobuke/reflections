@@ -1,6 +1,23 @@
 <!-- @format -->
 
 <main class="glass">
-	<h2>Login</h2>
-	<%- include("partials/loginForm") %>
+	<section>
+		<form action="/login" method="POST" autocomplete="on">
+			<p>Please enter your credentials.</p>
+			<div class="form-input-container">
+				<input class="glass" type="email" name="email" id="login-email" placeholder="Email" required autocomplete="username" />
+				<input
+					class="glass"
+					type="password"
+					name="password"
+					id="login-password"
+					placeholder="Password"
+					required
+					autocomplete="current-password" />
+			</div>
+			<button class="glass button-link" type="submit">
+				<span class="carved-glass">Login</span>
+			</button>
+		</form>
+	</section>
 </main>
