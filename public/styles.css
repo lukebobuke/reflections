@@ -231,6 +231,9 @@ i {
 }
 
 main {
+	display: flex;
+	flex-direction: column;
+	gap: var(--padding);
 	padding: var(--padding);
 	animation: main-slide-in var(--transition-fast) cubic-bezier(var(--big-bezier)) 0s 1;
 	position: relative;
@@ -261,16 +264,36 @@ footer {
 /* ----------------------------------------------------------------------------------------------------*/
 form {
 	display: flex;
+	flex-direction: column;
+	gap: var(--padding);
+	align-items: center;
+}
+
+.form-input-container {
+	display: flex;
 	flex-direction: row;
-	padding: var(--padding);
 	gap: var(--glass-thickness);
 }
 
 #spark-container {
 	display: flex;
+	flex-direction: column;
 	gap: 1rem;
 	align-items: center;
 	justify-content: center;
+}
+
+#shard-crud-container {
+	display: flex;
+	flex-direction: column;
+	gap: var(--padding);
+	align-items: center;
+	position: fixed;
+	top: 30%;
+	left: var(--padding);
+	right: var(--padding);
+	text-align: center;
+	padding: var(--padding);
 }
 
 input,
@@ -291,7 +314,7 @@ button,
 .button-link {
 	position: relative;
 	border: none;
-	padding: 0.7rem 1.5rem;
+	padding: 0.75rem .75rem;
 	cursor: pointer;
 	font-weight: 600;
 	text-transform: uppercase;
@@ -301,6 +324,16 @@ button:hover,
 .button-link:hover {
 	background: rgba(255, 255, 255, 0.2);
 }
+
+.button-small {
+	padding: 0.5rem;
+	height: 2.5rem;
+	width: 2.5rem;
+}
+.button-small i {
+	font-size: 1.5rem;
+}
+
 /* #endregion */
 
 /* ----------------------------------------------------------------------------------------------------*/
@@ -312,16 +345,14 @@ h1 {
 
 h2 {
 	font-size: 2rem;
+	height: 2rem;
 }
 
-p {
-	line-height: 1.7;
-	margin-bottom: 1.2rem;
-}
-
+p,
 ul,
 ol {
-	margin-bottom: 1.5rem;
+	line-height: 1.25;
+	margin-top: 1.25rem;
 }
 
 .spark-text {
@@ -348,14 +379,7 @@ ol {
 	display: flex;
 	flex-direction: column;
 }
-#shard-crud-container {
-	position: fixed;
-	top: 30%;
-	left: var(--padding);
-	right: var(--padding);
-	text-align: center;
-	padding: var(--padding);
-}
+
 .shard-info {
 	display: flex;
 	flex-direction: column;

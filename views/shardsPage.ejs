@@ -1,24 +1,26 @@
 <!-- @format -->
 
 <section id="shard-crud-container" class="glass hidden shifted-up">
-	<h2 id="shard-crud-form-title">Create New Shard</h2>
 	<div id="spark-container">
+		<h2 id="shard-crud-form-title">Create New Shard</h2>
 		<span id="spark-text" class="spark-text">Spark text not found.</span>
-		<button id="spark-refresh" class="glass">
+		<button id="spark-refresh" class="glass button-small">
 			<i class="carved-glass fa-solid fa-arrows-rotate"></i>
 		</button>
 	</div>
 	<form id="shard-crud-form" data-shard-form-type="create" data-current-shard-id="" data-glow="0">
-		<input id="shard-form-text" class="glass" type="text" name="text" placeholder="Text" required />
-		<input id="shard-form-tint" class="glass" type="number" name="tint" placeholder="Tint" required />
-		<button class="glass" type="button" id="shard-form-glow-btn">
-			<i id="shard-form-glow-icon" class="carved-glass fa-regular fa-star"></i>
-		</button>
+		<div class="form-input-container">
+			<input id="shard-form-text" class="glass" type="text" name="text" placeholder="Text" required />
+			<input id="shard-form-tint" class="glass" type="number" name="tint" placeholder="Tint" required />
+			<button class="glass" type="button" id="shard-form-glow-btn">
+				<i id="shard-form-glow-icon" class="carved-glass fa-regular fa-star"></i>
+			</button>
+			<button class="glass hidden" type="button" id="shard-form-delete-btn">
+				<i id="shard-form-delete-icon" class="carved-glass fa-solid fa-trash-can"></i>
+			</button>
+		</div>
 		<button class="glass" type="submit">
 			<span class="carved-glass" id="shard-form-submit-text">Create Shard</span>
-		</button>
-		<button class="glass hidden" type="button" id="shard-form-delete-btn">
-			<i id="shard-form-delete-icon" class="carved-glass fa-solid fa-trash-can"></i>
 		</button>
 	</form>
 </section>
