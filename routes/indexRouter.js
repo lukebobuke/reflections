@@ -5,12 +5,7 @@ const indexRouter = Router();
 
 // Root route - serves homepage or welcome message
 indexRouter.get("/", (req, res) => {
-	res.send("Welcome to your project! Edit this route in indexRouter.js.");
-});
-
-// Health check route - useful for uptime monitoring
-indexRouter.get("/health", (req, res) => {
-	res.json({ status: "ok", timestamp: new Date() });
+	res.render("index", { currentPage: "home", user: req.user });
 });
 
 // About route - renders the about page
@@ -22,12 +17,11 @@ indexRouter.get("/contact", (req, res) => {
 	res.render("contact", { currentPage: "contact", user: req.user });
 });
 
-indexRouter.get("/index", (req, res) => {
-	res.render("index", { currentPage: "home", user: req.user });
-});
-
 // User home page route - renders the user home page after login/signup
 indexRouter.get("/dashboard", (req, res) => {
+	if (!req.user) {
+		return res.redirect("/login");
+	}
 	res.render("dashboardPage", { currentPage: "dashboard", user: req.user });
 });
 

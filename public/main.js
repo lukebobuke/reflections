@@ -9,6 +9,7 @@ import {
 	handleShardClick,
 	handleEditShardClick,
 	handleGlowClick,
+	handleTintClick,
 	handleSparkRefreshClick,
 } from "./shards.js";
 
@@ -23,6 +24,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	handleShardClick();
 	handleEditShardClick();
 	handleGlowClick();
+	handleTintClick();
 	handleSparkRefreshClick();
 	//----------------------------------------------------------------------------------------------------
 	// #region Menu/Nav Setup

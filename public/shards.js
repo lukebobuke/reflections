@@ -80,7 +80,7 @@ function updateShardFormUI() {
 	const sparkRefresh = document.getElementById("spark-refresh");
 	const submitText = document.getElementById("shard-form-submit-text");
 	const deleteBtn = document.getElementById("shard-form-delete-btn");
-	const glowIcon = document.querySelector("#shard-form-glow-icon");
+	const glowButton = document.querySelector("#shard-form-glow-btn");
 	if (!form || !submitText || !deleteBtn) return;
 	const type = form.dataset.shardFormType;
 	if (type === "edit") {
@@ -95,11 +95,9 @@ function updateShardFormUI() {
 		sparkRefresh.classList.remove("hidden");
 	}
 	if (form.dataset.glow === "1" || form.dataset.glow === 1) {
-		glowIcon.classList.add("fa-solid");
-		glowIcon.classList.remove("fa-regular");
+		glowButton.classList.add("glow-clicked");
 	} else {
-		glowIcon.classList.remove("fa-solid");
-		glowIcon.classList.add("fa-regular");
+		glowButton.classList.remove("glow-clicked");
 	}
 }
 // ----------------------------------------------------------------------------------------------------
@@ -116,6 +114,7 @@ function handleShardClick() {
 	const shardCrudContainer = document.querySelector("#shard-crud-container");
 	const shardCrudForm = document.querySelector("#shard-crud-form");
 	const sparkText = document.querySelector("#spark-text");
+	const tintPetals = document.querySelectorAll(".tint-petal");
 	if (!shardContainer || !shardCrudContainer || !shardCrudForm) return;
 	shardContainer.addEventListener("click", function (e) {
 		if (shardCrudContainer.classList.contains("hidden")) {
@@ -129,7 +128,14 @@ function handleShardClick() {
 				shardCrudForm.dataset.currentShardId = shardId;
 				sparkText.textContent = shard.dataset.shardSpark;
 				shardCrudForm.elements["text"].value = shard.dataset.shardText;
-				shardCrudForm.elements["tint"].value = shard.dataset.shardTint;
+				shardCrudForm.dataset.tint = shard.dataset.shardTint;
+				tintPetals.forEach((tintPetal) => {
+					if (tintPetal.dataset.tint == shardCrudForm.dataset.tint) {
+						tintPetal.classList.add("tint-selected");
+					} else {
+						tintPetal.classList.remove("tint-selected");
+					}
+				});
 				shardCrudForm.dataset.glow = shard.dataset.shardGlow;
 				console.log("form:", shardCrudForm);
 				updateShardFormUI();
@@ -150,7 +156,7 @@ function handleEditShardClick() {
 			try {
 				const spark = document.querySelector("#spark-text").textContent;
 				const text = shardCrudForm.elements["text"].value;
-				const tint = shardCrudForm.elements["tint"].value;
+				const tint = shardCrudForm.dataset.tint;
 				const glow = shardCrudForm.dataset.glow || "0";
 				const rawData = { spark, text, tint, glow };
 				console.log("Raw data for shard edit:", rawData);
@@ -180,7 +186,7 @@ function handleCreateShardClick() {
 			try {
 				const spark = document.querySelector("#spark-text").textContent;
 				const text = document.querySelector("#shard-form-text").value;
-				const tint = document.querySelector("#shard-form-tint").value;
+				const tint = shardCrudForm.dataset.tint || "0";
 				const glow = shardCrudForm.dataset.glow || "0";
 				const rawData = { spark, text, tint, glow };
 				console.log("Raw data for shard creation:", rawData);
@@ -296,27 +302,48 @@ function handleSparkRefreshClick() {
 
 function handleGlowClick() {
 	const glowButton = document.querySelector("#shard-form-glow-btn");
-	const glowIcon = document.querySelector("#shard-form-glow-icon");
 	const shardCrudForm = document.querySelector("#shard-crud-form");
-	if (!glowButton || !glowIcon || !shardCrudForm) {
-		console.log("Glow button or icon or form not found.");
+	if (!glowButton || !shardCrudForm) {
+		console.log("Glow button or form not found.");
 		return;
 	}
 	glowButton.addEventListener("click", () => {
 		let glow = parseInt(shardCrudForm.dataset.glow, 10) || 0;
 		if (glow === 0) {
 			glow = 1;
-			glowIcon.classList.add("fa-solid");
-			glowIcon.classList.remove("fa-regular");
+			glowButton.classList.add("glow-clicked");
 		} else {
 			glow = 0;
-			glowIcon.classList.remove("fa-solid");
-			glowIcon.classList.add("fa-regular");
+			glowButton.classList.remove("glow-clicked");
 		}
 		console.log("Updated glow state:", glow);
 		shardCrudForm.dataset.glow = glow;
 	});
 }
+function handleTintClick() {
+	const tintPetals = document.querySelectorAll(".tint-petal");
+	const shardCrudForm = document.querySelector("#shard-crud-form");
+	if (!tintPetals || !shardCrudForm) {
+		console.log("tintPetal or shardCrudForm not found.");
+		return;
+	}
+	tintPetals.forEach((tintPetal) => {
+		tintPetal.addEventListener("click", () => {
+			tintPetals.forEach((tintPetal) => {
+				if (tintPetal.classList.contains("tint-selected")) {
+					tintPetals.forEach((tintPetal) => {
+						tintPetal.classList.remove("tint-selected");
+					});
+					shardCrudForm.dataset.tint = 1;
+				}
+			});
+			tintPetal.classList.add("tint-selected");
+			shardCrudForm.dataset.tint = tintPetal.dataset.tint;
+		});
+	});
+	updateShardFormUI();
+};
+
 // ----------------------------------------------------------------------------------------------------
 // #endregion
 // ----------------------------------------------------------------------------------------------------
@@ -362,5 +389,6 @@ export {
 	handleHideShardCrudClick,
 	handleShardClick,
 	handleGlowClick,
+	handleTintClick,
 	handleSparkRefreshClick,
 };

@@ -12,7 +12,7 @@ const renderShardsPage = async (req, res) => {
 
 		const user = req.user;
 		if (!user || !user.id) {
-			return res.status(401).send("Unauthorized: No user found.");
+			return res.redirect("/login");
 		}
 		const shards = await shardModel.getShardsByUserId(user.id);
 		res.render("shardsPage", { currentPage: "shards", shards, user });
