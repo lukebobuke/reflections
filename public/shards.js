@@ -342,7 +342,7 @@ function handleTintClick() {
 		});
 	});
 	updateShardFormUI();
-};
+}
 
 // ----------------------------------------------------------------------------------------------------
 // #endregion
@@ -380,6 +380,36 @@ function randomSpark() {
 // #endregion
 // ----------------------------------------------------------------------------------------------------
 
+// ----------------------------------------------------------------------------------------------------
+// #region Point Capture
+// ----------------------------------------------------------------------------------------------------
+function detectVoronoiClick() {
+	const voronoiContainer = document.getElementById("shards-section");
+	const points = [];
+
+	if(!voronoiContainer) {
+		console.error("Voronoi container not found.");
+		return;
+	}
+	voronoiContainer.addEventListener("click", (e) => {
+		// Get bounding rect to calculate relative coords
+		const rect = voronoiContainer.getBoundingClientRect();
+		const x = e.clientX - rect.left;
+		const y = e.clientY - rect.top;
+
+		// Add point to array
+		points.push([x, y]);
+
+		console.log("Current points:", points);
+
+		// TODO: call function to re-generate Voronoi using 'points'
+	});
+};
+
+// ----------------------------------------------------------------------------------------------------
+// #endregion
+// ----------------------------------------------------------------------------------------------------
+
 export {
 	handleCreateShardClick,
 	handleDeleteShardClick,
@@ -391,4 +421,5 @@ export {
 	handleGlowClick,
 	handleTintClick,
 	handleSparkRefreshClick,
+	detectVoronoiClick
 };

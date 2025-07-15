@@ -11,6 +11,7 @@ import {
 	handleGlowClick,
 	handleTintClick,
 	handleSparkRefreshClick,
+	detectVoronoiClick
 } from "./shards.js";
 
 // Runs when the DOM is fully loaded
@@ -26,6 +27,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	handleGlowClick();
 	handleTintClick();
 	handleSparkRefreshClick();
+	detectVoronoiClick();
 	//----------------------------------------------------------------------------------------------------
 	// #region Menu/Nav Setup
 	// Get references to menu button, nav popup, and main content
