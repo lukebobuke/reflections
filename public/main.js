@@ -23,19 +23,19 @@ document.addEventListener("DOMContentLoaded", () => {
 	const editButton = document.querySelector("#show-shard-crud");
 	const hideButton = document.querySelector("#hide-shard-crud");
 	
+	handleAddVoronoiPoint();
 	handleCreateShardClick();
 	handleDeleteShardClick();
 	handleShardHover();
 	handleShowShardCrudClick();
 	handleHideShardCrudClick();
-	handleShardClick();
 	handleEditShardClick();
 	handleGlowClick();
 	handleTintClick();
 	handleSparkRefreshClick();
-	handleAddVoronoiPoint();
 	editVoronoi(editButton);
 	finishEditVoronoi(hideButton);
+	handleShardClick();
 	//----------------------------------------------------------------------------------------------------
 	// #region Menu/Nav Setup
 	// Get references to menu button, nav popup, and main content

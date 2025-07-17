@@ -109,21 +109,20 @@ function updateShardFormUI() {
 // #region Handle Shard Click
 // ----------------------------------------------------------------------------------------------------
 function handleShardClick() {
-	const shardContainer = document.getElementById("shards-list-container");
+	const shardContainer = document.querySelector("#voronoi-group");
 	const shardCrudContainer = document.querySelector("#shard-crud-container");
 	const shardCrudForm = document.querySelector("#shard-crud-form");
 	const sparkText = document.querySelector("#spark-text");
 	const tintPetals = document.querySelectorAll(".tint-petal");
-	if (!shardContainer || !shardCrudContainer || !shardCrudForm) return;
+	if (!shardContainer || !shardCrudContainer || !shardCrudForm) {
+		console.log("One or more required elements are missing.");
+		return;
+	}
 	shardContainer.addEventListener("click", function (e) {
-		if (shardCrudContainer.classList.contains("hidden")) {
+		if (shardCrudContainer.classList.contains("hidden") && isVoronoiEditEnabled()===false) {
 			const shard = e.target.closest(".shard");
+			// console.log("Shard clicked:", shard);
 			if (shard && shardContainer.contains(shard)) {
-				console.log("Shard clicked:", shard);
-				if (!shard.dataset.shardId) {
-					handleShowShardCrudClick(shard);
-					return;
-				}
 				shardCrudForm.dataset.shardFormType = "edit";
 				const shardId = shard.dataset.shardId;
 				shardCrudForm.classList.remove("hidden");
@@ -145,15 +144,6 @@ function handleShardClick() {
 			}
 		}
 	});
-	function handleVoronoiCellClick() {
-		const shards = document.querySelectorAll(".shard");
-		if (!shards || shards.length === 0) {
-			return;
-		}
-		shards.forEach((shard) => {
-			shard.addEventListener("click", () => {});
-		});
-	}
 }
 
 // ----------------------------------------------------------------------------------------------------
@@ -235,7 +225,6 @@ function handleEditShardClick() {
 function handleCreateShardClick() {
 	const shardCrudContainer = document.querySelector("#shard-crud-container");
 	const shardCrudForm = document.querySelector("#shard-crud-form");
-	console.log("shardCrudForm:", shardCrudForm);
 	if (!shardCrudForm || !shardCrudContainer) return;
 	shardCrudForm.addEventListener("submit", async function (e) {
 		if (shardCrudForm && shardCrudForm.dataset.shardFormType == "create") {
@@ -423,9 +412,29 @@ function handleSparkRefreshClick() {
 // ----------------------------------------------------------------------------------------------------
 // #region Voronoi Handlers
 // ----------------------------------------------------------------------------------------------------
+// Encapsulate voronoiEdit state using a closure and expose handlers
+function createVoronoiEditState() {
+	let voronoiEdit = false;
+	function voronoiEditTrue() {
+		voronoiEdit = true;
+	}
+	function voronoiEditFalse() {
+		voronoiEdit = false;
+	}
+	function isVoronoiEditEnabled() {
+		return voronoiEdit;
+	}
+
+	return { voronoiEditTrue, voronoiEditFalse, isVoronoiEditEnabled };
+}
+const { voronoiEditTrue, voronoiEditFalse, isVoronoiEditEnabled } = createVoronoiEditState();
+
 function updateVoronoi(voronoiGroup, points, width, height) {
-	voronoiGroup.innerHTML = ""; // Clear old cells
-	if (points.length < 2) return; // Need at least two points
+	// Remove only the old Voronoi cell paths, not the group itself or its event listeners
+	const oldPaths = voronoiGroup.querySelectorAll("path.shard");
+	console.log("Old paths to remove:", oldPaths);
+	oldPaths.forEach((p) => p.remove());
+	if (points.length < 2) return;
 	const delaunay = Delaunay.from(points);
 	const voronoi = delaunay.voronoi([-1 * (width / 2), -1 * (height / 2), width / 2, height / 2]);
 	for (let i = 0; i < points.length; i++) {
@@ -438,52 +447,35 @@ function updateVoronoi(voronoiGroup, points, width, height) {
 		voronoiGroup.appendChild(path);
 	}
 }
-// Encapsulate voronoiEdit state using a closure and expose handlers
-function createVoronoiHandlers() {
-	let voronoiEdit = false;
-	function enableVoronoiEdit() {
-		voronoiEdit = true;
+function handleAddVoronoiPoint() {
+	const voronoiContainer = document.getElementById("shards-section");
+	const voronoiSvg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+	const points = [];
+	if (!voronoiContainer) {
+		console.error("Voronoi container not found.");
+		return;
 	}
-	function disableVoronoiEdit() {
-		voronoiEdit = false;
-	}
-	function isVoronoiEditEnabled() {
-		return voronoiEdit;
-	}
-	function handleAddVoronoiPoint() {
-		const voronoiContainer = document.getElementById("shards-section");
-		const voronoiSvg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-		const points = [];
-		if (!voronoiContainer) {
-			console.error("Voronoi container not found.");
-			return;
+	voronoiContainer.style.position = "relative";
+	voronoiContainer.appendChild(voronoiSvg);
+	voronoiSvg.classList.add("voronoi-svg");
+	const voronoiGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
+	voronoiGroup.id = "voronoi-group";
+	voronoiSvg.appendChild(voronoiGroup);
+	voronoiContainer.addEventListener("click", (e) => {
+		if (isVoronoiEditEnabled()) {
+			requestAnimationFrame(() => {
+				const rect = voronoiContainer.getBoundingClientRect();
+				const width = voronoiContainer.clientWidth;
+				const height = voronoiContainer.clientHeight;
+				voronoiGroup.setAttribute("transform", `translate(${rect.width / 2}, ${rect.height / 2})`);
+				const x = e.clientX - rect.left - rect.width / 2;
+				const y = e.clientY - rect.top - rect.height / 2;
+				points.push([x, y]);
+				updateVoronoi(voronoiGroup, points, width, height);
+			});
 		}
-		voronoiContainer.style.position = "relative";
-		voronoiContainer.appendChild(voronoiSvg);
-		voronoiSvg.classList.add("voronoi-svg");
-		const voronoiGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
-		voronoiSvg.appendChild(voronoiGroup);
-		voronoiContainer.addEventListener("click", (e) => {
-			if (voronoiEdit) {
-				requestAnimationFrame(() => {
-					const rect = voronoiContainer.getBoundingClientRect();
-					const width = voronoiContainer.clientWidth;
-					const height = voronoiContainer.clientHeight;
-					voronoiGroup.setAttribute("transform", `translate(${rect.width / 2}, ${rect.height / 2})`);
-					const x = e.clientX - rect.left - (rect.width / 2);
-					const y = e.clientY - rect.top - (rect.height / 2);
-					points.push([x, y]);
-					updateVoronoi(voronoiGroup, points, width, height);
-				});
-			}
-		});
-	}
-	return { enableVoronoiEdit, disableVoronoiEdit, isVoronoiEditEnabled, handleAddVoronoiPoint };
+	});
 }
-
-// Create closure instance and export handlers
-const { enableVoronoiEdit, disableVoronoiEdit, isVoronoiEditEnabled, handleAddVoronoiPoint } = createVoronoiHandlers();
-
 // Example: call enableVoronoiEdit() from a button handler
 function editVoronoi(pressable) {
 	if (!pressable) {
@@ -496,7 +488,7 @@ function editVoronoi(pressable) {
 			return;
 		}
 		console.log("Edit button clicked.");
-		enableVoronoiEdit();
+		voronoiEditTrue();
 	});
 }
 function finishEditVoronoi(pressable) {
@@ -510,7 +502,7 @@ function finishEditVoronoi(pressable) {
 			return;
 		}
 		console.log("Finish edit button clicked.");
-		disableVoronoiEdit();
+		voronoiEditFalse();
 	});
 }
 // ----------------------------------------------------------------------------------------------------
@@ -530,5 +522,5 @@ export {
 	handleSparkRefreshClick,
 	handleAddVoronoiPoint,
 	editVoronoi,
-	finishEditVoronoi
+	finishEditVoronoi,
 };

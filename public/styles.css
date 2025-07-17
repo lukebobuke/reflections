@@ -40,7 +40,7 @@
 	--tint-opacity: 0.2;
 	/* Dimensions */
 	--radius: 16px;
-	--padding: 3rem;
+	--padding: 2rem;
 	--padding-small: 1.5rem;
 	--nav-popup-height: 100vh;
 	--nav-popup-width: 16rem;
@@ -580,8 +580,6 @@ ol {
 	position: absolute;
 	top: 0;
 	left: 0;
-	pointer-events: none;
-
 	filter: drop-shadow(		
 		/* big shadow underneath */ 
 		/* Calc(-1 * (var(--hover-distance) + var(--glass-thickness))) Calc(var(--hover-distance) + var(--glass-thickness)) var(--blur) rgba(var(--shadow-rgb)), */
@@ -613,8 +611,18 @@ ol {
 	inset: 0;
 	height: 100%;
 	width: 100%;
-	pointer-events: none;
 	z-index: 2;
+	pointer-events: none;
+}
+
+/* Add this to ensure SVG paths are clickable, but the SVG overlay does not block UI buttons */
+.voronoi-svg > g,
+#voronoi-group {
+	pointer-events: auto;
+}
+
+.shard {
+	pointer-events: auto;
 }
 
 /* ----------------------------------------------------------------------------------------------------*/
