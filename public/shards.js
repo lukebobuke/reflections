@@ -108,8 +108,6 @@ function updateShardFormUI() {
 // ----------------------------------------------------------------------------------------------------
 // #region Handle Shard Click
 // ----------------------------------------------------------------------------------------------------
-
-// Update UI when switching to edit mode
 function handleShardClick() {
 	const shardContainer = document.getElementById("shards-list-container");
 	const shardCrudContainer = document.querySelector("#shard-crud-container");
@@ -122,6 +120,10 @@ function handleShardClick() {
 			const shard = e.target.closest(".shard");
 			if (shard && shardContainer.contains(shard)) {
 				console.log("Shard clicked:", shard);
+				if (!shard.dataset.shardId) {
+					handleShowShardCrudClick(shard);
+					return;
+				}
 				shardCrudForm.dataset.shardFormType = "edit";
 				const shardId = shard.dataset.shardId;
 				shardCrudForm.classList.remove("hidden");
@@ -143,11 +145,56 @@ function handleShardClick() {
 			}
 		}
 	});
+	function handleVoronoiCellClick() {
+		const shards = document.querySelectorAll(".shard");
+		if (!shards || shards.length === 0) {
+			return;
+		}
+		shards.forEach((shard) => {
+			shard.addEventListener("click", () => {});
+		});
+	}
+}
+
+// ----------------------------------------------------------------------------------------------------
+// #region Show/Hide Shard CRUD
+// ----------------------------------------------------------------------------------------------------
+function handleShowShardCrudClick(pressable) {
+	const shardCrudContainer = document.querySelector("#shard-crud-container");
+	const shardCrudForm = document.querySelector("#shard-crud-form");
+	const sparkText = document.querySelector("#spark-text");
+	if (!pressable || !shardCrudContainer || !shardCrudForm || !sparkText) return;
+	pressable.addEventListener("click", () => {
+		shardCrudForm.dataset.shardFormType = "create";
+		shardCrudForm.dataset.currentShardId = "";
+		shardCrudForm.reset();
+		sparkText.textContent = randomSpark(); // Set initial spark text
+		shardCrudForm.dataset.glow = "0"; // Reset glow state
+		shardCrudContainer.classList.remove("hidden");
+		updateShardFormUI();
+	});
+}
+function handleHideShardCrudClick() {
+	const crudContainer = document.querySelector("#shard-crud-container");
+	if (!crudContainer) return;
+	document.addEventListener("click", (e) => {
+		if (
+			!crudContainer.contains(e.target) &&
+			!e.target.closest("#show-shard-crud") &&
+			!e.target.closest("#shard-crud-form") &&
+			!e.target.closest(".shard")
+		) {
+			crudContainer.classList.add("hidden");
+		}
+	});
 }
 // ----------------------------------------------------------------------------------------------------
 // #endregion
 // ----------------------------------------------------------------------------------------------------
 
+// ----------------------------------------------------------------------------------------------------
+// #region Edit Shard Click
+// ----------------------------------------------------------------------------------------------------
 function handleEditShardClick() {
 	const shardCrudForm = document.querySelector("#shard-crud-form");
 	const shardCrudContainer = document.querySelector("#shard-crud-container");
@@ -178,7 +225,13 @@ function handleEditShardClick() {
 		}
 	});
 }
+// ----------------------------------------------------------------------------------------------------
+// #endregion
+// ----------------------------------------------------------------------------------------------------
 
+// ----------------------------------------------------------------------------------------------------
+// #region Create Shard Click
+// ----------------------------------------------------------------------------------------------------
 function handleCreateShardClick() {
 	const shardCrudContainer = document.querySelector("#shard-crud-container");
 	const shardCrudForm = document.querySelector("#shard-crud-form");
@@ -207,7 +260,13 @@ function handleCreateShardClick() {
 		}
 	});
 }
+// ----------------------------------------------------------------------------------------------------
+// #endregion
+// ----------------------------------------------------------------------------------------------------
 
+// ----------------------------------------------------------------------------------------------------
+// #region Delete Shard Click
+// ----------------------------------------------------------------------------------------------------
 function handleDeleteShardClick() {
 	const formDeleteButton = document.getElementById("shard-form-delete-btn");
 	const form = document.getElementById("shard-crud-form");
@@ -232,7 +291,13 @@ function handleDeleteShardClick() {
 		}
 	});
 }
+// ----------------------------------------------------------------------------------------------------
+// #endregion
+// ----------------------------------------------------------------------------------------------------
 
+// ----------------------------------------------------------------------------------------------------
+// #region Shard Hover
+// ----------------------------------------------------------------------------------------------------
 function handleShardHover() {
 	const container = document.getElementById("shards-list-container");
 	const shardCrudContainer = document.querySelector("#shard-crud-container");
@@ -260,50 +325,13 @@ function handleShardHover() {
 		}
 	});
 }
+// ----------------------------------------------------------------------------------------------------
+// #endregion
+// ----------------------------------------------------------------------------------------------------
 
-function handleShowShardCrudClick() {
-	const showButton = document.querySelector("#show-shard-crud");
-	const shardCrudContainer = document.querySelector("#shard-crud-container");
-	const shardCrudForm = document.querySelector("#shard-crud-form");
-	const sparkText = document.querySelector("#spark-text");
-	if (!showButton || !shardCrudContainer || !shardCrudForm || !sparkText) return;
-	showButton.addEventListener("click", () => {
-		shardCrudForm.dataset.shardFormType = "create";
-		shardCrudForm.dataset.currentShardId = "";
-		shardCrudForm.reset();
-		sparkText.textContent = randomSpark(); // Set initial spark text
-		shardCrudForm.dataset.glow = "0"; // Reset glow state
-		shardCrudContainer.classList.remove("hidden");
-		updateShardFormUI();
-	});
-}
-
-function handleHideShardCrudClick() {
-	const crudContainer = document.querySelector("#shard-crud-container");
-	if (!crudContainer) return;
-	document.addEventListener("click", (e) => {
-		if (
-			!crudContainer.contains(e.target) &&
-			!e.target.closest("#show-shard-crud") &&
-			!e.target.closest("#shard-crud-form") &&
-			!e.target.closest(".shard")
-		) {
-			crudContainer.classList.add("hidden");
-		}
-	});
-}
-
-function handleSparkRefreshClick() {
-	const sparkRefreshButton = document.querySelector("#spark-refresh");
-	const sparkText = document.querySelector("#spark-text");
-	if (!sparkRefreshButton || !sparkText) return;
-
-	sparkRefreshButton.addEventListener("click", () => {
-		sparkText.textContent = randomSpark();
-		console.log("Spark text refreshed:", sparkText.textContent);
-	});
-}
-
+// ----------------------------------------------------------------------------------------------------
+// #region Glow and Tint Handlers
+// ----------------------------------------------------------------------------------------------------
 function handleGlowClick() {
 	const glowButton = document.querySelector("#shard-form-glow-btn");
 	const shardCrudForm = document.querySelector("#shard-crud-form");
@@ -355,7 +383,6 @@ function handleTintClick() {
 // ----------------------------------------------------------------------------------------------------
 // #region Sparks
 // ----------------------------------------------------------------------------------------------------
-
 function randomSpark() {
 	const sparks = [
 		"Which hue best reflects the emotion you carry today?",
@@ -379,41 +406,14 @@ function randomSpark() {
 	const randomSpark = sparks[randomIndex];
 	return randomSpark;
 }
+function handleSparkRefreshClick() {
+	const sparkRefreshButton = document.querySelector("#spark-refresh");
+	const sparkText = document.querySelector("#spark-text");
+	if (!sparkRefreshButton || !sparkText) return;
 
-// ----------------------------------------------------------------------------------------------------
-// #endregion
-// ----------------------------------------------------------------------------------------------------
-
-// ----------------------------------------------------------------------------------------------------
-// #region Point Capture
-// ----------------------------------------------------------------------------------------------------
-function handleAddVoronoiPoint() {
-	const voronoiContainer = document.getElementById("shards-section");
-	const voronoiSvg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-	const points = [];
-	if (!voronoiContainer) {
-		console.error("Voronoi container not found.");
-		return;
-	}
-	voronoiContainer.style.position = "relative";
-	voronoiContainer.appendChild(voronoiSvg);
-	voronoiSvg.classList.add("voronoi-svg");
-	const voronoiGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
-	voronoiSvg.appendChild(voronoiGroup);
-	// Create a group for Voronoi cells
-	voronoiContainer.addEventListener("click", (e) => {
-		if (voronoiEdit = true) {
-			requestAnimationFrame(() => {
-				const rect = voronoiContainer.getBoundingClientRect();
-				const width = voronoiContainer.clientWidth;
-				const height = voronoiContainer.clientHeight;
-				voronoiGroup.setAttribute("transform", `translate(${rect.width / 2}, ${rect.height / 2})`);
-				const x = e.clientX - rect.left - (rect.width / 2);
-				const y = e.clientY - rect.top - (rect.height / 2);
-				points.push([x, y]);
-				updateVoronoi(voronoiGroup, points, width, height);
-			});
-		};
+	sparkRefreshButton.addEventListener("click", () => {
+		sparkText.textContent = randomSpark();
+		console.log("Spark text refreshed:", sparkText.textContent);
 	});
 }
 // ----------------------------------------------------------------------------------------------------
@@ -421,46 +421,98 @@ function handleAddVoronoiPoint() {
 // ----------------------------------------------------------------------------------------------------
 
 // ----------------------------------------------------------------------------------------------------
-// #region Update Voronoi
+// #region Voronoi Handlers
 // ----------------------------------------------------------------------------------------------------
-	function updateVoronoi(voronoiGroup, points, width, height) {
-		voronoiGroup.innerHTML = ""; // Clear old cells
-		if (points.length < 2) return; // Need at least two points
-		const delaunay = Delaunay.from(points);
-		const voronoi = delaunay.voronoi([(-1*(width/2)), (-1*(height/2)), (width/2), (height/2)]);
-		for (let i = 0; i < points.length; i++) {
-			const cellPath = voronoi.renderCell(i);
-			const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-			path.classList.add("shard");
-			// set the path data for the Voronoi cell
-			path.setAttribute("d", cellPath);
-			path.dataset.index = i;
-			voronoiGroup.appendChild(path);
+function updateVoronoi(voronoiGroup, points, width, height) {
+	voronoiGroup.innerHTML = ""; // Clear old cells
+	if (points.length < 2) return; // Need at least two points
+	const delaunay = Delaunay.from(points);
+	const voronoi = delaunay.voronoi([-1 * (width / 2), -1 * (height / 2), width / 2, height / 2]);
+	for (let i = 0; i < points.length; i++) {
+		const cellPath = voronoi.renderCell(i);
+		const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+		path.classList.add("shard");
+		// set the path data for the Voronoi cell
+		path.setAttribute("d", cellPath);
+		path.dataset.index = i;
+		voronoiGroup.appendChild(path);
+	}
+}
+// Encapsulate voronoiEdit state using a closure and expose handlers
+function createVoronoiHandlers() {
+	let voronoiEdit = false;
+	function enableVoronoiEdit() {
+		voronoiEdit = true;
+	}
+	function disableVoronoiEdit() {
+		voronoiEdit = false;
+	}
+	function isVoronoiEditEnabled() {
+		return voronoiEdit;
+	}
+	function handleAddVoronoiPoint() {
+		const voronoiContainer = document.getElementById("shards-section");
+		const voronoiSvg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+		const points = [];
+		if (!voronoiContainer) {
+			console.error("Voronoi container not found.");
+			return;
 		}
+		voronoiContainer.style.position = "relative";
+		voronoiContainer.appendChild(voronoiSvg);
+		voronoiSvg.classList.add("voronoi-svg");
+		const voronoiGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
+		voronoiSvg.appendChild(voronoiGroup);
+		voronoiContainer.addEventListener("click", (e) => {
+			if (voronoiEdit) {
+				requestAnimationFrame(() => {
+					const rect = voronoiContainer.getBoundingClientRect();
+					const width = voronoiContainer.clientWidth;
+					const height = voronoiContainer.clientHeight;
+					voronoiGroup.setAttribute("transform", `translate(${rect.width / 2}, ${rect.height / 2})`);
+					const x = e.clientX - rect.left - (rect.width / 2);
+					const y = e.clientY - rect.top - (rect.height / 2);
+					points.push([x, y]);
+					updateVoronoi(voronoiGroup, points, width, height);
+				});
+			}
+		});
 	}
-// ----------------------------------------------------------------------------------------------------
-// #endregion
-// ----------------------------------------------------------------------------------------------------
+	return { enableVoronoiEdit, disableVoronoiEdit, isVoronoiEditEnabled, handleAddVoronoiPoint };
+}
 
-// ----------------------------------------------------------------------------------------------------
-// #region Voronoi Cell Click Handler
-// ----------------------------------------------------------------------------------------------------
-function handleVoronoiCellClick() {
-	const voronoiCells = document.querySelectorAll(".voronoi-cell");
-	if (!voronoiCells || voronoiCells.length === 0) {
+// Create closure instance and export handlers
+const { enableVoronoiEdit, disableVoronoiEdit, isVoronoiEditEnabled, handleAddVoronoiPoint } = createVoronoiHandlers();
+
+// Example: call enableVoronoiEdit() from a button handler
+function editVoronoi(pressable) {
+	if (!pressable) {
+		console.error("Edit Voronoi button not found.");
 		return;
 	}
-	voronoiCells.forEach((cell) => {
-		cell.addEventListener("click", () => {
-			document.querySelectorAll(".voronoi-cell").forEach((cell) => cell.classList.remove("selected"));
-			cell.classList.add("selected");
-		});
+	pressable.addEventListener("click", () => {
+		if (isVoronoiEditEnabled() === true) {
+			console.log("Voronoi edit is already enabled.");
+			return;
+		}
+		console.log("Edit button clicked.");
+		enableVoronoiEdit();
 	});
 }
-// -----------------------------------------------------------------------------------------------------
-// #endregion
-// ----------------------------------------------------------------------------------------------------
-
+function finishEditVoronoi(pressable) {
+	if (!pressable) {
+		console.error("Finish edit button not found.");
+		return;
+	}
+	pressable.addEventListener("click", () => {
+		if (isVoronoiEditEnabled() === false) {
+			console.log("Voronoi edit is not enabled.");
+			return;
+		}
+		console.log("Finish edit button clicked.");
+		disableVoronoiEdit();
+	});
+}
 // ----------------------------------------------------------------------------------------------------
 // #endregion
 // ----------------------------------------------------------------------------------------------------
@@ -477,5 +529,6 @@ export {
 	handleTintClick,
 	handleSparkRefreshClick,
 	handleAddVoronoiPoint,
-	handleVoronoiCellClick
+	editVoronoi,
+	finishEditVoronoi
 };

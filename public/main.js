@@ -12,12 +12,17 @@ import {
 	handleTintClick,
 	handleSparkRefreshClick,
 	handleAddVoronoiPoint,
-	handleVoronoiCellClick
+	editVoronoi,
+	finishEditVoronoi,
 } from "./shards.js";
 
 // Runs when the DOM is fully loaded
 document.addEventListener("DOMContentLoaded", () => {
 	console.log("Frontend JS loaded.");
+	
+	const editButton = document.querySelector("#show-shard-crud");
+	const hideButton = document.querySelector("#hide-shard-crud");
+	
 	handleCreateShardClick();
 	handleDeleteShardClick();
 	handleShardHover();
@@ -29,7 +34,8 @@ document.addEventListener("DOMContentLoaded", () => {
 	handleTintClick();
 	handleSparkRefreshClick();
 	handleAddVoronoiPoint();
-	// handleVoronoiCellClick();
+	editVoronoi(editButton);
+	finishEditVoronoi(hideButton);
 	//----------------------------------------------------------------------------------------------------
 	// #region Menu/Nav Setup
 	// Get references to menu button, nav popup, and main content

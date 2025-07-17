@@ -227,7 +227,8 @@ i {
 }
 
 .menu-button,
-#show-shard-crud {
+#show-shard-crud,
+#hide-shard-crud {
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -607,10 +608,6 @@ ol {
 	cursor: pointer;
 }
 
-.voronoi-cell.selected {
-	fill: rgba(0, 150, 255, 0.8);
-	filter: drop-shadow(0 0 8px rgba(0, 150, 255, 1));
-}
 .voronoi-svg {
 	position: absolute;
 	inset: 0;
@@ -641,7 +638,8 @@ footer {
 }
 
 .menu-button,
-#show-shard-crud {
+#show-shard-crud,
+#hide-shard-crud {
 	transition: background var(--transition-fast);
 }
 
