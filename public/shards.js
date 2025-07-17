@@ -1,4 +1,5 @@
 /** @format */
+import { Delaunay } from "https://cdn.jsdelivr.net/npm/d3-delaunay@6/+esm";
 
 // ----------------------------------------------------------------------------------------------------
 // #region API Calls
@@ -105,7 +106,7 @@ function updateShardFormUI() {
 // ----------------------------------------------------------------------------------------------------
 
 // ----------------------------------------------------------------------------------------------------
-// #region Event Handlers
+// #region Handle Shard Click
 // ----------------------------------------------------------------------------------------------------
 
 // Update UI when switching to edit mode
@@ -143,6 +144,9 @@ function handleShardClick() {
 		}
 	});
 }
+// ----------------------------------------------------------------------------------------------------
+// #endregion
+// ----------------------------------------------------------------------------------------------------
 
 function handleEditShardClick() {
 	const shardCrudForm = document.querySelector("#shard-crud-form");
@@ -383,28 +387,79 @@ function randomSpark() {
 // ----------------------------------------------------------------------------------------------------
 // #region Point Capture
 // ----------------------------------------------------------------------------------------------------
-function detectVoronoiClick() {
+function handleAddVoronoiPoint() {
 	const voronoiContainer = document.getElementById("shards-section");
+	const voronoiSvg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
 	const points = [];
-
-	if(!voronoiContainer) {
+	if (!voronoiContainer) {
 		console.error("Voronoi container not found.");
 		return;
 	}
+	voronoiContainer.style.position = "relative";
+	voronoiContainer.appendChild(voronoiSvg);
+	voronoiSvg.classList.add("voronoi-svg");
+	const voronoiGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
+	voronoiSvg.appendChild(voronoiGroup);
+	// Create a group for Voronoi cells
 	voronoiContainer.addEventListener("click", (e) => {
-		// Get bounding rect to calculate relative coords
-		const rect = voronoiContainer.getBoundingClientRect();
-		const x = e.clientX - rect.left;
-		const y = e.clientY - rect.top;
-
-		// Add point to array
-		points.push([x, y]);
-
-		console.log("Current points:", points);
-
-		// TODO: call function to re-generate Voronoi using 'points'
+		if (voronoiEdit = true) {
+			requestAnimationFrame(() => {
+				const rect = voronoiContainer.getBoundingClientRect();
+				const width = voronoiContainer.clientWidth;
+				const height = voronoiContainer.clientHeight;
+				voronoiGroup.setAttribute("transform", `translate(${rect.width / 2}, ${rect.height / 2})`);
+				const x = e.clientX - rect.left - (rect.width / 2);
+				const y = e.clientY - rect.top - (rect.height / 2);
+				points.push([x, y]);
+				updateVoronoi(voronoiGroup, points, width, height);
+			});
+		};
 	});
-};
+}
+// ----------------------------------------------------------------------------------------------------
+// #endregion
+// ----------------------------------------------------------------------------------------------------
+
+// ----------------------------------------------------------------------------------------------------
+// #region Update Voronoi
+// ----------------------------------------------------------------------------------------------------
+	function updateVoronoi(voronoiGroup, points, width, height) {
+		voronoiGroup.innerHTML = ""; // Clear old cells
+		if (points.length < 2) return; // Need at least two points
+		const delaunay = Delaunay.from(points);
+		const voronoi = delaunay.voronoi([(-1*(width/2)), (-1*(height/2)), (width/2), (height/2)]);
+		for (let i = 0; i < points.length; i++) {
+			const cellPath = voronoi.renderCell(i);
+			const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+			path.classList.add("shard");
+			// set the path data for the Voronoi cell
+			path.setAttribute("d", cellPath);
+			path.dataset.index = i;
+			voronoiGroup.appendChild(path);
+		}
+	}
+// ----------------------------------------------------------------------------------------------------
+// #endregion
+// ----------------------------------------------------------------------------------------------------
+
+// ----------------------------------------------------------------------------------------------------
+// #region Voronoi Cell Click Handler
+// ----------------------------------------------------------------------------------------------------
+function handleVoronoiCellClick() {
+	const voronoiCells = document.querySelectorAll(".voronoi-cell");
+	if (!voronoiCells || voronoiCells.length === 0) {
+		return;
+	}
+	voronoiCells.forEach((cell) => {
+		cell.addEventListener("click", () => {
+			document.querySelectorAll(".voronoi-cell").forEach((cell) => cell.classList.remove("selected"));
+			cell.classList.add("selected");
+		});
+	});
+}
+// -----------------------------------------------------------------------------------------------------
+// #endregion
+// ----------------------------------------------------------------------------------------------------
 
 // ----------------------------------------------------------------------------------------------------
 // #endregion
@@ -421,5 +476,6 @@ export {
 	handleGlowClick,
 	handleTintClick,
 	handleSparkRefreshClick,
-	detectVoronoiClick
+	handleAddVoronoiPoint,
+	handleVoronoiCellClick
 };

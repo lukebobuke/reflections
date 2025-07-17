@@ -433,13 +433,14 @@ ol {
 	gap: var(--glass-thickness);
 	height: 2.5rem;
 }
-.shard {
+/* .shard {
 	display: flex;
 	width: 4rem;
 	height: 4rem;
 	align-items: center;
 	justify-content: center;
-}
+	fill: rgba(255, 255, 255, 0.266);
+} */
 .shard:hover {
 	cursor: pointer;
 }
@@ -568,6 +569,55 @@ ol {
 #tint-outer-circle {
 	opacity: 1;
 	fill-opacity: 0;
+}
+
+.shard {
+	fill: rgba(255, 255, 255, 0.182);
+	stroke: #ffffff;
+	stroke-width: 10px;
+	transition: fill 0.3s ease, filter 0.3s ease;
+	position: absolute;
+	top: 0;
+	left: 0;
+	pointer-events: none;
+
+	filter: drop-shadow(		
+		/* big shadow underneath */ 
+		/* Calc(-1 * (var(--hover-distance) + var(--glass-thickness))) Calc(var(--hover-distance) + var(--glass-thickness)) var(--blur) rgba(var(--shadow-rgb)), */
+		/* top */ 
+		0px 1px 1px rgba(255, 255, 255, 0.5) 
+		/* right */ 
+		/* inset -1px 0px 1px rgba(255, 255, 255, 0.5), */
+		/* bottom */ 
+		/* inset 3px 0px 3px rgba(255, 255, 255, 0.1),  */
+		/* left */ 
+		/* inset 0px -3px 3px rgba(255, 255, 255, 0.1), */
+		/* top right thickened edge */ 
+		/* inset calc(-1 * var(--glass-thickness)) var(--glass-thickness) 4px rgba(200, 200, 200, 0.25), */
+		/* bottom left thickened edge */ 
+		/* calc(-1 * var(--glass-thickness)) var(--glass-thickness) 0px rgba(220, 220, 220, 0.25)); */
+	);
+	backdrop-filter: blur(var(--blur));
+	-webkit-backdrop-filter: blur(var(--blur));
+}
+
+.voronoi-cell:hover {
+	fill: rgba(0, 150, 255, 0.6);
+	filter: drop-shadow(0 0 5px rgba(0, 150, 255, 0.7));
+	cursor: pointer;
+}
+
+.voronoi-cell.selected {
+	fill: rgba(0, 150, 255, 0.8);
+	filter: drop-shadow(0 0 8px rgba(0, 150, 255, 1));
+}
+.voronoi-svg {
+	position: absolute;
+	inset: 0;
+	height: 100%;
+	width: 100%;
+	pointer-events: none;
+	z-index: 2;
 }
 
 /* ----------------------------------------------------------------------------------------------------*/
