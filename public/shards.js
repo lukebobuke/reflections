@@ -121,7 +121,7 @@ function handleShardClick() {
 	shardContainer.addEventListener("click", function (e) {
 		if (shardCrudContainer.classList.contains("hidden") && isVoronoiEditEnabled() === false) {
 			const shard = e.target.closest(".shard");
-			// console.log("Shard clicked:", shard);
+			console.log("Shard clicked:", shard);
 			if (shard && shardContainer.contains(shard)) {
 				shardCrudForm.dataset.shardFormType = "edit";
 				const shardId = shard.dataset.shardId;
@@ -200,7 +200,6 @@ function handleEditShardClick() {
 				const tint = shardCrudForm.dataset.tint;
 				const glow = shardCrudForm.dataset.glow || "0";
 				const rawData = { spark, text, tint, glow };
-				console.log("Raw data for shard edit:", rawData);
 				const validatedData = validateShardData(rawData);
 				const html = await editShard(shardId, validatedData);
 				document.getElementById("shards-list-container").innerHTML = html;
@@ -235,7 +234,6 @@ function handleCreateShardClick() {
 				const tint = shardCrudForm.dataset.tint || "0";
 				const glow = shardCrudForm.dataset.glow || "0";
 				const rawData = { spark, text, tint, glow };
-				console.log("Raw data for shard creation:", rawData);
 				const validatedData = validateShardData(rawData);
 				console.log("Validated data for shard creation:", validatedData);
 				const html = await createShard(validatedData);
@@ -295,7 +293,6 @@ function handleShardHover(shardContainer, shardCrudContainer) {
 	shardContainer.addEventListener("mouseover", function (e) {
 		if (shardCrudContainer.classList.contains("hidden")) {
 			const shardElem = e.target.closest(".shard");
-			console.log("Shard hovered:", shardElem);
 			if (shardElem && shardContainer.contains(shardElem) && isVoronoiEditEnabled() === false) {
 				// const shardId = shardElem.dataset.shardId;
 				// if (!shardId) return;
@@ -434,7 +431,6 @@ const { voronoiEditTrue, voronoiEditFalse, isVoronoiEditEnabled } = createVorono
 function updateVoronoi(voronoiGroup, points, width, height) {
 	// Remove only the old Voronoi cell paths, not the group itself or its event listeners
 	const oldPaths = voronoiGroup.querySelectorAll("path.shard");
-	console.log("Old paths to remove:", oldPaths);
 	oldPaths.forEach((p) => p.remove());
 	if (points.length < 2) return;
 	const delaunay = Delaunay.from(points);

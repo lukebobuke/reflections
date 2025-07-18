@@ -188,20 +188,6 @@ h2 {
 	filter: url(#glassEmboss);
 	opacity: 1;
 }
-/* input::after,
-textarea::after {
-	content: "";
-	display: block;
-	position: absolute;
-	top: 0;
-	left: 0;
-	width: 100%;
-	height: 100%;
-	pointer-events: none;
-	background: rgba(var(--glass-rgb));
-	box-shadow: inset var(--glass-thickness) calc(-1 * var(--glass-thickness)) 0px 0px rgb(11, 10, 10);
-	border-radius: var(--radius);
-} */
 
 /* #endregion */
 
@@ -420,7 +406,6 @@ ol {
 	display: flex;
 	flex-direction: column;
 }
-
 .shard-info {
 	display: flex;
 	flex-direction: column;
@@ -428,30 +413,42 @@ ol {
 	padding: 1rem;
 	align-items: center;
 }
-.shard-list-item {
-	display: flex;
-	margin: 2rem 0;
-	align-items: center;
-	gap: var(--glass-thickness);
-	height: 2.5rem;
-}
-/* .shard {
-	display: flex;
-	width: 4rem;
-	height: 4rem;
-	align-items: center;
-	justify-content: center;
-	fill: rgba(255, 255, 255, 0.266);
-} */
 .shard:hover {
 	cursor: pointer;
-	fill: rgba(0, 150, 255, 0.6)
+	fill: rgba(255, 255, 255, 0.341);
 }
-
-.glow::after {
-	box-shadow: 0 0 20px 10px rgba(255, 255, 255, 0.75);
+.shard {
+	fill: rgba(255, 255, 255, 0.182);
+	stroke: #ffffff;
+	stroke-width: 4px;
+	transition: fill 0.3s ease, filter 0.3s ease;
+	position: absolute;
+	top: 0;
+	left: 0;
+	filter: drop-shadow(
+		/* big shadow underneath */
+			/* Calc(-1 * (var(--hover-distance) + var(--glass-thickness))) Calc(var(--hover-distance) + var(--glass-thickness)) var(--blur) rgba(var(--shadow-rgb)), */
+			/* top */ 0px 1px 1px rgba(255, 255, 255, 0.5) /* right */ /* inset -1px 0px 1px rgba(255, 255, 255, 0.5), */ /* bottom */
+			/* inset 3px 0px 3px rgba(255, 255, 255, 0.1),  */ /* left */ /* inset 0px -3px 3px rgba(255, 255, 255, 0.1), */
+			/* top right thickened edge */ /* inset calc(-1 * var(--glass-thickness)) var(--glass-thickness) 4px rgba(200, 200, 200, 0.25), */
+			/* bottom left thickened edge */ /* calc(-1 * var(--glass-thickness)) var(--glass-thickness) 0px rgba(220, 220, 220, 0.25)); */
+	);
+	backdrop-filter: blur(var(--blur));
+	-webkit-backdrop-filter: blur(var(--blur));
+	pointer-events: auto;
 }
-
+.voronoi-svg {
+	position: absolute;
+	inset: 0;
+	height: 100%;
+	width: 100%;
+	z-index: 2;
+	pointer-events: none;
+}
+.voronoi-svg > g,
+#voronoi-group {
+	pointer-events: auto;
+}
 .shard::after {
 	content: "";
 	display: block;
@@ -462,30 +459,12 @@ ol {
 	z-index: 1;
 }
 
-#tint-selector-outer-container {
-	position: relative;
-	width: 8rem;
-	height: 8rem;
-	display: flex;
-	align-items: center;
-	justify-content: center;
+/* ----------------------------------------------------------------------------------------------------*/
+/* #region MARK: Shard States */
+/* ----------------------------------------------------------------------------------------------------*/
+.glow::after {
+	box-shadow: 0 0 20px 10px rgba(255, 255, 255, 0.75);
 }
-
-#tint-selector-inner-container {
-	position: absolute;
-	width: 100%;
-	height: 100%;
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	justify-content: center;
-	pointer-events: none;
-}
-
-#tint-selector-embossed {
-	pointer-events: none;
-}
-
 .tint-white,
 [data-shard-tint="1"]::after {
 	background: rgba(var(--tint-white), var(--tint-opacity));
@@ -526,17 +505,61 @@ ol {
 	background: rgba(var(--tint-violet), var(--tint-opacity));
 	fill: rgb(var(--tint-violet));
 }
+/* #endregion */
 
+/* ----------------------------------------------------------------------------------------------------*/
+/* #region MARK: Tint and Glow Selector */
+/* ----------------------------------------------------------------------------------------------------*/
 #tint-selector *,
 #tint-selector-embossed * {
 	/* stroke: rgba(255, 255, 255, 0.75); */
 	stroke-width: 4;
 }
 
+#tint-selector-outer-container {
+	position: relative;
+	width: 8rem;
+	height: 8rem;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+#tint-selector-inner-container {
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	pointer-events: none;
+}
+#tint-selector-embossed {
+	pointer-events: none;
+}
 #tint-selector-embossed * {
 	stroke: rgba(255, 255, 255, 0.75);
 }
+.tint-petal {
+	/* opacity: 0.5; */
+	fill-opacity: var(--tint-opacity);
+}
 
+.embossed-petal {
+	opacity: 0.75;
+	fill-opacity: 0;
+	/* filter: drop-shadow(0 0 50px rgba(255, 255, 255, 1)); */
+}
+.tint-petal:hover,
+.tint-selected {
+	fill-opacity: 0.65;
+	cursor: pointer;
+}
+#tint-outer-circle {
+	opacity: 1;
+	fill-opacity: 0;
+}
 #shard-form-glow-btn {
 	opacity: 0.6;
 	fill-opacity: 1;
@@ -551,73 +574,7 @@ ol {
 		drop-shadow(0px 0px 8px rgba(255, 255, 255, 0.9)) drop-shadow(0px 0px 8px rgba(255, 255, 255, 0.9))
 		drop-shadow(0px 0px 8px rgba(255, 255, 255, 0.9)) drop-shadow(0px 0px 8px rgba(255, 255, 255, 0.9));
 }
-
-.tint-petal {
-	/* opacity: 0.5; */
-	fill-opacity: var(--tint-opacity);
-}
-
-.embossed-petal {
-	opacity: 0.75;
-	fill-opacity: 0;
-	/* filter: drop-shadow(0 0 50px rgba(255, 255, 255, 1)); */
-}
-
-.tint-petal:hover,
-.tint-selected {
-	fill-opacity: 0.65;
-	cursor: pointer;
-}
-
-#tint-outer-circle {
-	opacity: 1;
-	fill-opacity: 0;
-}
-
-.shard {
-	fill: rgba(255, 255, 255, 0.182);
-	stroke: #ffffff;
-	stroke-width: 4px;
-	transition: fill 0.3s ease, filter 0.3s ease;
-	position: absolute;
-	top: 0;
-	left: 0;
-	filter: drop-shadow(
-		/* big shadow underneath */
-			/* Calc(-1 * (var(--hover-distance) + var(--glass-thickness))) Calc(var(--hover-distance) + var(--glass-thickness)) var(--blur) rgba(var(--shadow-rgb)), */
-			/* top */ 0px 1px 1px rgba(255, 255, 255, 0.5) /* right */ /* inset -1px 0px 1px rgba(255, 255, 255, 0.5), */ /* bottom */
-			/* inset 3px 0px 3px rgba(255, 255, 255, 0.1),  */ /* left */ /* inset 0px -3px 3px rgba(255, 255, 255, 0.1), */
-			/* top right thickened edge */ /* inset calc(-1 * var(--glass-thickness)) var(--glass-thickness) 4px rgba(200, 200, 200, 0.25), */
-			/* bottom left thickened edge */ /* calc(-1 * var(--glass-thickness)) var(--glass-thickness) 0px rgba(220, 220, 220, 0.25)); */
-	);
-	backdrop-filter: blur(var(--blur));
-	-webkit-backdrop-filter: blur(var(--blur));
-}
-
-.voronoi-cell:hover {
-	fill: rgba(0, 150, 255, 0.6);
-	filter: drop-shadow(0 0 5px rgba(0, 150, 255, 0.7));
-	cursor: pointer;
-}
-
-.voronoi-svg {
-	position: absolute;
-	inset: 0;
-	height: 100%;
-	width: 100%;
-	z-index: 2;
-	pointer-events: none;
-}
-
-/* Add this to ensure SVG paths are clickable, but the SVG overlay does not block UI buttons */
-.voronoi-svg > g,
-#voronoi-group {
-	pointer-events: auto;
-}
-
-.shard {
-	pointer-events: auto;
-}
+/* #endregion */
 
 /* ----------------------------------------------------------------------------------------------------*/
 /* #region MARK: Animation and Transition */
@@ -739,4 +696,5 @@ body {
 body {
 	z-index: -1;
 }
+
 /* #endregion */
