@@ -1,9 +1,9 @@
 const db = require("./db");
 
-const createVoronoiPattern = async (userId, patternData) => {
+const createVoronoiPattern = async (userId, rotationCount, points) => {
     const result = await db.query(
-        "INSERT INTO voronoi_patterns (user_id, pattern_data) VALUES ($1, $2) RETURNING *",
-        [userId, patternData]
+        "INSERT INTO voronoi_patterns (user_id, rotation_count, points) VALUES ($1, $2, $3) RETURNING *",
+        [userId, rotationCount, points]
     );
     return result.rows[0];
 };
@@ -16,10 +16,10 @@ const getVoronoiPatternById = async (patternId) => {
     return result.rows[0];
 };
 
-const updateVoronoiPattern = async (patternId, updatedData) => {
+const updateVoronoiPattern = async (patternId, updatedRotationCount, updatedPoints) => {
     const result = await db.query(
-        "UPDATE voronoi_patterns SET pattern_data = $1 WHERE id = $2 RETURNING *",
-        [updatedData, patternId]
+        "UPDATE voronoi_patterns SET rotation_count = $1, points = $2 WHERE id = $3 RETURNING *",
+        [updatedRotationCount, updatedPoints, patternId]
     );
     return result.rows[0];
 };
@@ -37,3 +37,5 @@ module.exports = {
     updateVoronoiPattern,
     deleteVoronoiPattern
 };
+
+

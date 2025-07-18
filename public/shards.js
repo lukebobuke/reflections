@@ -42,8 +42,8 @@ async function createShard(data) {
 }
 async function createVoronoiPattern(points, rotationCount) {
 	const payload = {
-		points,
 		rotationCount,
+		points,
 	};
 
 	const response = await fetch("/api/voronoi-patterns", {
