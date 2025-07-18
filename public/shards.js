@@ -119,7 +119,7 @@ function handleShardClick() {
 		return;
 	}
 	shardContainer.addEventListener("click", function (e) {
-		if (shardCrudContainer.classList.contains("hidden") && isVoronoiEditEnabled()===false) {
+		if (shardCrudContainer.classList.contains("hidden") && isVoronoiEditEnabled() === false) {
 			const shard = e.target.closest(".shard");
 			// console.log("Shard clicked:", shard);
 			if (shard && shardContainer.contains(shard)) {
@@ -287,29 +287,31 @@ function handleDeleteShardClick() {
 // ----------------------------------------------------------------------------------------------------
 // #region Shard Hover
 // ----------------------------------------------------------------------------------------------------
-function handleShardHover() {
-	const container = document.getElementById("shards-list-container");
-	const shardCrudContainer = document.querySelector("#shard-crud-container");
-	if (!container || !shardCrudContainer) return;
-	container.addEventListener("mouseover", function (e) {
+function handleShardHover(shardContainer, shardCrudContainer) {
+	if (!shardContainer || !shardCrudContainer) {
+		console.log("Shard container or shard CRUD container not found.");
+		return;
+	}
+	shardContainer.addEventListener("mouseover", function (e) {
 		if (shardCrudContainer.classList.contains("hidden")) {
 			const shardElem = e.target.closest(".shard");
-			if (shardElem && container.contains(shardElem)) {
-				const shardId = shardElem.dataset.shardId;
-				if (!shardId) return;
-				const infoElem = container.querySelector(`.shard-info[data-shard-id="${shardId}"]`);
-				if (infoElem) infoElem.classList.remove("hidden");
+			console.log("Shard hovered:", shardElem);
+			if (shardElem && shardContainer.contains(shardElem) && isVoronoiEditEnabled() === false) {
+				// const shardId = shardElem.dataset.shardId;
+				// if (!shardId) return;
+				// const infoElem = shardContainer.querySelector(`.shard-info[data-shard-id="${shardId}"]`);
+				// if (infoElem) infoElem.classList.remove("hidden");
 				shardElem.classList.add("popped");
 			}
 		}
 	});
-	container.addEventListener("mouseout", function (e) {
+	shardContainer.addEventListener("mouseout", function (e) {
 		const shardElem = e.target.closest(".shard");
-		if (shardElem && container.contains(shardElem)) {
-			const shardId = shardElem.dataset.shardId;
-			if (!shardId) return;
-			const infoElem = container.querySelector(`.shard-info[data-shard-id="${shardId}"]`);
-			if (infoElem) infoElem.classList.add("hidden");
+		if (shardElem && shardContainer.contains(shardElem)) {
+			// const shardId = shardElem.dataset.shardId;
+			// if (!shardId) return;
+			// const infoElem = shardContainer.querySelector(`.shard-info[data-shard-id="${shardId}"]`);
+			// if (infoElem) infoElem.classList.add("hidden");
 			shardElem.classList.remove("popped");
 		}
 	});
@@ -471,7 +473,12 @@ function handleAddVoronoiPoint() {
 				const x = e.clientX - rect.left - rect.width / 2;
 				const y = e.clientY - rect.top - rect.height / 2;
 				points.push([x, y]);
-				updateVoronoi(voronoiGroup, points, width, height);
+
+				const center = [0, 0];
+				const duplicates = 5; // for example, 7 duplicates + original = 8 total rotational segments
+				const newPoints = duplicateAndRotatePoints(points, duplicates, center);
+
+				updateVoronoi(voronoiGroup, newPoints, width, height);
 			});
 		}
 	});
@@ -504,6 +511,35 @@ function finishEditVoronoi(pressable) {
 		console.log("Finish edit button clicked.");
 		voronoiEditFalse();
 	});
+}
+function duplicateAndRotatePoints(points, duplicatesCount, center) {
+	const angleStep = 360 / (duplicatesCount + 1); // degrees
+	const radians = (angle) => (angle * Math.PI) / 180;
+
+	// Helper to rotate a point [x, y] around center [cx, cy]
+	function rotatePoint([x, y], angleDeg, [cx, cy]) {
+		const angleRad = radians(angleDeg);
+		const dx = x - cx;
+		const dy = y - cy;
+		const cos = Math.cos(angleRad);
+		const sin = Math.sin(angleRad);
+		const rx = dx * cos - dy * sin + cx;
+		const ry = dx * sin + dy * cos + cy;
+		return [rx, ry];
+	}
+
+	// Start with a shallow copy of original points
+	const result = [...points];
+
+	for (let i = 1; i <= duplicatesCount; i++) {
+		const angle = angleStep * i;
+		points.forEach((pt) => {
+			const rotatedPt = rotatePoint(pt, angle, center);
+			result.push(rotatedPt);
+		});
+	}
+
+	return result;
 }
 // ----------------------------------------------------------------------------------------------------
 // #endregion

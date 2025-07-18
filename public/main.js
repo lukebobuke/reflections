@@ -19,14 +19,17 @@ import {
 // Runs when the DOM is fully loaded
 document.addEventListener("DOMContentLoaded", () => {
 	console.log("Frontend JS loaded.");
-	
+
 	const editButton = document.querySelector("#show-shard-crud");
 	const hideButton = document.querySelector("#hide-shard-crud");
-	
 	handleAddVoronoiPoint();
+	const shardContainer = document.querySelector("#voronoi-group");
+	console.log("Shard container:", shardContainer);
+	const shardCrudContainer = document.querySelector("#shard-crud-container");
+
 	handleCreateShardClick();
 	handleDeleteShardClick();
-	handleShardHover();
+	handleShardHover(shardContainer, shardCrudContainer);
 	handleShowShardCrudClick();
 	handleHideShardCrudClick();
 	handleEditShardClick();
