@@ -16,6 +16,7 @@ const indexRouter = require("./routes/indexRouter");
 const loginRouter = require("./routes/loginRouter");
 const populateUser = require("./middleware/populateUser");
 const shardRouter = require("./routes/shardRouter");
+const voronoiRouter = require("./routes/voronoiRouter");
 
 // ----------------------------------------------------------------------------------------------------
 // #region View Engine
@@ -80,7 +81,8 @@ app.use(populateUser);
 // ----------------------------------------------------------------------------------------------------
 //route routers
 app.use("/login", loginRouter);
-app.use("/shards", shardRouter); // <-- Add this line to enable /shards routes
+app.use("/shards", shardRouter);
+app.use("/voronoi", voronoiRouter);
 app.use("/", indexRouter);
 // #endregion
 // ----------------------------------------------------------------------------------------------------

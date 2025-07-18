@@ -40,6 +40,26 @@ async function createShard(data) {
 	console.log("Shard creation response:", response);
 	return response.text();
 }
+async function createVoronoiPattern(points, rotationCount) {
+	const payload = {
+		points,
+		rotationCount,
+	};
+
+	const response = await fetch("/api/voronoi-patterns", {
+		method: "POST",
+		headers: {
+			"Content-Type": "application/json",
+		},
+		body: JSON.stringify(payload),
+	});
+
+	if (!response.ok) {
+		throw new Error("Failed to save Voronoi pattern");
+	}
+
+	return await response.json(); // or response.text() based on your backend response
+}
 // ----------------------------------------------------------------------------------------------------
 // #endregion
 // ----------------------------------------------------------------------------------------------------
@@ -299,6 +319,7 @@ function handleShardHover(shardContainer, shardCrudContainer) {
 				// const infoElem = shardContainer.querySelector(`.shard-info[data-shard-id="${shardId}"]`);
 				// if (infoElem) infoElem.classList.remove("hidden");
 				shardElem.classList.add("popped");
+				shardElem.classList.add("hovered");
 			}
 		}
 	});
@@ -310,6 +331,7 @@ function handleShardHover(shardContainer, shardCrudContainer) {
 			// const infoElem = shardContainer.querySelector(`.shard-info[data-shard-id="${shardId}"]`);
 			// if (infoElem) infoElem.classList.add("hidden");
 			shardElem.classList.remove("popped");
+			shardElem.classList.remove("hovered");
 		}
 	});
 }
