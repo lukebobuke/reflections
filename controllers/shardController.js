@@ -29,7 +29,7 @@ const renderShardsPage = async (req, res) => {
 // #region Validate Shard Data
 // ----------------------------------------------------------------------------------------------------
 function validateShardData(data) {
-	const { spark, text, tint, glow } = data;
+	const { spark, text, tint, glow, point } = data;
 	if (!spark || typeof spark !== "string") {
 		throw new Error("Invalid spark text");
 	}
@@ -42,11 +42,15 @@ function validateShardData(data) {
 	if (isNaN(glow) || glow < 0 || glow > 1) {
 		throw new Error("validateShardData in shardController.js:  Glow must be a number between 0 and 1.");
 	}
+	if (isNaN(point) || point < 0 || point > 128) {
+		throw new Error("validateShardData in shardController.js:  Point must be a number between 0 and 128.");
+	}
 	return {
 		spark: spark.trim(),
 		text: text.trim(),
 		tint: parseInt(tint, 10) || 0,
 		glow: parseInt(glow, 10) || 0,
+		point: parseInt(point, 10) || 0,
 	};
 }
 // ----------------------------------------------------------------------------------------------------
@@ -58,17 +62,17 @@ function validateShardData(data) {
 // ----------------------------------------------------------------------------------------------------
 const createShard = async (req, res) => {
 	const userId = req.user.id;
-	const user = req.user;
+	// const user = req.user;
 	const shardData = req.body;
 	const validatedShardData = validateShardData(shardData);
 	try {
 		await shardModel.createShard(userId, validatedShardData);
 		// Get updated list
-		const shards = await shardModel.getShardsByUserId(userId);
-		res.render("partials/shardsList", { currentPage: "shards", shards, user, layout: false });
+		// const shards = await shardModel.getShardsByUserId(userId);
+		// res.render("partials/shardsList", { currentPage: "shards", shards, user, layout: false });
 	} catch (error) {
 		console.error("From shardController, error creating shard:", error);
-		res.status(500).send("Internal server error");
+		res.status(500).send("createShard: Internal server error");
 	}
 };
 // ----------------------------------------------------------------------------------------------------

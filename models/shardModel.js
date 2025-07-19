@@ -6,10 +6,10 @@ const db = require("./db");
 // #region Create Shard
 // ----------------------------------------------------------------------------------------------------
 const createShard = async (userId, shardData) => {
-	const values = [userId, shardData.spark, shardData.text, shardData.tint, shardData.glow];
+	const values = [userId, shardData.spark, shardData.text, shardData.tint, shardData.glow, shardData.point];
 	const query = `
-        INSERT INTO shards (user_id, spark, text, tint, glow)
-        VALUES ($1, $2, $3, $4, $5)
+        INSERT INTO shards (user_id, spark, text, tint, glow, point)
+        VALUES ($1, $2, $3, $4, $5, $6)
         RETURNING *
     `;
 	const result = await db.query(query, values);

@@ -34,6 +34,7 @@ async function createShard(data) {
 		headers: { "Content-Type": "application/json" },
 		body: JSON.stringify(data),
 	});
+	console.log("response:", response);
 	if (!response.ok) {
 		throw new Error("From shards.js, failed to create shard");
 	}
@@ -68,7 +69,7 @@ async function createVoronoiPattern(points, rotationCount) {
 // #region Validation
 // ----------------------------------------------------------------------------------------------------
 function validateShardData(data) {
-	const { spark, text, tint, glow } = data;
+	const { spark, text, tint, glow, point } = data;
 	if (!spark || typeof spark !== "string") {
 		throw new Error("ValidateShardData in shards.js: Invalid spark text");
 	}
@@ -81,11 +82,15 @@ function validateShardData(data) {
 	if (glow < 0 || glow > 1) {
 		throw new Error("validateShardData in shards.js:  Glow must be a number between 0 and 1.");
 	}
+	if (isNaN(point) || point < 0 || point > 128) {
+		throw new Error("validateShardData in shards.js:  Point must be a number between 0 and 128.");
+	}
 	return {
 		spark: spark.trim(),
 		text: text.trim(),
 		tint: parseInt(tint, 10) || 0,
 		glow: parseInt(glow, 10) || 0,
+		point: parseInt(point, 10) || 0,
 	};
 }
 // ----------------------------------------------------------------------------------------------------
@@ -142,12 +147,21 @@ function handleShardClick() {
 		if (shardCrudContainer.classList.contains("hidden") && isVoronoiEditEnabled() === false) {
 			const shard = e.target.closest(".shard");
 			console.log("Shard clicked:", shard);
-			if (shard && shardContainer.contains(shard)) {
+			// display create shard CRUD form
+			if (shard && shardContainer.contains(shard) && !shard.dataset.shardId) {
+				console.log("shard CRUD form initialized");
+				shardCrudForm.dataset.shardFormType = "create";
+				shardCrudForm.dataset.originalIndex = shard.dataset.originalIndex;
+				shardCrudContainer.classList.remove("hidden");
+				console.log("Shard Crud Container class:", shardCrudContainer.classList);
+			}
+			// display edit shard CRUD form
+			else if (shard && shard.dataset.shardId) {
 				shardCrudForm.dataset.shardFormType = "edit";
 				const shardId = shard.dataset.shardId;
-				shardCrudForm.classList.remove("hidden");
 				shardCrudContainer.classList.remove("hidden");
 				shardCrudForm.dataset.currentShardId = shardId;
+				shardCrudForm.dataset.originalIndex = shard.dataset.originalIndex;
 				sparkText.textContent = shard.dataset.shardSpark;
 				shardCrudForm.elements["text"].value = shard.dataset.shardText;
 				shardCrudForm.dataset.tint = shard.dataset.shardTint;
@@ -165,6 +179,9 @@ function handleShardClick() {
 		}
 	});
 }
+// ----------------------------------------------------------------------------------------------------
+// #endregion
+// ----------------------------------------------------------------------------------------------------
 
 // ----------------------------------------------------------------------------------------------------
 // #region Show/Hide Shard CRUD
@@ -190,10 +207,11 @@ function handleHideShardCrudClick() {
 	document.addEventListener("click", (e) => {
 		if (
 			!crudContainer.contains(e.target) &&
+			!crudContainer.classList.contains("hidden") &&
 			!e.target.closest("#show-shard-crud") &&
-			!e.target.closest("#shard-crud-form") &&
-			!e.target.closest(".shard")
+			!e.target.closest("#shard-crud-form")
 		) {
+			console.log("Clicked outside shardCrudContainer.  Hiding shard CRUD container");
 			crudContainer.classList.add("hidden");
 		}
 	});
@@ -203,8 +221,68 @@ function handleHideShardCrudClick() {
 // ----------------------------------------------------------------------------------------------------
 
 // ----------------------------------------------------------------------------------------------------
-// #region Edit Shard Click
+// #region Handle Shard CRUD
 // ----------------------------------------------------------------------------------------------------
+function createCurrentShardState() {
+	let state = {
+		id: null,
+		text: "",
+		tint: 0,
+		glow: 0,
+		spark: null,
+		point: 0
+	};
+	
+	return {
+		get: function() {
+			return { ...state };
+		},
+		set: function(data) {
+			state = { ...state, ...data };
+		},
+		clear: function() {
+			state = {
+				id: null,
+				text: "",
+				tint: 0,
+				glow: 0,
+				spark: null,
+				point: 0
+			};
+		}
+	};
+}
+const currentShardState = createCurrentShardState();
+
+function handleCreateShardClick() {
+	const shardCrudContainer = document.querySelector("#shard-crud-container");
+	const shardCrudForm = document.querySelector("#shard-crud-form");
+	if (!shardCrudForm || !shardCrudContainer) return;
+	shardCrudForm.addEventListener("submit", async function (e) {
+		if (shardCrudForm && shardCrudForm.dataset.shardFormType == "create") {
+			e.preventDefault();
+			try {
+				const point = shardCrudForm.dataset.originalIndex || 0; // Default to 0 if not set
+				console.log("handleCreateShardClick: point value:", point);
+				const spark = document.querySelector("#spark-text").textContent;
+				const text = document.querySelector("#shard-form-text").value;
+				const tint = shardCrudForm.dataset.tint || "0";
+				const glow = shardCrudForm.dataset.glow || "0";
+				const rawData = { spark, text, tint, glow, point };
+				const validatedData = validateShardData(rawData);
+				console.log("Validated data for shard creation:", validatedData);
+				shardCrudContainer.classList.add("hidden");
+				const html = await createShard(validatedData);
+				document.getElementById("shards-list-container").innerHTML = html;
+				shardCrudForm.reset();
+				updateShardFormUI();
+			} catch (error) {
+				alert(error.message);
+			}
+		}
+	});
+}
+
 function handleEditShardClick() {
 	const shardCrudForm = document.querySelector("#shard-crud-form");
 	const shardCrudContainer = document.querySelector("#shard-crud-container");
@@ -234,46 +312,7 @@ function handleEditShardClick() {
 		}
 	});
 }
-// ----------------------------------------------------------------------------------------------------
-// #endregion
-// ----------------------------------------------------------------------------------------------------
 
-// ----------------------------------------------------------------------------------------------------
-// #region Create Shard Click
-// ----------------------------------------------------------------------------------------------------
-function handleCreateShardClick() {
-	const shardCrudContainer = document.querySelector("#shard-crud-container");
-	const shardCrudForm = document.querySelector("#shard-crud-form");
-	if (!shardCrudForm || !shardCrudContainer) return;
-	shardCrudForm.addEventListener("submit", async function (e) {
-		if (shardCrudForm && shardCrudForm.dataset.shardFormType == "create") {
-			e.preventDefault();
-			try {
-				const spark = document.querySelector("#spark-text").textContent;
-				const text = document.querySelector("#shard-form-text").value;
-				const tint = shardCrudForm.dataset.tint || "0";
-				const glow = shardCrudForm.dataset.glow || "0";
-				const rawData = { spark, text, tint, glow };
-				const validatedData = validateShardData(rawData);
-				console.log("Validated data for shard creation:", validatedData);
-				const html = await createShard(validatedData);
-				document.getElementById("shards-list-container").innerHTML = html;
-				shardCrudForm.reset();
-				shardCrudContainer.classList.add("hidden");
-				updateShardFormUI();
-			} catch (error) {
-				alert(error.message);
-			}
-		}
-	});
-}
-// ----------------------------------------------------------------------------------------------------
-// #endregion
-// ----------------------------------------------------------------------------------------------------
-
-// ----------------------------------------------------------------------------------------------------
-// #region Delete Shard Click
-// ----------------------------------------------------------------------------------------------------
 function handleDeleteShardClick() {
 	const formDeleteButton = document.getElementById("shard-form-delete-btn");
 	const form = document.getElementById("shard-crud-form");
@@ -449,8 +488,12 @@ function createVoronoiEditState() {
 	return { voronoiEditTrue, voronoiEditFalse, isVoronoiEditEnabled };
 }
 const { voronoiEditTrue, voronoiEditFalse, isVoronoiEditEnabled } = createVoronoiEditState();
-
-function updateVoronoi(voronoiGroup, points, width, height) {
+function getOriginalIndex(duplicatedIndex, originalLength) {
+	if (originalLength <= 0) throw new Error("Invalid original length");
+	// Original index is duplicatedIndex modulo originalLength
+	return duplicatedIndex % originalLength;
+}
+function updateVoronoi(voronoiGroup, originalLength, points, width, height) {
 	// Remove only the old Voronoi cell paths, not the group itself or its event listeners
 	const oldPaths = voronoiGroup.querySelectorAll("path.shard");
 	oldPaths.forEach((p) => p.remove());
@@ -460,10 +503,12 @@ function updateVoronoi(voronoiGroup, points, width, height) {
 	for (let i = 0; i < points.length; i++) {
 		const cellPath = voronoi.renderCell(i);
 		const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+		const originalIndex = getOriginalIndex(i, originalLength);
 		path.classList.add("shard");
 		// set the path data for the Voronoi cell
 		path.setAttribute("d", cellPath);
 		path.dataset.index = i;
+		path.dataset.originalIndex = originalIndex;
 		voronoiGroup.appendChild(path);
 	}
 }
@@ -496,7 +541,7 @@ function handleAddVoronoiPoint() {
 				const duplicates = 5; // for example, 7 duplicates + original = 8 total rotational segments
 				const newPoints = duplicateAndRotatePoints(points, duplicates, center);
 
-				updateVoronoi(voronoiGroup, newPoints, width, height);
+				updateVoronoi(voronoiGroup, points.length, newPoints, width, height);
 			});
 		}
 	});
