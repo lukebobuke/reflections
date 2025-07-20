@@ -62,17 +62,36 @@ function validateShardData(data) {
 // ----------------------------------------------------------------------------------------------------
 const createShard = async (req, res) => {
 	const userId = req.user.id;
-	// const user = req.user;
 	const shardData = req.body;
 	const validatedShardData = validateShardData(shardData);
 	try {
 		await shardModel.createShard(userId, validatedShardData);
-		// Get updated list
-		// const shards = await shardModel.getShardsByUserId(userId);
-		// res.render("partials/shardsList", { currentPage: "shards", shards, user, layout: false });
+		const shards = await shardModel.getShardsByUserId(userId);
+		// Return the new shard as JSON
+		res.json(shards);
 	} catch (error) {
 		console.error("From shardController, error creating shard:", error);
-		res.status(500).send("createShard: Internal server error");
+		res.status(500).json({ error: "createShard: Internal server error" });
+	}
+};
+// ----------------------------------------------------------------------------------------------------
+// #endregion
+// ----------------------------------------------------------------------------------------------------
+
+// ----------------------------------------------------------------------------------------------------
+// #region Get Shards API
+// ----------------------------------------------------------------------------------------------------
+const getShardsAPI = async (req, res) => {
+	try {
+		const user = req.user;
+		if (!user || !user.id) {
+			return res.status(401).json({ error: "Unauthorized" });
+		}
+		const shards = await shardModel.getShardsByUserId(user.id);
+		res.json(shards);
+	} catch (error) {
+		console.error("Error fetching shards:", error);
+		res.status(500).json({ error: "Internal Server Error" });
 	}
 };
 // ----------------------------------------------------------------------------------------------------
@@ -116,7 +135,6 @@ const getShardById = async (shardId) => {
 // ----------------------------------------------------------------------------------------------------
 const updateShard = async (req, res) => {
 	const userId = req.user.id;
-	const user = req.user;
 	const shardId = req.params.shardId;
 	const shardData = req.body;
 	const validatedShardData = validateShardData(shardData);
@@ -124,7 +142,7 @@ const updateShard = async (req, res) => {
 		await shardModel.validateShardUser(shardId, userId);
 		await shardModel.editShard(shardId, validatedShardData);
 		const shards = await shardModel.getShardsByUserId(userId);
-		res.render("partials/shardsList", { currentPage: "shards", shards, user, layout: false });
+		res.json(shards);
 	} catch (error) {
 		console.error("From shardController, error updating shard:", error);
 		res.status(500).json({ error: "Internal server error" });
@@ -139,13 +157,12 @@ const updateShard = async (req, res) => {
 // ----------------------------------------------------------------------------------------------------
 const deleteShard = async (req, res) => {
 	const userId = req.user.id;
-	const user = req.user;
 	const shardId = req.params.shardId;
 	try {
 		await shardModel.validateShardUser(shardId, userId);
 		await shardModel.deleteShard(shardId);
 		const shards = await shardModel.getShardsByUserId(userId);
-		res.render("partials/shardsList", { currentPage: "shards", shards, user, layout: false });
+		res.json(shards);
 	} catch (error) {
 		console.error("From shardController, error deleting shard:", error);
 		res.status(500).json({ error: "Internal server error" });
@@ -159,6 +176,7 @@ module.exports = {
 	renderShardsPage,
 	createShard,
 	getShardsByUserId,
+	getShardsAPI,
 	getShardById,
 	updateShard,
 	deleteShard,

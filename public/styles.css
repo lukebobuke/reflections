@@ -413,11 +413,11 @@ ol {
 	padding: 1rem;
 	align-items: center;
 }
-.shard.hovered {
+.voronoi-cell.hovered {
 	cursor: pointer;
 	fill: rgba(255, 255, 255, 0.341);
 }
-.shard {
+.voronoi-cell {
 	fill: rgba(255, 255, 255, 0.182);
 	stroke: #ffffff;
 	stroke-width: 4px;
@@ -437,6 +437,34 @@ ol {
 	-webkit-backdrop-filter: blur(var(--blur));
 	pointer-events: auto;
 }
+.voronoi-cell.glow {
+	filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.75)) drop-shadow(0 0 10px rgba(255, 255, 255, 0.5))
+		drop-shadow(0px 1px 1px rgba(255, 255, 255, 0.5));
+}
+.voronoi-cell[data-shard-tint="1"] {
+	fill: rgba(var(--tint-white), var(--tint-opacity));
+}
+.voronoi-cell[data-shard-tint="2"] {
+	fill: rgba(var(--tint-red), var(--tint-opacity));
+}
+.voronoi-cell[data-shard-tint="3"] {
+	fill: rgba(var(--tint-orange), var(--tint-opacity));
+}
+.voronoi-cell[data-shard-tint="4"] {
+	fill: rgba(var(--tint-yellow), var(--tint-opacity));
+}
+.voronoi-cell[data-shard-tint="5"] {
+	fill: rgba(var(--tint-green), var(--tint-opacity));
+}
+.voronoi-cell[data-shard-tint="6"] {
+	fill: rgba(var(--tint-blue), var(--tint-opacity));
+}
+.voronoi-cell[data-shard-tint="7"] {
+	fill: rgba(var(--tint-indigo), var(--tint-opacity));
+}
+.voronoi-cell[data-shard-tint="8"] {
+	fill: rgba(var(--tint-violet), var(--tint-opacity));
+}
 .voronoi-svg {
 	position: absolute;
 	inset: 0;
@@ -448,15 +476,6 @@ ol {
 .voronoi-svg > g,
 #voronoi-group {
 	pointer-events: auto;
-}
-.shard::after {
-	content: "";
-	display: block;
-	position: absolute;
-	inset: 0;
-	pointer-events: none;
-	border-radius: inherit;
-	z-index: 1;
 }
 
 /* ----------------------------------------------------------------------------------------------------*/
@@ -615,7 +634,7 @@ textarea {
 
 button,
 .button-link,
-.shard {
+.voronoi-cell {
 	transition: background var(--transition-fast), transform 0.3s cubic-bezier(var(--small-bezier)), box-shadow 0.3s cubic-bezier(var(--small-bezier));
 }
 

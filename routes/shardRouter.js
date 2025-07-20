@@ -7,6 +7,9 @@ const shardController = require("../controllers/shardController");
 // Renders the shard page or shard list with user shards
 shardRouter.get("/", shardController.renderShardsPage);
 
+// API endpoint to get user's shards as JSON
+shardRouter.get("/api/user-shards", shardController.getShardsAPI);
+
 // This route handles the creation of a new shard.
 shardRouter.post("/", shardController.createShard);
 

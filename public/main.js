@@ -4,7 +4,6 @@ import {
 	handleCreateShardClick,
 	handleShardHover,
 	handleDeleteShardClick,
-	handleShowShardCrudClick,
 	handleHideShardCrudClick,
 	handleShardClick,
 	handleEditShardClick,
@@ -24,13 +23,11 @@ document.addEventListener("DOMContentLoaded", () => {
 	const hideButton = document.querySelector("#hide-shard-crud");
 	handleAddVoronoiPoint();
 	const shardContainer = document.querySelector("#voronoi-group");
-	console.log("Shard container:", shardContainer);
 	const shardCrudContainer = document.querySelector("#shard-crud-container");
 
 	handleCreateShardClick();
 	handleDeleteShardClick();
 	handleShardHover(shardContainer, shardCrudContainer);
-	handleShowShardCrudClick();
 	handleHideShardCrudClick();
 	handleEditShardClick();
 	handleGlowClick();
