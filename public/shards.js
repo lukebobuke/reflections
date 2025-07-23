@@ -18,6 +18,7 @@ const createAppState = () => {
 				try {
 					currentShards = await fetchShards();
 					updateVoronoiWithShards(currentShards);
+					FxFilter.scanElements();
 				} catch (error) {
 					console.error("Error fetching shards:", error);
 				}
@@ -47,7 +48,7 @@ const createAppState = () => {
 	};
 };
 const appState = createAppState();
-
+appState.set.mainView();
 // Store shards globally for state management
 let currentShards = [];
 
@@ -584,6 +585,7 @@ function updateVoronoi(voronoiGroup, originalLength, points, width, height) {
 		const cellPath = voronoi.renderCell(i);
 		const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
 		const originalIndex = getOriginalIndex(i, originalLength);
+		path.classList.add("liquid-glass");
 		path.classList.add("voronoi-cell");
 		// set the path data for the Voronoi cell
 		path.setAttribute("d", cellPath);

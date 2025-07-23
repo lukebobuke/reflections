@@ -30,14 +30,15 @@
 	--input-shadow-rgb: 0, 0, 0, 1;
 	--text-color: 255, 255, 255, 0.5;
 	--tint-white: 255, 255, 255;
-	--tint-red: 255, 97, 110;
-	--tint-orange: 255, 100, 20;
+	--tint-red: 255, 70, 70;
+	--tint-orange: 255, 120, 0;
+	--test: orange;
 	--tint-yellow: 255, 255, 0;
 	--tint-green: 116, 255, 111;
 	--tint-blue: 72, 220, 253;
 	--tint-indigo: 115, 40, 255;
 	--tint-violet: 225, 0, 255;
-	--tint-opacity: 0.2;
+	--tint-opacity: 0.3;
 	/* Dimensions */
 	--radius: 16px;
 	--padding: 2rem;
@@ -138,41 +139,50 @@ body {
 /* ----------------------------------------------------------------------------------------------------*/
 /* #region MARK: Glassmorphism Utility */
 /* ----------------------------------------------------------------------------------------------------*/
-.glass {
+
+.liquid-glass {
 	border-radius: var(--radius);
+	--fx-filter: blur(var(--blur)) liquid-glass(10, 5) contrast(1.25);
 	box-shadow: 
-		/* big shadow underneath */ Calc(-1 * (var(--hover-distance) + var(--glass-thickness)))
+	/* big shadow underneath */ Calc(-1 * (var(--hover-distance) + var(--glass-thickness)))
 			Calc(var(--hover-distance) + var(--glass-thickness)) var(--blur) rgba(var(--shadow-rgb)),
 		/* top */ inset 0px 1px 1px 0px rgba(255, 255, 255, 0.5), /* right */ inset -1px 0px 1px 0px rgba(255, 255, 255, 0.5),
 		/* bottom */ inset 3px 0px 3px 0px rgba(255, 255, 255, 0.1), /* left */ inset 0px -3px 3px 0px rgba(255, 255, 255, 0.1),
 		/* top right thickened edge */ inset calc(-1 * var(--glass-thickness)) var(--glass-thickness) 4px 0px rgba(200, 200, 200, 0.25),
 		/* bottom left thickened edge */ calc(-1 * var(--glass-thickness)) var(--glass-thickness) 0px 0px rgba(220, 220, 220, 0.25);
+	background: rgba(var(--glass-rgb));
+}
+.glass {
+	box-shadow: 
+	/* big shadow underneath */ Calc(-1 * (var(--hover-distance) + var(--glass-thickness)))
+			Calc(var(--hover-distance) + var(--glass-thickness)) var(--blur) rgba(var(--shadow-rgb)),
+		/* top */ inset 0px 1px 1px 0px rgba(255, 255, 255, 0.5), /* right */ inset -1px 0px 1px 0px rgba(255, 255, 255, 0.5),
+		/* bottom */ inset 3px 0px 3px 0px rgba(255, 255, 255, 0.1), /* left */ inset 0px -3px 3px 0px rgba(255, 255, 255, 0.1),
+		/* top right thickened edge */ inset calc(-1 * var(--glass-thickness)) var(--glass-thickness) 4px 0px rgba(200, 200, 200, 0.25),
+		/* bottom left thickened edge */ calc(-1 * var(--glass-thickness)) var(--glass-thickness) 0px 0px rgba(220, 220, 220, 0.25);
+	border-radius: var(--radius);
 	backdrop-filter: blur(var(--blur));
 	-webkit-backdrop-filter: blur(var(--blur));
 	background: rgba(var(--glass-rgb));
-	background-attachment: fixed;
-	background-position: fixed;
-	background-size: 100vw 100vh;
 }
-
-.glass::before {
+/* A little extra shine on the edges
+/* .glass::before {
 	content: "";
 	position: absolute;
-	inset: 0; /* shorthand for top/right/bottom/left: 0 */
-	padding: var(--bw, 2px); /* border-width */
-	border-radius: inherit; /* match your element’s radius */
+	inset: 0;
+	padding: var(--bw, 2px);
+	border-radius: inherit;
 	background: linear-gradient(to top right, rgba(255, 255, 255, 0) 90%, rgb(255, 255, 255, 0.9));
 
-	/* mask out the center so only the ring remains */
 	-webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0) padding-box;
 	-webkit-mask-composite: destination-out;
 
 	mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0) padding-box;
 	mask-composite: exclude;
 
-	pointer-events: none; /* let clicks pass through */
+	pointer-events: none;
 	z-index: -1;
-}
+} */
 
 .carved-glass {
 	filter: url(#glassCarveBevel);
@@ -241,15 +251,6 @@ i {
 	transition: transform var(--transition-slow) cubic-bezier(var(--big-bezier));
 	transition-delay: var(--transition-fast);
 	gap: var(--glass-thickness);
-}
-
-.nav-popup .button-link {
-	display: block;
-	font-size: 1.15rem;
-}
-
-.nav-popup .button-link:hover {
-	background: rgba(255, 255, 255, 0.1);
 }
 
 main {
@@ -344,6 +345,7 @@ button,
 	cursor: pointer;
 	font-weight: 600;
 	text-transform: uppercase;
+	background: none;
 }
 
 button:hover,
@@ -413,14 +415,14 @@ ol {
 	padding: 1rem;
 	align-items: center;
 }
-.voronoi-cell.hovered {
+.voronoi-cell.hovered::after {
 	cursor: pointer;
 	fill: rgba(255, 255, 255, 0.341);
 }
 .voronoi-cell {
-	fill: rgba(255, 255, 255, 0.182);
+	fill: rgba(255, 255, 255, 0);
 	stroke: #ffffff;
-	stroke-width: 4px;
+	stroke-width: 2spx;
 	transition: fill 0.3s ease, filter 0.3s ease;
 	position: absolute;
 	top: 0;
@@ -433,13 +435,57 @@ ol {
 			/* top right thickened edge */ /* inset calc(-1 * var(--glass-thickness)) var(--glass-thickness) 4px rgba(200, 200, 200, 0.25), */
 			/* bottom left thickened edge */ /* calc(-1 * var(--glass-thickness)) var(--glass-thickness) 0px rgba(220, 220, 220, 0.25)); */
 	);
-	backdrop-filter: blur(var(--blur));
+	/* backdrop-filter: blur(var(--blur));
 	-webkit-backdrop-filter: blur(var(--blur));
+	pointer-events: auto; */
+}
+
+.voronoi-svg {
+	position: absolute;
+	inset: 0;
+	height: 100%;
+	width: 100%;
+	z-index: 2;
+	pointer-events: none;
+	stroke: none;
+}
+.voronoi-svg > g,
+#voronoi-group {
 	pointer-events: auto;
 }
+
+/* ----------------------------------------------------------------------------------------------------*/
+/* #region MARK: Shard States */
+/* ----------------------------------------------------------------------------------------------------*/
+/* .glow::after {
+	box-shadow: 0 0 20px 10px rgba(255, 255, 255, 0.75);
+} */
+.tint-white {
+	fill: rgb(var(--tint-white));
+}
+.tint-red {
+	fill: rgb(var(--tint-red));
+}
+.tint-orange {
+	fill: rgb(var(--tint-orange));
+}
+.tint-yellow {
+	fill: rgb(var(--tint-yellow));
+}
+.tint-green {
+	fill: rgb(var(--tint-green));
+}
+.tint-blue {
+	fill: rgb(var(--tint-blue));
+}
+.tint-indigo {
+	fill: rgb(var(--tint-indigo));
+}
+.tint-violet {
+	fill: rgb(var(--tint-violet));
+}
 .voronoi-cell.glow {
-	filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.75)) drop-shadow(0 0 10px rgba(255, 255, 255, 0.5))
-		drop-shadow(0px 1px 1px rgba(255, 255, 255, 0.5));
+	filter: drop-shadow(0px 0px 3px rgba(255, 255, 255, 0.9)) drop-shadow(0px 0px 4px rgba(255, 255, 255, 0.9));
 }
 .voronoi-cell[data-shard-tint="1"] {
 	fill: rgba(var(--tint-white), var(--tint-opacity));
@@ -464,65 +510,6 @@ ol {
 }
 .voronoi-cell[data-shard-tint="8"] {
 	fill: rgba(var(--tint-violet), var(--tint-opacity));
-}
-.voronoi-svg {
-	position: absolute;
-	inset: 0;
-	height: 100%;
-	width: 100%;
-	z-index: 2;
-	pointer-events: none;
-}
-.voronoi-svg > g,
-#voronoi-group {
-	pointer-events: auto;
-}
-
-/* ----------------------------------------------------------------------------------------------------*/
-/* #region MARK: Shard States */
-/* ----------------------------------------------------------------------------------------------------*/
-.glow::after {
-	box-shadow: 0 0 20px 10px rgba(255, 255, 255, 0.75);
-}
-.tint-white,
-[data-shard-tint="1"]::after {
-	background: rgba(var(--tint-white), var(--tint-opacity));
-	fill: rgb(var(--tint-white));
-}
-.tint-red,
-[data-shard-tint="2"]::after {
-	background: rgba(var(--tint-red), var(--tint-opacity));
-	fill: rgb(var(--tint-red));
-}
-.tint-orange,
-[data-shard-tint="3"]::after {
-	background: rgba(var(--tint-orange), var(--tint-opacity));
-	fill: rgb(var(--tint-orange));
-}
-.tint-yellow,
-[data-shard-tint="4"]::after {
-	background: rgba(var(--tint-yellow), var(--tint-opacity));
-	fill: rgb(var(--tint-yellow));
-}
-.tint-green,
-[data-shard-tint="5"]::after {
-	background: rgba(var(--tint-green), var(--tint-opacity));
-	fill: rgb(var(--tint-green));
-}
-.tint-blue,
-[data-shard-tint="6"]::after {
-	background: rgba(var(--tint-blue), var(--tint-opacity));
-	fill: rgb(var(--tint-blue));
-}
-.tint-indigo,
-[data-shard-tint="7"]::after {
-	background: rgba(var(--tint-indigo), var(--tint-opacity));
-	fill: rgb(var(--tint-indigo));
-}
-.tint-violet,
-[data-shard-tint="8"]::after {
-	background: rgba(var(--tint-violet), var(--tint-opacity));
-	fill: rgb(var(--tint-violet));
 }
 /* #endregion */
 
@@ -562,7 +549,7 @@ ol {
 }
 .tint-petal {
 	/* opacity: 0.5; */
-	fill-opacity: var(--tint-opacity);
+	fill-opacity: 0.4;
 }
 
 .embossed-petal {
@@ -572,12 +559,12 @@ ol {
 }
 .tint-petal:hover,
 .tint-selected {
-	fill-opacity: 0.65;
+	fill-opacity: 1;
 	cursor: pointer;
 }
 #tint-outer-circle {
+	fill: rgba(var(--tint-white), 0.5);
 	opacity: 1;
-	fill-opacity: 0;
 }
 #shard-form-glow-btn {
 	opacity: 0.6;
@@ -588,10 +575,12 @@ ol {
 #shard-form-glow-btn:hover,
 #shard-form-glow-btn.glow-clicked {
 	cursor: pointer;
-	filter: drop-shadow(0px 0px 6px rgba(255, 255, 255, 0.9)) drop-shadow(0px 0px 6px rgba(255, 255, 255, 0.9))
-		drop-shadow(0px 0px 6px rgba(255, 255, 255, 0.9)) drop-shadow(0px 0px 6px rgba(255, 255, 255, 0.9))
-		drop-shadow(0px 0px 8px rgba(255, 255, 255, 0.9)) drop-shadow(0px 0px 8px rgba(255, 255, 255, 0.9))
-		drop-shadow(0px 0px 8px rgba(255, 255, 255, 0.9)) drop-shadow(0px 0px 8px rgba(255, 255, 255, 0.9));
+	filter: drop-shadow(0px 0px 3px rgba(255, 255, 255, 1)) drop-shadow(0px 0px 3px rgba(255, 255, 255, 1))
+		drop-shadow(0px 0px 3px rgba(255, 255, 255, 1)) drop-shadow(0px 0px 3px rgba(255, 255, 255, 1))
+		drop-shadow(0px 0px 5px rgba(255, 255, 255, 0.9)) drop-shadow(0px 0px 5px rgba(255, 255, 255, 0.9))
+		drop-shadow(0px 0px 5px rgba(255, 255, 255, 0.9)) drop-shadow(0px 0px 5px rgba(255, 255, 255, 0.9))
+		drop-shadow(0px 0px 5px rgba(255, 255, 255, 0.9)) drop-shadow(0px 0px 5px rgba(255, 255, 255, 0.9))
+		drop-shadow(0px 0px 5px rgba(255, 255, 255, 0.9)) drop-shadow(0px 0px 5px rgba(255, 255, 255, 0.9));
 }
 /* #endregion */
 
