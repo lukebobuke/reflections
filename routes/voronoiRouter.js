@@ -1,13 +1,15 @@
-const express = require('express');
+/** @format */
+
+const express = require("express");
 const voronoiRouter = express.Router();
-const voronoiController = require('../controllers/voronoiController');
+const voronoiController = require("../controllers/voronoiController");
 
-voronoiRouter.post('/', voronoiController.createVoronoiPattern);
+voronoiRouter.post("/", voronoiController.createVoronoiPattern);
 
-voronoiRouter.get('/:patternId', voronoiController.getVoronoiPatternById);
+voronoiRouter.get("/:patternId", voronoiController.getVoronoiPatternById);
 
-voronoiRouter.put('/:patternId', voronoiController.updateVoronoiPattern);
+voronoiRouter.put("/:patternId", voronoiController.updateVoronoiPattern);
 
-voronoiRouter.delete('/:patternId', voronoiController.deleteVoronoiPattern);
+voronoiRouter.delete("/:patternId", voronoiController.deleteVoronoiPattern);
 
 module.exports = voronoiRouter;

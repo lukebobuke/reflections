@@ -11,8 +11,8 @@ import {
 	handleTintClick,
 	handleSparkRefreshClick,
 	handleAddVoronoiPoint,
-	editVoronoi,
-	finishEditVoronoi,
+	enterVoronoiEditingState,
+	exitVoronoiEditingState,
 } from "./shards.js";
 
 // Runs when the DOM is fully loaded
@@ -33,8 +33,8 @@ document.addEventListener("DOMContentLoaded", () => {
 	handleGlowClick();
 	handleTintClick();
 	handleSparkRefreshClick();
-	editVoronoi(editButton);
-	finishEditVoronoi(hideButton);
+	enterVoronoiEditingState(editButton);
+	exitVoronoiEditingState(hideButton);
 	handleShardClick();
 	//----------------------------------------------------------------------------------------------------
 	// #region Menu/Nav Setup

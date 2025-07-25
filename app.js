@@ -82,7 +82,7 @@ app.use(populateUser);
 //route routers
 app.use("/login", loginRouter);
 app.use("/shards", shardRouter);
-app.use("/voronoi", voronoiRouter);
+app.use("/api/voronoi", voronoiRouter);
 app.use("/", indexRouter);
 // #endregion
 // ----------------------------------------------------------------------------------------------------

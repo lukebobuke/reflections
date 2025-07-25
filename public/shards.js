@@ -1,6 +1,9 @@
 /** @format */
 import { Delaunay } from "https://cdn.jsdelivr.net/npm/d3-delaunay@6/+esm";
 
+// ----------------------------------------------------------------------------------------------------
+// #region App State
+// ----------------------------------------------------------------------------------------------------
 const createAppState = () => {
 	let state = null;
 	const shardCrudContainer = document.querySelector("#shard-crud-container");
@@ -51,6 +54,53 @@ const appState = createAppState();
 appState.set.mainView();
 // Store shards globally for state management
 let currentShards = [];
+
+function handleHideShardCrudClick() {
+	const crudContainer = document.querySelector("#shard-crud-container");
+	if (!crudContainer) return;
+	// Listen for clicks on the document
+	document.addEventListener("click", (e) => {
+		// Check if we're in a state where we should close the form
+		if (appState.get() === "shardCreation" || appState.get() === "shardEditing") {
+			// If the click is outside the container, close the form
+			if (!crudContainer.contains(e.target)) {
+				console.log("Clicked outside shardCrudContainer. Hiding shard CRUD container");
+				appState.set.mainView();
+			}
+		}
+	});
+}
+function enterVoronoiEditingState(pressable) {
+	if (!pressable) {
+		console.error("Edit Voronoi button not found.");
+		return;
+	}
+	pressable.addEventListener("click", () => {
+		if (appState.get() === "voronoiEditing") {
+			console.log("Voronoi edit is already enabled.");
+			return;
+		}
+		console.log("Edit button clicked.");
+		appState.set.voronoiEditing();
+	});
+}
+function exitVoronoiEditingState(pressable) {
+	if (!pressable) {
+		console.error("Finish edit button not found.");
+		return;
+	}
+	pressable.addEventListener("click", () => {
+		if (appState.get() !== "voronoiEditing") {
+			console.log("Voronoi edit is not enabled.");
+			return;
+		}
+		console.log("Finish edit button clicked.");
+		appState.set.mainView();
+	});
+}
+// ----------------------------------------------------------------------------------------------------
+// #endRegion
+// ----------------------------------------------------------------------------------------------------
 
 // ----------------------------------------------------------------------------------------------------
 // #region API Calls
@@ -108,7 +158,8 @@ async function createVoronoiPattern(points, rotationCount) {
 		points,
 	};
 
-	const response = await fetch("/api/voronoi-patterns", {
+	// Change this to match your actual router mounting
+	const response = await fetch("/api/voronoi", {
 		method: "POST",
 		headers: {
 			"Content-Type": "application/json",
@@ -120,7 +171,7 @@ async function createVoronoiPattern(points, rotationCount) {
 		throw new Error("Failed to save Voronoi pattern");
 	}
 
-	return await response.json(); // or response.text() based on your backend response
+	return await response.json();
 }
 // ----------------------------------------------------------------------------------------------------
 // #endregion
@@ -153,57 +204,6 @@ function validateShardData(data) {
 		glow: parseInt(glow, 10) || 0,
 		point: parseInt(point, 10) || 0,
 	};
-}
-// ----------------------------------------------------------------------------------------------------
-// #endregion
-// ----------------------------------------------------------------------------------------------------
-
-// ----------------------------------------------------------------------------------------------------
-// #region UI Helpers
-// ----------------------------------------------------------------------------------------------------
-function updateShardFormUI() {
-	const shardCrudFormTitle = document.getElementById("shard-crud-form-title");
-	const sparkRefreshButton = document.getElementById("spark-refresh");
-	const submitText = document.getElementById("shard-form-submit-text");
-	const deleteBtn = document.getElementById("shard-form-delete-btn");
-	const shardCrudForm = document.querySelector("#shard-crud-form");
-	if (!shardCrudFormTitle || !sparkRefreshButton || !submitText || !deleteBtn) return;
-	if (appState.get() === "shardEditing") {
-		shardCrudForm.reset();
-		submitText.textContent = "Update Shard";
-		deleteBtn.classList.remove("hidden");
-		shardCrudFormTitle.textContent = "Edit Shard";
-		sparkRefreshButton.classList.add("hidden");
-	} else if (appState.get() === "shardCreation") {
-		shardCrudForm.reset();
-		submitText.textContent = "Create Shard";
-		deleteBtn.classList.add("hidden");
-		shardCrudFormTitle.textContent = "Create New Shard";
-		sparkRefreshButton.classList.remove("hidden");
-	}
-}
-function loadShardFormInfo() {
-	const shardCrudForm = document.querySelector("#shard-crud-form");
-	const sparkText = document.querySelector("#spark-text");
-	const tintPetals = document.querySelectorAll(".tint-petal");
-	const glowButton = document.querySelector("#shard-form-glow-btn");
-
-	sparkText.textContent = currentShardState.get().spark;
-	if (currentShardState.get().text) {
-		shardCrudForm.elements["text"].value = currentShardState.get().text;
-	}
-	tintPetals.forEach((tintPetal) => {
-		if (tintPetal.dataset.tint == currentShardState.get().tint) {
-			tintPetal.classList.add("tint-selected");
-		} else {
-			tintPetal.classList.remove("tint-selected");
-		}
-	});
-	if (currentShardState.get().glow === 0) {
-		glowButton.classList.add("glow-clicked");
-	} else {
-		glowButton.classList.remove("glow-clicked");
-	}
 }
 // ----------------------------------------------------------------------------------------------------
 // #endregion
@@ -254,29 +254,6 @@ function handleShardClick() {
 				}
 				appState.set.shardEditing();
 				console.log("form:", shardCrudForm);
-			}
-		}
-	});
-}
-// ----------------------------------------------------------------------------------------------------
-// #endregion
-// ----------------------------------------------------------------------------------------------------
-
-// ----------------------------------------------------------------------------------------------------
-// #region Hide Shard CRUD
-// ----------------------------------------------------------------------------------------------------
-
-function handleHideShardCrudClick() {
-	const crudContainer = document.querySelector("#shard-crud-container");
-	if (!crudContainer) return;
-	// Listen for clicks on the document
-	document.addEventListener("click", (e) => {
-		// Check if we're in a state where we should close the form
-		if (appState.get() === "shardCreation" || appState.get() === "shardEditing") {
-			// If the click is outside the container, close the form
-			if (!crudContainer.contains(e.target)) {
-				console.log("Clicked outside shardCrudContainer. Hiding shard CRUD container");
-				appState.set.mainView();
 			}
 		}
 	});
@@ -435,7 +412,7 @@ function handleShardHover(shardContainer, shardCrudContainer) {
 	shardContainer.addEventListener("mouseover", function (e) {
 		if (appState.get() === "mainView") {
 			const voronoiCell = e.target.closest(".voronoi-cell");
-			if (voronoiCell && shardContainer.contains(voronoiCell) && isVoronoiEditEnabled() === false) {
+			if (voronoiCell && shardContainer.contains(voronoiCell) && appState.get() !== "voronoiEditing") {
 				// const shardId = voronoiCell.dataset.shardId;
 				// if (!shardId) return;
 				// const infoElem = shardContainer.querySelector(`.shard-info[data-shard-id="${shardId}"]`);
@@ -462,8 +439,52 @@ function handleShardHover(shardContainer, shardCrudContainer) {
 // ----------------------------------------------------------------------------------------------------
 
 // ----------------------------------------------------------------------------------------------------
-// #region Glow and Tint Handlers
+// #region Shard Form State
 // ----------------------------------------------------------------------------------------------------
+function updateShardFormUI() {
+	const shardCrudFormTitle = document.getElementById("shard-crud-form-title");
+	const sparkRefreshButton = document.getElementById("spark-refresh");
+	const submitText = document.getElementById("shard-form-submit-text");
+	const deleteBtn = document.getElementById("shard-form-delete-btn");
+	const shardCrudForm = document.querySelector("#shard-crud-form");
+	if (!shardCrudFormTitle || !sparkRefreshButton || !submitText || !deleteBtn) return;
+	if (appState.get() === "shardEditing") {
+		shardCrudForm.reset();
+		submitText.textContent = "Update Shard";
+		deleteBtn.classList.remove("hidden");
+		shardCrudFormTitle.textContent = "Edit Shard";
+		sparkRefreshButton.classList.add("hidden");
+	} else if (appState.get() === "shardCreation") {
+		shardCrudForm.reset();
+		submitText.textContent = "Create Shard";
+		deleteBtn.classList.add("hidden");
+		shardCrudFormTitle.textContent = "Create New Shard";
+		sparkRefreshButton.classList.remove("hidden");
+	}
+}
+function loadShardFormInfo() {
+	const shardCrudForm = document.querySelector("#shard-crud-form");
+	const sparkText = document.querySelector("#spark-text");
+	const tintPetals = document.querySelectorAll(".tint-petal");
+	const glowButton = document.querySelector("#shard-form-glow-btn");
+
+	sparkText.textContent = currentShardState.get().spark;
+	if (currentShardState.get().text) {
+		shardCrudForm.elements["text"].value = currentShardState.get().text;
+	}
+	tintPetals.forEach((tintPetal) => {
+		if (tintPetal.dataset.tint == currentShardState.get().tint) {
+			tintPetal.classList.add("tint-selected");
+		} else {
+			tintPetal.classList.remove("tint-selected");
+		}
+	});
+	if (currentShardState.get().glow === 0) {
+		glowButton.classList.add("glow-clicked");
+	} else {
+		glowButton.classList.remove("glow-clicked");
+	}
+}
 function handleGlowClick() {
 	const glowButton = document.querySelector("#shard-form-glow-btn");
 	const shardCrudForm = document.querySelector("#shard-crud-form");
@@ -504,14 +525,6 @@ function handleTintClick() {
 		});
 	});
 }
-
-// ----------------------------------------------------------------------------------------------------
-// #endregion
-// ----------------------------------------------------------------------------------------------------
-
-// ----------------------------------------------------------------------------------------------------
-// #region Sparks
-// ----------------------------------------------------------------------------------------------------
 function randomSpark() {
 	const sparks = [
 		"Which hue best reflects the emotion you carry today?",
@@ -551,30 +564,16 @@ function handleSparkRefreshClick() {
 // ----------------------------------------------------------------------------------------------------
 
 // ----------------------------------------------------------------------------------------------------
-// #region Voronoi Handlers
+// #region Voronoi Rendering
 // ----------------------------------------------------------------------------------------------------
-// Encapsulate voronoiEdit state using a closure and expose handlers
-function createVoronoiEditState() {
-	let voronoiEdit = false;
-	function voronoiEditTrue() {
-		voronoiEdit = true;
-	}
-	function voronoiEditFalse() {
-		voronoiEdit = false;
-	}
-	function isVoronoiEditEnabled() {
-		return voronoiEdit;
-	}
 
-	return { voronoiEditTrue, voronoiEditFalse, isVoronoiEditEnabled };
-}
-const { voronoiEditTrue, voronoiEditFalse, isVoronoiEditEnabled } = createVoronoiEditState();
-function getOriginalIndex(duplicatedIndex, originalLength) {
+// Helper function to calculate the original index from a duplicated index
+function calculateOriginalIndex(duplicatedIndex, originalLength) {
 	if (originalLength <= 0) throw new Error("Invalid original length");
 	// Original index is duplicatedIndex modulo originalLength
 	return duplicatedIndex % originalLength;
 }
-function updateVoronoi(voronoiGroup, originalLength, points, width, height) {
+function updateVoronoiPaths(voronoiGroup, originalLength, points, width, height) {
 	// Remove only the old Voronoi cell paths, not the group itself or its event listeners
 	const oldPaths = voronoiGroup.querySelectorAll("path.voronoi-cell");
 	oldPaths.forEach((p) => p.remove());
@@ -584,7 +583,7 @@ function updateVoronoi(voronoiGroup, originalLength, points, width, height) {
 	for (let i = 0; i < points.length; i++) {
 		const cellPath = voronoi.renderCell(i);
 		const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-		const originalIndex = getOriginalIndex(i, originalLength);
+		const originalIndex = calculateOriginalIndex(i, originalLength);
 		path.classList.add("liquid-glass");
 		path.classList.add("voronoi-cell");
 		// set the path data for the Voronoi cell
@@ -594,6 +593,7 @@ function updateVoronoi(voronoiGroup, originalLength, points, width, height) {
 		voronoiGroup.appendChild(path);
 	}
 }
+//Adds a point to the Voronoi diagram and updates the paths when user clicks during voronoi edit mode
 function handleAddVoronoiPoint() {
 	const voronoiContainer = document.getElementById("shards-section");
 	const voronoiSvg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
@@ -609,7 +609,7 @@ function handleAddVoronoiPoint() {
 	voronoiGroup.id = "voronoi-group";
 	voronoiSvg.appendChild(voronoiGroup);
 	voronoiContainer.addEventListener("click", (e) => {
-		if (isVoronoiEditEnabled()) {
+		if (appState.get() === "voronoiEditing") {
 			requestAnimationFrame(() => {
 				const rect = voronoiContainer.getBoundingClientRect();
 				const width = voronoiContainer.clientWidth;
@@ -623,42 +623,13 @@ function handleAddVoronoiPoint() {
 				const duplicates = 5; // for example, 7 duplicates + original = 8 total rotational segments
 				const newPoints = duplicateAndRotatePoints(points, duplicates, center);
 
-				updateVoronoi(voronoiGroup, points.length, newPoints, width, height);
+				updateVoronoiPaths(voronoiGroup, points.length, newPoints, width, height);
 			});
 		}
 	});
 }
-// Example: call enableVoronoiEdit() from a button handler
-function editVoronoi(pressable) {
-	if (!pressable) {
-		console.error("Edit Voronoi button not found.");
-		return;
-	}
-	pressable.addEventListener("click", () => {
-		if (isVoronoiEditEnabled() === true) {
-			console.log("Voronoi edit is already enabled.");
-			return;
-		}
-		console.log("Edit button clicked.");
-		voronoiEditTrue();
-		appState.set.voronoiEditing();
-	});
-}
-function finishEditVoronoi(pressable) {
-	if (!pressable) {
-		console.error("Finish edit button not found.");
-		return;
-	}
-	pressable.addEventListener("click", () => {
-		if (isVoronoiEditEnabled() === false) {
-			console.log("Voronoi edit is not enabled.");
-			return;
-		}
-		console.log("Finish edit button clicked.");
-		voronoiEditFalse();
-		appState.set.mainView();
-	});
-}
+// Creates a kaleidoscopic effect by duplicating and rotating points around the center of the container div.
+// This has no effect on the points array stored in the backend.
 function duplicateAndRotatePoints(points, duplicatesCount, center) {
 	const angleStep = 360 / (duplicatesCount + 1); // degrees
 	const radians = (angle) => (angle * Math.PI) / 180;
@@ -703,6 +674,6 @@ export {
 	handleTintClick,
 	handleSparkRefreshClick,
 	handleAddVoronoiPoint,
-	editVoronoi,
-	finishEditVoronoi,
+	enterVoronoiEditingState,
+	exitVoronoiEditingState,
 };
