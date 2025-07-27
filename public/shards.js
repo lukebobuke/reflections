@@ -705,7 +705,36 @@ function updateVoronoiPaths(originalLength, points, width, height) {
 	// Set the transform on the group
 	voronoiGroup.setAttribute("transform", `translate(${width / 2}, ${height / 2})`);
 
+	// Helper function to check if a cell touches the boundary
+	function cellTouchesBoundary(cellPolygon, width, height) {
+		const bounds = {
+			left: -width / 2,
+			right: width / 2,
+			top: -height / 2,
+			bottom: height / 2,
+		};
+
+		const tolerance = 1; // Small tolerance for floating point comparison
+
+		return cellPolygon.some(([x, y]) => {
+			return (
+				Math.abs(x - bounds.left) < tolerance ||
+				Math.abs(x - bounds.right) < tolerance ||
+				Math.abs(y - bounds.top) < tolerance ||
+				Math.abs(y - bounds.bottom) < tolerance
+			);
+		});
+	}
+
 	for (let i = 0; i < newPoints.length; i++) {
+		const cellPolygon = voronoi.cellPolygon(i);
+		if (!cellPolygon) continue;
+
+		// Skip cells that touch the boundary (edge cells)
+		if (cellTouchesBoundary(cellPolygon, width, height)) {
+			continue;
+		}
+
 		const cellPath = voronoi.renderCell(i);
 		const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
 		const originalIndex = calculateOriginalIndex(i, originalLength);
@@ -714,6 +743,10 @@ function updateVoronoiPaths(originalLength, points, width, height) {
 		path.setAttribute("d", cellPath);
 		path.dataset.index = i;
 		path.dataset.originalIndex = originalIndex;
+
+		// Set the --fx-filter property to trigger FxFilter scanning
+		path.style.setProperty("--fx-filter", `blur(var(--blur)) liquid-glass(10, 5) contrast(1.25)`);
+
 		voronoiGroup.appendChild(path);
 	}
 }

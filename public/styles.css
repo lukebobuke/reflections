@@ -430,7 +430,7 @@ ol {
 	left: 0;
 	box-shadow: 
 		/* big shadow underneath */ Calc(-1 * (var(--hover-distance) + var(--glass-thickness)))
-				Calc(var(--hover-distance) + var(--glass-thickness)) var(--blur) rgba(var(--shadow-rgb)),
+			Calc(var(--hover-distance) + var(--glass-thickness)) var(--blur) rgba(var(--shadow-rgb)),
 		/* top */ inset 0px 1px 1px 0px rgba(255, 255, 255, 0.5), /* right */ inset -1px 0px 1px 0px rgba(255, 255, 255, 0.5),
 		/* bottom */ inset 3px 0px 3px 0px rgba(255, 255, 255, 0.1), /* left */ inset 0px -3px 3px 0px rgba(255, 255, 255, 0.1),
 		/* top right thickened edge */ inset calc(-1 * var(--glass-thickness)) var(--glass-thickness) 4px 0px rgba(200, 200, 200, 0.25),
