@@ -480,24 +480,28 @@ function handleShardHover(shardContainer, shardCrudContainer) {
 		if (appState.get() === "viewShards") {
 			const voronoiCell = e.target.closest(".voronoi-cell");
 			if (voronoiCell && shardContainer.contains(voronoiCell) && appState.get() !== "pointsEditing") {
-				// const shardId = voronoiCell.dataset.shardId;
-				// if (!shardId) return;
-				// const infoElem = shardContainer.querySelector(`.shard-info[data-shard-id="${shardId}"]`);
-				// if (infoElem) infoElem.classList.remove("hidden");
-				voronoiCell.classList.add("popped");
-				voronoiCell.classList.add("hovered");
+				// Find all corresponding elements with the same original index
+				const originalIndex = voronoiCell.dataset.originalIndex;
+				const allVoronoiCells = shardContainer.querySelectorAll(`[data-original-index="${originalIndex}"]`);
+
+				allVoronoiCells.forEach((cell) => {
+					cell.classList.add("popped");
+					cell.classList.add("hovered");
+				});
 			}
 		}
 	});
 	shardContainer.addEventListener("mouseout", function (e) {
 		const voronoiCell = e.target.closest(".voronoi-cell");
 		if (voronoiCell && shardContainer.contains(voronoiCell)) {
-			// const shardId = voronoiCell.dataset.shardId;
-			// if (!shardId) return;
-			// const infoElem = shardContainer.querySelector(`.shard-info[data-shard-id="${shardId}"]`);
-			// if (infoElem) infoElem.classList.add("hidden");
-			voronoiCell.classList.remove("popped");
-			voronoiCell.classList.remove("hovered");
+			// Find all corresponding elements with the same original index
+			const originalIndex = voronoiCell.dataset.originalIndex;
+			const allVoronoiCells = shardContainer.querySelectorAll(`[data-original-index="${originalIndex}"]`);
+
+			allVoronoiCells.forEach((cell) => {
+				cell.classList.remove("popped");
+				cell.classList.remove("hovered");
+			});
 		}
 	});
 }
@@ -726,6 +730,65 @@ function updateVoronoiPaths(originalLength, points, width, height) {
 		});
 	}
 
+	// Proper polygon offset function - moves each edge perpendicular to itself
+	function offsetPolygon(polygon, offsetDistance) {
+		if (!polygon || polygon.length < 3) return polygon;
+
+		const offsetVertices = [];
+		const numVertices = polygon.length;
+
+		for (let i = 0; i < numVertices; i++) {
+			const prevIndex = (i - 1 + numVertices) % numVertices;
+			const nextIndex = (i + 1) % numVertices;
+
+			const prev = polygon[prevIndex];
+			const current = polygon[i];
+			const next = polygon[nextIndex];
+
+			// Calculate edge vectors
+			const edge1 = [current[0] - prev[0], current[1] - prev[1]];
+			const edge2 = [next[0] - current[0], next[1] - current[1]];
+
+			// Calculate normal vectors (perpendicular to edges, pointing inward for negative offset)
+			const normal1 = [-edge1[1], edge1[0]];
+			const normal2 = [-edge2[1], edge2[0]];
+
+			// Normalize the normal vectors
+			const length1 = Math.sqrt(normal1[0] * normal1[0] + normal1[1] * normal1[1]);
+			const length2 = Math.sqrt(normal2[0] * normal2[0] + normal2[1] * normal2[1]);
+
+			if (length1 > 0) {
+				normal1[0] /= length1;
+				normal1[1] /= length1;
+			}
+			if (length2 > 0) {
+				normal2[0] /= length2;
+				normal2[1] /= length2;
+			}
+
+			// Calculate the average normal (bisector)
+			const bisector = [(normal1[0] + normal2[0]) / 2, (normal1[1] + normal2[1]) / 2];
+
+			// Normalize the bisector
+			const bisectorLength = Math.sqrt(bisector[0] * bisector[0] + bisector[1] * bisector[1]);
+			if (bisectorLength > 0) {
+				bisector[0] /= bisectorLength;
+				bisector[1] /= bisectorLength;
+			}
+
+			// Calculate the angle between the edges to determine offset scaling
+			const dot = normal1[0] * normal2[0] + normal1[1] * normal2[1];
+			const angle = Math.acos(Math.max(-1, Math.min(1, dot)));
+			const scale = angle > 0 ? 1 / Math.sin(angle / 2) : 1;
+
+			// Apply the offset
+			const scaledOffset = Math.min(scale, 5) * offsetDistance; // Limit scaling to prevent extreme values
+			offsetVertices.push([current[0] + bisector[0] * scaledOffset, current[1] + bisector[1] * scaledOffset]);
+		}
+
+		return offsetVertices;
+	}
+
 	for (let i = 0; i < newPoints.length; i++) {
 		const cellPolygon = voronoi.cellPolygon(i);
 		if (!cellPolygon) continue;
@@ -735,20 +798,92 @@ function updateVoronoiPaths(originalLength, points, width, height) {
 			continue;
 		}
 
-		const cellPath = voronoi.renderCell(i);
-		const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
 		const originalIndex = calculateOriginalIndex(i, originalLength);
 
-		path.classList.add("voronoi-cell");
-		path.setAttribute("d", cellPath);
-		path.dataset.index = i;
-		path.dataset.originalIndex = originalIndex;
+		// Create multiple paths for each cell
+		const pathConfigs = [
+			{
+				offset: 0,
+				className: "voronoi-cell-border",
+				className2: "embossed-glass",
+				fill: "none",
+				filter: null,
+			},
+			{
+				offset: 0.5,
+				className: "voronoi-cell",
+				fill: null, // Will be set by CSS based on shard data
+				stroke: "none",
+				strokeWidth: "0",
+				filter: "blur(var(--blur)) liquid-glass(10, 5) contrast(1.25)",
+			},
+		];
 
-		// Set the --fx-filter property to trigger FxFilter scanning
-		path.style.setProperty("--fx-filter", `blur(var(--blur)) liquid-glass(10, 5) contrast(1.25)`);
+		pathConfigs.forEach((config, configIndex) => {
+			// Get the appropriate path data
+			let cellPath;
+			if (config.offset === 0) {
+				cellPath = voronoi.renderCell(i);
+			} else {
+				const offsetPoly = offsetPolygon(cellPolygon, config.offset);
+				cellPath = offsetPoly.map(([x, y], idx) => `${idx === 0 ? "M" : "L"}${x},${y}`).join(" ") + "Z";
+			}
 
-		voronoiGroup.appendChild(path);
+			const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+
+			path.classList.add(config.className);
+			if (config.className2) {
+				path.classList.add(config.className2);
+			}
+			path.setAttribute("d", cellPath);
+			path.dataset.index = i;
+			path.dataset.originalIndex = originalIndex;
+
+			// Apply styling
+			if (config.fill) {
+				path.style.fill = config.fill;
+			}
+			if (config.stroke) {
+				path.style.stroke = config.stroke;
+			}
+			if (config.strokeWidth) {
+				path.style.strokeWidth = config.strokeWidth;
+			}
+			if (config.filter) {
+				path.style.setProperty("--fx-filter", config.filter);
+			}
+
+			voronoiGroup.appendChild(path);
+		});
 	}
+
+	// Render un-inset paths for outlines
+	// for (let i = 0; i < newPoints.length; i++) {
+	// 	const cellPolygon = voronoi.cellPolygon(i);
+	// 	if (!cellPolygon) continue;
+
+	// 	// Skip cells that touch the boundary (edge cells)
+	// 	if (cellTouchesBoundary(cellPolygon, width, height)) {
+	// 		continue;
+	// 	}
+	// 	const cellPathUnoffset = voronoi.renderCell(i);
+	// 	// Apply inset to create gap between cells
+	// 	const insetPoly = insetPolygon(cellPolygon, 3);
+	// 	const cellPath = insetPoly.map(([x, y], idx) => `${idx === 0 ? "M" : "L"}${x},${y}`).join(" ") + "Z";
+
+	// 	const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+	// 	const originalIndex = calculateOriginalIndex(i, originalLength);
+
+	// 	path.classList.add("voronoi-cell");
+	// 	path.setAttribute("d", cellPath);
+	// 	path.dataset.index = i;
+	// 	path.dataset.originalIndex = originalIndex;
+
+	// 	// Set the --fx-filter property to trigger FxFilter scanning
+	// 	path.style.setProperty("--fx-filter", `blur(var(--blur)) liquid-glass(10, 5) contrast(1.25)`);
+
+	// 	voronoiGroup.appendChild(path);
+	// }
 }
 
 // Setup event handling for adding points during editing

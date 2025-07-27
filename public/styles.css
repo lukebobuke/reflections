@@ -421,8 +421,8 @@ ol {
 }
 .voronoi-cell {
 	fill: rgba(255, 255, 255, 0);
-	stroke: #ffffff;
-	stroke-width: 2px;
+	/* stroke: #ffffff; */
+	/* stroke-width: 2px; */
 	--fx-filter: blur(var(--blur)) liquid-glass(10, 5) contrast(1.25);
 	transition: fill 0.3s ease, filter 0.3s ease;
 	position: absolute;
@@ -439,6 +439,11 @@ ol {
 	/* -webkit-backdrop-filter: blur(var(--blur)); */
 	/* background: rgba(var(--glass-rgb)); */
 	pointer-events: auto;
+}
+.voronoi-cell-border {
+	fill-opacity: 0;
+	stroke: rgba(255, 255, 255, 0.5);
+	opacity: 0.5;
 }
 
 .voronoi-svg {
