@@ -6,10 +6,10 @@ const voronoiController = require("../controllers/voronoiController");
 
 voronoiRouter.post("/", voronoiController.createVoronoiPattern);
 
-voronoiRouter.get("/:patternId", voronoiController.getVoronoiPatternById);
+voronoiRouter.get("/", voronoiController.getVoronoiPatternByUserId);
 
-voronoiRouter.put("/:patternId", voronoiController.updateVoronoiPattern);
+voronoiRouter.put("/", voronoiController.updateVoronoiPattern);
 
-voronoiRouter.delete("/:patternId", voronoiController.deleteVoronoiPattern);
+voronoiRouter.delete("/", voronoiController.deleteVoronoiPattern);
 
 module.exports = voronoiRouter;

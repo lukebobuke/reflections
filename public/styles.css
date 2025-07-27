@@ -423,27 +423,22 @@ ol {
 	fill: rgba(255, 255, 255, 0);
 	stroke: #ffffff;
 	stroke-width: 2px;
-
-	border-radius: var(--radius);
 	--fx-filter: blur(var(--blur)) liquid-glass(10, 5) contrast(1.25);
-
 	transition: fill 0.3s ease, filter 0.3s ease;
 	position: absolute;
 	top: 0;
 	left: 0;
-	filter: drop-shadow(
-		/* big shadow underneath */ Calc(-1 * (var(--hover-distance) + var(--glass-thickness))) Calc(var(--hover-distance) + var(--glass-thickness))
-			var(--blur) rgba(var(--shadow-rgb)),
-		/* top */ 0px 1px 1px rgba(255, 255, 255, 0.5),
-		/* right */ inset -1px 0px 1px rgba(255, 255, 255, 0.5),
-		/* bottom */ inset 3px 0px 3px rgba(255, 255, 255, 0.1),
-		/* left */ inset 0px -3px 3px rgba(255, 255, 255, 0.1),
-		/* top right thickened edge */ inset calc(-1 * var(--glass-thickness)) var(--glass-thickness) 4px rgba(200, 200, 200, 0.25),
-		/* bottom left thickened edge */ calc(-1 * var(--glass-thickness)) var(--glass-thickness) 0px rgba(220, 220, 220, 0.25)
-	);
-	/* backdrop-filter: blur(var(--blur));
-	-webkit-backdrop-filter: blur(var(--blur));
-	pointer-events: auto; */
+	box-shadow: 
+		/* big shadow underneath */ Calc(-1 * (var(--hover-distance) + var(--glass-thickness)))
+				Calc(var(--hover-distance) + var(--glass-thickness)) var(--blur) rgba(var(--shadow-rgb)),
+		/* top */ inset 0px 1px 1px 0px rgba(255, 255, 255, 0.5), /* right */ inset -1px 0px 1px 0px rgba(255, 255, 255, 0.5),
+		/* bottom */ inset 3px 0px 3px 0px rgba(255, 255, 255, 0.1), /* left */ inset 0px -3px 3px 0px rgba(255, 255, 255, 0.1),
+		/* top right thickened edge */ inset calc(-1 * var(--glass-thickness)) var(--glass-thickness) 4px 0px rgba(200, 200, 200, 0.25),
+		/* bottom left thickened edge */ calc(-1 * var(--glass-thickness)) var(--glass-thickness) 0px 0px rgba(220, 220, 220, 0.25);
+	/* backdrop-filter: blur(var(--blur)); */
+	/* -webkit-backdrop-filter: blur(var(--blur)); */
+	/* background: rgba(var(--glass-rgb)); */
+	pointer-events: auto;
 }
 
 .voronoi-svg {
