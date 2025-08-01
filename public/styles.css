@@ -267,7 +267,7 @@ main {
 	gap: var(--padding);
 	padding: var(--padding);
 	position: relative;
-	flex: 1; /* Add this to make main fill available space */
+	/* flex: 1;  */
 }
 
 /* Specific styling for shards page main */
@@ -275,9 +275,10 @@ main {
 	display: flex;
 	flex-direction: column;
 	gap: var(--padding);
-	height: calc(100vh - var(--header-height) - var(--footer-height) - (4 * var(--padding)));
-	min-height: calc(100vh - var(--header-height) - var(--footer-height) - (4 * var(--padding)));
-	max-height: calc(100vh - var(--header-height) - var(--footer-height) - (4 * var(--padding)));
+	/* Remove fixed height and use viewport calculation instead */
+	height: calc(100vh - var(--header-height) - var(--footer-height) - var(--padding));
+	min-height: calc(100vh - var(--header-height) - var(--footer-height) - Calc(2*var(--padding)));
+	max-height: calc(100vh - var(--header-height) - var(--footer-height) - Calc(2*var(--padding)));
 	overflow: hidden; /* Prevent content from spilling out */
 }
 
