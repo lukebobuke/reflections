@@ -13,6 +13,8 @@ import {
 	handleAddVoronoiPoint,
 	enterPointsEditingState,
 	exitPointsEditingState,
+	handleIncreaseRotationClick,
+	handleDecreaseRotationClick,
 } from "./shards.js";
 
 // Runs when the DOM is fully loaded
@@ -36,6 +38,8 @@ document.addEventListener("DOMContentLoaded", () => {
 	enterPointsEditingState(editButton);
 	exitPointsEditingState(hideButton);
 	handleShardClick();
+	handleIncreaseRotationClick();
+	handleDecreaseRotationClick();
 	//----------------------------------------------------------------------------------------------------
 	// #region Menu/Nav Setup
 	// Get references to menu button, nav popup, and main content

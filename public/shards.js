@@ -7,6 +7,7 @@ import { Delaunay } from "https://cdn.jsdelivr.net/npm/d3-delaunay@6/+esm";
 const createAppState = () => {
 	let state = null;
 	const shardCrudContainer = document.querySelector("#shard-crud-container");
+	const editPointsActions = document.querySelector("#edit-points-actions");
 	return {
 		get: function () {
 			return state;
@@ -17,6 +18,7 @@ const createAppState = () => {
 				shardCrudContainer.classList.add("hidden");
 				state = "viewShards";
 				console.log("App state set to viewShards");
+				editPointsActions.classList.remove("active");
 				// Fetch and update shards when returning to viewShards
 				try {
 					const pointsData = await fetchPointArray();
@@ -65,6 +67,7 @@ const createAppState = () => {
 			},
 			pointsEditing: () => {
 				state = "pointsEditing";
+				editPointsActions.classList.add("active");
 				shardCrudContainer.classList.add("hidden");
 				console.log("App state set to pointsEditing");
 			},
@@ -641,6 +644,42 @@ function handleSparkRefreshClick() {
 // ----------------------------------------------------------------------------------------------------
 
 // ----------------------------------------------------------------------------------------------------
+// #region Handle Points Actions
+// ----------------------------------------------------------------------------------------------------
+
+function handleIncreaseRotationClick() {
+	const increaseRotationButton = document.querySelector("#increase-rotation");
+	if (!increaseRotationButton) {
+		console.error("Increase rotation button not found!");
+		return;
+	}
+	increaseRotationButton.addEventListener("click", () => {
+		const currentState = currentPointsState.get();
+		const newRotationCount = Math.min(currentState.rotationCount + 1, 9);
+		currentPointsState.set(currentState.points, newRotationCount);
+		updateVoronoiPaths(currentPointsState.get().points.length, currentPointsState.get().points);
+	});
+}
+
+function handleDecreaseRotationClick() {
+	const decreaseRotationButton = document.querySelector("#decrease-rotation");
+	if (!decreaseRotationButton) {
+		console.error("Decrease rotation button not found!");
+		return;
+	}
+
+	decreaseRotationButton.addEventListener("click", () => {
+		const currentState = currentPointsState.get();
+		const newRotationCount = Math.max(currentState.rotationCount - 1, 0);
+		currentPointsState.set(currentState.points, newRotationCount);
+		updateVoronoiPaths(currentPointsState.get().points.length, currentPointsState.get().points);
+	});
+}
+// ----------------------------------------------------------------------------------------------------
+// #endregion
+// ----------------------------------------------------------------------------------------------------
+
+// ----------------------------------------------------------------------------------------------------
 // #region Voronoi Rendering
 // ----------------------------------------------------------------------------------------------------
 
@@ -697,7 +736,7 @@ function updateVoronoiPaths(originalLength, points, width, height) {
 	}
 
 	// Remove only the old Voronoi cell paths
-	const oldPaths = voronoiGroup.querySelectorAll("path.voronoi-cell");
+	const oldPaths = voronoiGroup.querySelectorAll("path");
 	oldPaths.forEach((p) => p.remove());
 	const newPoints = duplicateAndRotatePoints(currentPointsState.get().points, currentPointsState.get().rotationCount, center);
 
@@ -806,16 +845,10 @@ function updateVoronoiPaths(originalLength, points, width, height) {
 				offset: 0,
 				className: "voronoi-cell-border",
 				className2: "embossed-glass",
-				fill: "none",
-				filter: null,
 			},
 			{
 				offset: 0.5,
 				className: "voronoi-cell",
-				fill: null, // Will be set by CSS based on shard data
-				stroke: "none",
-				strokeWidth: "0",
-				filter: "blur(var(--blur)) liquid-glass(10, 5) contrast(1.25)",
 			},
 		];
 
@@ -838,20 +871,6 @@ function updateVoronoiPaths(originalLength, points, width, height) {
 			path.setAttribute("d", cellPath);
 			path.dataset.index = i;
 			path.dataset.originalIndex = originalIndex;
-
-			// Apply styling
-			if (config.fill) {
-				path.style.fill = config.fill;
-			}
-			if (config.stroke) {
-				path.style.stroke = config.stroke;
-			}
-			if (config.strokeWidth) {
-				path.style.strokeWidth = config.strokeWidth;
-			}
-			if (config.filter) {
-				path.style.setProperty("--fx-filter", config.filter);
-			}
 
 			voronoiGroup.appendChild(path);
 		});
@@ -915,6 +934,13 @@ function handleAddVoronoiPoint() {
 // This has no effect on the points array stored in the backend.
 function duplicateAndRotatePoints(points, duplicatesCount, center) {
 	console.log("duplicateAndRotatePoints: creating kaleidoscopic pattern");
+	console.log("Points:", points.length, "Duplicates count:", duplicatesCount);
+	
+	if (duplicatesCount === 0) {
+		console.log("No rotation duplicates, returning original points");
+		return [...points];
+	}
+	
 	const angleStep = 360 / (duplicatesCount + 1); // degrees
 	const radians = (angle) => (angle * Math.PI) / 180;
 
@@ -941,6 +967,7 @@ function duplicateAndRotatePoints(points, duplicatesCount, center) {
 		});
 	}
 
+	console.log(`Total points after rotation: ${result.length} (original: ${points.length})`);
 	return result;
 }
 function updateVoronoiWithShards(shards = []) {
@@ -985,4 +1012,6 @@ export {
 	handleAddVoronoiPoint,
 	enterPointsEditingState,
 	exitPointsEditingState,
+	handleIncreaseRotationClick,
+	handleDecreaseRotationClick,
 };

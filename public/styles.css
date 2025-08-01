@@ -19,7 +19,7 @@
 
 :root {
 	/* Colors */
-	--glass-rgb: 200, 200, 200, 0.15;
+	--glass-rgb: rgba(200, 200, 200, 0.1);
 	--highlight-rgb: 200, 200, 200, 0.3;
 	--border-rgb: 255, 255, 255, 1;
 	--shadow-rgb: 0, 0, 0, 0.35;
@@ -28,7 +28,7 @@
 	--input-focus-rgb: 255, 255, 255, 1;
 	--input-bg-rgb: 255, 255, 255, 1;
 	--input-shadow-rgb: 0, 0, 0, 1;
-	--text-color: 255, 255, 255, 0.5;
+	--text-color: 255, 255, 255, 0.9;
 	--tint-white: 255, 255, 255;
 	--tint-red: 255, 70, 70;
 	--tint-orange: 255, 120, 0;
@@ -38,7 +38,7 @@
 	--tint-blue: 72, 220, 253;
 	--tint-indigo: 115, 40, 255;
 	--tint-violet: 225, 0, 255;
-	--tint-opacity: 0.3;
+	--tint-opacity: 0.5;
 	/* Dimensions */
 	--radius: 16px;
 	--padding: 2rem;
@@ -62,7 +62,7 @@
 	--hover-distance-pressed: Calc(var(--hover-distance-unpressed) - var(--pressed-offset));
 	--hover-distance-popped: Calc(2 * var(--hover-distance));
 	/* Other */
-	--blur: 4px;
+	--blur: 8px;
 }
 /*#endregion*/
 
@@ -73,7 +73,7 @@
 	color: rgba(var(--text-color));
 	font-family: "Cinzel", Arial, sans-serif;
 	padding: 0;
-	margin: 0;
+	margin: 0.5px;
 	box-sizing: border-box;
 }
 
@@ -122,7 +122,8 @@ body {
 	width: 100vw;
 	height: 100vh;
 	z-index: -10;
-	background: url("/background_bluemountains_2.png") center center / cover no-repeat;
+	background: url("/background_stainedglass_2.jpg") center center / cover no-repeat;
+	/* background: rgb(55, 55, 55); */
 }
 #bg-video {
 	position: fixed;
@@ -142,7 +143,7 @@ body {
 
 .liquid-glass {
 	border-radius: var(--radius);
-	--fx-filter: blur(var(--blur)) liquid-glass(10, 8) contrast(1.25);
+	--fx-filter: blur(var(--blur)) liquid-glass(4, 12) contrast(1.1);
 	box-shadow: 
 	/* big shadow underneath */ Calc(-1 * (var(--hover-distance) + var(--glass-thickness)))
 			Calc(var(--hover-distance) + var(--glass-thickness)) var(--blur) rgba(var(--shadow-rgb)),
@@ -150,7 +151,7 @@ body {
 		/* bottom */ inset 3px 0px 3px 0px rgba(255, 255, 255, 0.1), /* left */ inset 0px -3px 3px 0px rgba(255, 255, 255, 0.1),
 		/* top right thickened edge */ inset calc(-1 * var(--glass-thickness)) var(--glass-thickness) 4px 0px rgba(200, 200, 200, 0.25),
 		/* bottom left thickened edge */ calc(-1 * var(--glass-thickness)) var(--glass-thickness) 0px 0px rgba(220, 220, 220, 0.25);
-	background: rgba(var(--glass-rgb));
+	background: var(--glass-rgb);
 }
 .glass {
 	box-shadow: 
@@ -163,7 +164,7 @@ body {
 	border-radius: var(--radius);
 	backdrop-filter: blur(var(--blur));
 	-webkit-backdrop-filter: blur(var(--blur));
-	background: rgba(var(--glass-rgb));
+	background: var(--glass-rgb);
 }
 /* A little extra shine on the edges
 /* .glass::before {
@@ -183,6 +184,11 @@ body {
 	pointer-events: none;
 	z-index: -1;
 } */
+
+main.liquid-glass:not(#shards-section),
+#shard-crud-container {
+	--glass-rgb: rgba(0, 0, 0, 0.25);
+}
 
 .carved-glass {
 	filter: url(#glassCarveBevel);
@@ -261,7 +267,16 @@ main {
 	animation: main-slide-in var(--transition-fast) cubic-bezier(var(--big-bezier)) 0s 1;
 	position: relative;
 }
-
+#edit-points-actions {
+	display: flex;
+	flex-direction: column;
+	gap: var(--padding-small);
+	padding: var(--padding);
+	width: 8rem;
+	position: absolute;
+	top: Calc(var(--header-height)+ var(--padding) + var(--padding));
+	left: var(--padding);
+}
 footer {
 	position: fixed !important;
 	bottom: var(--padding);
@@ -415,14 +430,10 @@ ol {
 	padding: 1rem;
 	align-items: center;
 }
-.voronoi-cell.hovered::after {
-	cursor: pointer;
-	fill: rgba(255, 255, 255, 0.341);
-}
 .voronoi-cell {
 	fill: rgba(255, 255, 255, 0);
-	/* stroke: #ffffff; */
-	/* stroke-width: 2px; */
+	stroke: rgba(0, 0, 0, 0.5);
+	stroke-width: 2;
 	--fx-filter: blur(var(--blur)) liquid-glass(10, 5) contrast(1.25);
 	transition: fill 0.3s ease, filter 0.3s ease;
 	position: absolute;
@@ -437,13 +448,16 @@ ol {
 		/* bottom left thickened edge */ calc(-1 * var(--glass-thickness)) var(--glass-thickness) 0px 0px rgba(220, 220, 220, 0.25);
 	/* backdrop-filter: blur(var(--blur)); */
 	/* -webkit-backdrop-filter: blur(var(--blur)); */
-	/* background: rgba(var(--glass-rgb)); */
+	/* background: var(--glass-rgb); */
 	pointer-events: auto;
+	z-index: 1; /* Default z-index */
 }
+
 .voronoi-cell-border {
 	fill-opacity: 0;
-	stroke: rgba(255, 255, 255, 0.5);
+	stroke: rgba(255, 255, 255, 1);
 	opacity: 0.5;
+	z-index: 1; /* Default z-index */
 }
 
 .voronoi-svg {
@@ -568,12 +582,15 @@ ol {
 	fill-opacity: 1;
 	cursor: pointer;
 }
+.tint-selected {
+	stroke: rgb(255, 255, 255);
+}
 #tint-outer-circle {
 	fill: rgba(var(--tint-white), 0.5);
 	opacity: 1;
 }
 #shard-form-glow-btn {
-	opacity: 0.6;
+	opacity: 1;
 	fill-opacity: 1;
 	fill: rgb(255, 255, 255);
 }
@@ -583,10 +600,8 @@ ol {
 	cursor: pointer;
 	filter: drop-shadow(0px 0px 3px rgba(255, 255, 255, 1)) drop-shadow(0px 0px 3px rgba(255, 255, 255, 1))
 		drop-shadow(0px 0px 3px rgba(255, 255, 255, 1)) drop-shadow(0px 0px 3px rgba(255, 255, 255, 1))
-		drop-shadow(0px 0px 5px rgba(255, 255, 255, 0.9)) drop-shadow(0px 0px 5px rgba(255, 255, 255, 0.9))
-		drop-shadow(0px 0px 5px rgba(255, 255, 255, 0.9)) drop-shadow(0px 0px 5px rgba(255, 255, 255, 0.9))
-		drop-shadow(0px 0px 5px rgba(255, 255, 255, 0.9)) drop-shadow(0px 0px 5px rgba(255, 255, 255, 0.9))
-		drop-shadow(0px 0px 5px rgba(255, 255, 255, 0.9)) drop-shadow(0px 0px 5px rgba(255, 255, 255, 0.9));
+		drop-shadow(0px 0px 6px rgba(255, 255, 255, 0.9)) drop-shadow(0px 0px 6px rgba(255, 255, 255, 0.9))
+		drop-shadow(0px 0px 6px rgba(255, 255, 255, 0.9)) drop-shadow(0px 0px 6px rgba(255, 255, 255, 0.9));
 }
 /* #endregion */
 
@@ -604,6 +619,14 @@ main.slide-right {
 main.slide-left {
 	transform: translateX(-120vw);
 }
+
+#edit-points-actions {
+	transition: transform var(--transition-slow) cubic-bezier(var(--big-bezier));
+}
+#edit-points-actions:not(.active) {
+	transform: translateX(Calc(-8rem - var(--padding)));
+}
+
 
 header,
 footer {
@@ -631,6 +654,9 @@ button,
 .button-link,
 .voronoi-cell {
 	transition: background var(--transition-fast), transform 0.3s cubic-bezier(var(--small-bezier)), box-shadow 0.3s cubic-bezier(var(--small-bezier));
+}
+.tint-petal {
+	transition: stroke var(--transition-fast), fill var(--transition-fast), opacity var(--transition-fast), filter var(--transition-fast);
 }
 
 @keyframes main-slide-in {
@@ -676,9 +702,11 @@ button,
 }
 
 .nav-popup {
+	z-index: 4;
+}
+#edit-points-actions {
 	z-index: 3;
 }
-
 header.shifted-up {
 	z-index: 2;
 }
@@ -691,6 +719,26 @@ footer {
 	z-index: 3;
 }
 
+/* Base z-index for voronoi elements */
+.voronoi-cell {
+	z-index: 1;
+}
+
+.voronoi-cell-border {
+	z-index: 2;
+}
+
+/* Higher z-index for hovered/popped voronoi elements - must be after base styles */
+.voronoi-cell.popped,
+.voronoi-cell.hovered {
+	z-index: 50 !important;
+}
+
+.voronoi-cell-border.popped,
+.voronoi-cell-border.hovered {
+	z-index: 51 !important;
+}
+
 main {
 	z-index: 1;
 }
@@ -701,10 +749,6 @@ header {
 
 footer.shifted-down {
 	z-index: 0;
-}
-
-body {
-	z-index: -1;
 }
 
 body {
