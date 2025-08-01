@@ -739,20 +739,20 @@ function updateVoronoiPaths(originalLength, points, width, height) {
 	const minDimension = Math.min(width, height);
 	const radius = minDimension / 2;
 
-	console.log(`Container dimensions: ${width}x${height}, Using circular boundary with radius: ${radius}`);
-
 	// Convert normalized points (-1 to 1) to pixel coordinates
 	const pixelPoints = points.map(([normalizedX, normalizedY]) => {
-		const pixelX = normalizedX * (radius * 0.8); // Scale to 80% of radius to keep points well within circle
+		const pixelX = normalizedX * (radius * 0.8);
 		const pixelY = normalizedY * (radius * 0.8);
 		return [pixelX, pixelY];
 	});
 
-	console.log("Converted normalized points to pixel coordinates:", pixelPoints);
+	// Batch DOM operations to reduce reflows
+	const fragment = document.createDocumentFragment();
 
-	// Remove only the old Voronoi cell paths
+	// Remove only the old Voronoi cell paths - more efficient selection
 	const oldPaths = voronoiGroup.querySelectorAll("path");
 	oldPaths.forEach((p) => p.remove());
+
 	const newPoints = duplicateAndRotatePoints(pixelPoints, currentPointsState.get().rotationCount, center);
 
 	if (newPoints.length < 2) return;
@@ -928,7 +928,7 @@ function updateVoronoiPaths(originalLength, points, width, height) {
 			},
 		];
 
-		pathConfigs.forEach((config, configIndex) => {
+		pathConfigs.forEach((config) => {
 			// Get the appropriate path data
 			let cellPath;
 			if (config.offset === 0) {
@@ -940,45 +940,32 @@ function updateVoronoiPaths(originalLength, points, width, height) {
 
 			const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
 
-			path.classList.add(config.className);
-			if (config.className2) {
-				path.classList.add(config.className2);
-			}
+			// Batch class operations
+			path.className.baseVal = config.className + (config.className2 ? ` ${config.className2}` : "");
 			path.setAttribute("d", cellPath);
 			path.dataset.index = i;
 			path.dataset.originalIndex = originalIndex;
 
-			voronoiGroup.appendChild(path);
+			// Add to fragment instead of directly to DOM
+			fragment.appendChild(path);
 		});
 	}
 
-	// Render un-inset paths for outlines
-	// for (let i = 0; i < newPoints.length; i++) {
-	// 	const cellPolygon = voronoi.cellPolygon(i);
-	// 	if (!cellPolygon) continue;
+	// Single DOM insertion
+	voronoiGroup.appendChild(fragment);
+}
 
-	// 	// Skip cells that touch the boundary (edge cells)
-	// 	if (cellTouchesBoundary(cellPolygon, width, height)) {
-	// 		continue;
-	// 	}
-	// 	const cellPathUnoffset = voronoi.renderCell(i);
-	// 	// Apply inset to create gap between cells
-	// 	const insetPoly = insetPolygon(cellPolygon, 3);
-	// 	const cellPath = insetPoly.map(([x, y], idx) => `${idx === 0 ? "M" : "L"}${x},${y}`).join(" ") + "Z";
-
-	// 	const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-	// 	const originalIndex = calculateOriginalIndex(i, originalLength);
-
-	// 	path.classList.add("voronoi-cell");
-	// 	path.setAttribute("d", cellPath);
-	// 	path.dataset.index = i;
-	// 	path.dataset.originalIndex = originalIndex;
-
-	// 	// Set the --fx-filter property to trigger FxFilter scanning
-	// 	path.style.setProperty("--fx-filter", `blur(var(--blur)) liquid-glass(10, 5) contrast(1.25)`);
-
-	// 	voronoiGroup.appendChild(path);
-	// }
+// Debounce function for resize events
+function debounce(func, wait) {
+	let timeout;
+	return function executedFunction(...args) {
+		const later = () => {
+			clearTimeout(timeout);
+			func(...args);
+		};
+		clearTimeout(timeout);
+		timeout = setTimeout(later, wait);
+	};
 }
 
 // Setup event handling for adding points during editing
@@ -990,6 +977,11 @@ function handleAddVoronoiPoint() {
 
 	const { voronoiContainer } = svgElements;
 
+	// Debounce the update function to prevent excessive re-rendering
+	const debouncedUpdate = debounce((points, length, width, height) => {
+		updateVoronoiPaths(length, points, width, height);
+	}, 16); // ~60fps
+
 	voronoiContainer.addEventListener("click", (e) => {
 		console.log("handleAddVoronoiPoint: shards-section click - add point if editing");
 		if (appState.get() === "pointsEditing") {
@@ -997,23 +989,23 @@ function handleAddVoronoiPoint() {
 				const rect = voronoiContainer.getBoundingClientRect();
 				const width = voronoiContainer.clientWidth;
 				const height = voronoiContainer.clientHeight;
-				
+
 				// Calculate click position relative to center
 				const clickX = e.clientX - rect.left - rect.width / 2;
 				const clickY = e.clientY - rect.top - rect.height / 2;
-				
+
 				// Convert pixel coordinates to normalized coordinates (-1 to 1)
 				const minDimension = Math.min(width, height);
 				const radius = minDimension / 2;
-				const maxCoordinate = radius * 0.8; // Same scaling as in rendering
-				
+				const maxCoordinate = radius * 0.8;
+
 				const normalizedX = Math.max(-1, Math.min(1, clickX / maxCoordinate));
 				const normalizedY = Math.max(-1, Math.min(1, clickY / maxCoordinate));
-				
-				console.log(`Adding normalized point: [${normalizedX}, ${normalizedY}] from pixel coords [${clickX}, ${clickY}]`);
-				
+
 				currentPointsState.push([normalizedX, normalizedY]);
-				updateVoronoiPaths(currentPointsState.get().points.length, currentPointsState.get().points, width, height);
+
+				// Use debounced update
+				debouncedUpdate(currentPointsState.get().points, currentPointsState.get().points.length, width, height);
 			});
 		}
 	});
@@ -1061,27 +1053,39 @@ function duplicateAndRotatePoints(points, duplicatesCount, center) {
 }
 function updateVoronoiWithShards(shards = []) {
 	console.log("updateVoronoiWithShards: applying shard data to voronoi cells");
+
+	// Use more efficient selector and batch operations
 	const voronoiCells = document.querySelectorAll(".voronoi-cell");
 
+	// Create a Map for faster shard lookup
+	const shardMap = new Map();
+	shards.forEach((shard) => {
+		if (!shardMap.has(shard.point)) {
+			shardMap.set(shard.point, []);
+		}
+		shardMap.get(shard.point).push(shard);
+	});
+
+	// Batch DOM updates
 	voronoiCells.forEach((cell) => {
 		// Clear existing shard data
 		delete cell.dataset.shardId;
 		delete cell.dataset.shardTint;
 		cell.classList.remove("glow");
-	});
 
-	// Apply shard data to corresponding cells
-	shards.forEach((shard) => {
-		const cells = document.querySelectorAll(`[data-original-index="${shard.point}"]`);
-		cells.forEach((cell) => {
+		// Apply shard data if exists
+		const originalIndex = cell.dataset.originalIndex;
+		const cellShards = shardMap.get(parseInt(originalIndex));
+
+		if (cellShards && cellShards.length > 0) {
+			const shard = cellShards[0]; // Use first shard if multiple
 			cell.dataset.shardId = shard.id;
 			cell.dataset.shardTint = shard.tint;
 
-			// Apply visual styling
 			if (shard.glow > 0) {
 				cell.classList.add("glow");
 			}
-		});
+		}
 	});
 }
 // ----------------------------------------------------------------------------------------------------

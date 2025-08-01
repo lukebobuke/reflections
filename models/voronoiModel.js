@@ -36,7 +36,7 @@ const getVoronoiPatternByUserId = async (userId) => {
 
 const updateVoronoiPattern = async (userId, updatedRotationCount, updatedPoints) => {
 	console.log("Updating voronoi pattern:", { userId, updatedRotationCount, updatedPoints });
-	
+
 	// Validate that points are in normalized format (-1 to 1)
 	const validatedPoints = updatedPoints.map(([x, y]) => {
 		const normalizedX = Math.max(-1, Math.min(1, parseFloat(x)));
@@ -45,7 +45,7 @@ const updateVoronoiPattern = async (userId, updatedRotationCount, updatedPoints)
 	});
 
 	console.log("Validated normalized points for update:", validatedPoints);
-	
+
 	const pointsJson = JSON.stringify(validatedPoints);
 	console.log("Stringified updated points:", pointsJson); // Debug log
 

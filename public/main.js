@@ -132,7 +132,7 @@ document.addEventListener("DOMContentLoaded", () => {
 			// Only shift header if there's meaningful content to scroll
 			const doc = document.documentElement;
 			const hasVerticalScroll = doc.scrollHeight > window.innerHeight;
-			
+
 			if (hasVerticalScroll && window.scrollY > 5) {
 				header.classList.add("shifted-up");
 			} else {
@@ -156,10 +156,10 @@ document.addEventListener("DOMContentLoaded", () => {
 			footer.classList.add("shifted-down");
 			return;
 		}
-		
+
 		const doc = document.documentElement;
 		const hasVerticalScroll = doc.scrollHeight > window.innerHeight;
-		
+
 		// Only apply scroll-based footer logic if there's actually scrollable content
 		if (hasVerticalScroll) {
 			const atBottom = Math.abs(window.innerHeight + window.pageYOffset - doc.scrollHeight) < 5;

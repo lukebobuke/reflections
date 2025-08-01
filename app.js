@@ -6,7 +6,7 @@ const app = express();
 require("dotenv").config();
 const path = require("node:path");
 const session = require("express-session");
-const compression = require('compression');
+const compression = require("compression");
 // const cors = require("cors");
 const expressLayouts = require("express-ejs-layouts");
 
@@ -62,9 +62,9 @@ app.use(
 		secret: process.env.SESSION_SECRET || "your-secret-key", // Use env variable
 		resave: false,
 		saveUninitialized: false,
-		cookie: { 
-			secure: process.env.NODE_ENV === 'production', // Enable secure in production
-			maxAge: 24 * 60 * 60 * 1000 // 24 hours
+		cookie: {
+			secure: process.env.NODE_ENV === "production", // Enable secure in production
+			maxAge: 24 * 60 * 60 * 1000, // 24 hours
 		},
 	})
 );
