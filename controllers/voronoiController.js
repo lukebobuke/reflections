@@ -8,14 +8,20 @@ function validateAndNormalizePoints(points) {
 		throw new Error("Points must be an array");
 	}
 
+	// Add length validation to prevent excessive memory usage
+	if (points.length > 256) {
+		throw new Error("Too many points - maximum 256 points allowed");
+	}
+
 	return points.map((point) => {
 		if (!Array.isArray(point) || point.length !== 2) {
 			throw new Error("Each point must be an array of two numbers [x, y]");
 		}
 
 		const [x, y] = point;
-		if (typeof x !== "number" || typeof y !== "number") {
-			throw new Error("Point coordinates must be numbers");
+		// Use Number.isFinite for better type checking
+		if (!Number.isFinite(x) || !Number.isFinite(y)) {
+			throw new Error("Point coordinates must be finite numbers");
 		}
 
 		// Clamp values to -1 to 1 range
@@ -34,9 +40,9 @@ const createVoronoiPattern = async (req, res) => {
 		console.log("Creating voronoi pattern for user:", userId);
 		console.log("Raw input:", { rotationCount, points });
 
-		// Validate rotation count
-		if (typeof rotationCount !== "number" || rotationCount < 0 || rotationCount > 12) {
-			return res.status(400).json({ error: "Rotation count must be a number between 0 and 12" });
+		// Validate rotation count with better type checking
+		if (!Number.isInteger(rotationCount) || rotationCount < 0 || rotationCount > 12) {
+			return res.status(400).json({ error: "Rotation count must be an integer between 0 and 12" });
 		}
 
 		// Validate and normalize points
@@ -76,9 +82,9 @@ const updateVoronoiPattern = async (req, res) => {
 		console.log("Updating voronoi pattern for user:", userId);
 		console.log("Raw input:", { rotationCount, points });
 
-		// Validate rotation count
-		if (typeof rotationCount !== "number" || rotationCount < 0 || rotationCount > 12) {
-			return res.status(400).json({ error: "Rotation count must be a number between 0 and 12" });
+		// Validate rotation count with better type checking
+		if (!Number.isInteger(rotationCount) || rotationCount < 0 || rotationCount > 12) {
+			return res.status(400).json({ error: "Rotation count must be an integer between 0 and 12" });
 		}
 
 		// Validate and normalize points
