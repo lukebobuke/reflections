@@ -6,8 +6,17 @@ const createVoronoiPattern = async (userId, rotationCount, points) => {
 	// Debug the values being inserted
 	console.log("Creating voronoi pattern with:", { userId, rotationCount, points });
 
+	// Validate that points are in normalized format (-1 to 1)
+	const validatedPoints = points.map(([x, y]) => {
+		const normalizedX = Math.max(-1, Math.min(1, parseFloat(x)));
+		const normalizedY = Math.max(-1, Math.min(1, parseFloat(y)));
+		return [normalizedX, normalizedY];
+	});
+
+	console.log("Validated normalized points:", validatedPoints);
+
 	// Ensure points is stringified for PostgreSQL
-	const pointsJson = JSON.stringify(points);
+	const pointsJson = JSON.stringify(validatedPoints);
 	console.log("Stringified points:", pointsJson); // Debug log
 
 	const result = await db.query("INSERT INTO voronoi_patterns (user_id, rotation_count, points) VALUES ($1, $2, $3) RETURNING *", [
@@ -27,7 +36,17 @@ const getVoronoiPatternByUserId = async (userId) => {
 
 const updateVoronoiPattern = async (userId, updatedRotationCount, updatedPoints) => {
 	console.log("Updating voronoi pattern:", { userId, updatedRotationCount, updatedPoints });
-	const pointsJson = JSON.stringify(updatedPoints);
+	
+	// Validate that points are in normalized format (-1 to 1)
+	const validatedPoints = updatedPoints.map(([x, y]) => {
+		const normalizedX = Math.max(-1, Math.min(1, parseFloat(x)));
+		const normalizedY = Math.max(-1, Math.min(1, parseFloat(y)));
+		return [normalizedX, normalizedY];
+	});
+
+	console.log("Validated normalized points for update:", validatedPoints);
+	
+	const pointsJson = JSON.stringify(validatedPoints);
 	console.log("Stringified updated points:", pointsJson); // Debug log
 
 	const result = await db.query("UPDATE voronoi_patterns SET rotation_count = $1, points = $2 WHERE user_id = $3 RETURNING *", [

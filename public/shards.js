@@ -735,38 +735,114 @@ function updateVoronoiPaths(originalLength, points, width, height) {
 		height = voronoiContainer.clientHeight;
 	}
 
+	// Use the smaller dimension to create a circular viewport
+	const minDimension = Math.min(width, height);
+	const radius = minDimension / 2;
+
+	console.log(`Container dimensions: ${width}x${height}, Using circular boundary with radius: ${radius}`);
+
+	// Convert normalized points (-1 to 1) to pixel coordinates
+	const pixelPoints = points.map(([normalizedX, normalizedY]) => {
+		const pixelX = normalizedX * (radius * 0.8); // Scale to 80% of radius to keep points well within circle
+		const pixelY = normalizedY * (radius * 0.8);
+		return [pixelX, pixelY];
+	});
+
+	console.log("Converted normalized points to pixel coordinates:", pixelPoints);
+
 	// Remove only the old Voronoi cell paths
 	const oldPaths = voronoiGroup.querySelectorAll("path");
 	oldPaths.forEach((p) => p.remove());
-	const newPoints = duplicateAndRotatePoints(currentPointsState.get().points, currentPointsState.get().rotationCount, center);
+	const newPoints = duplicateAndRotatePoints(pixelPoints, currentPointsState.get().rotationCount, center);
 
 	if (newPoints.length < 2) return;
 
+	// Use rectangular bounds for Voronoi generation, but clip with circle
+	const voronoiWidth = minDimension;
+	const voronoiHeight = minDimension;
 	const delaunay = Delaunay.from(newPoints);
-	const voronoi = delaunay.voronoi([-1 * (width / 2), -1 * (height / 2), width / 2, height / 2]);
+	const voronoi = delaunay.voronoi([-1 * (voronoiWidth / 2), -1 * (voronoiHeight / 2), voronoiWidth / 2, voronoiHeight / 2]);
 
 	// Set the transform on the group
 	voronoiGroup.setAttribute("transform", `translate(${width / 2}, ${height / 2})`);
 
-	// Helper function to check if a cell touches the boundary
-	function cellTouchesBoundary(cellPolygon, width, height) {
-		const bounds = {
-			left: -width / 2,
-			right: width / 2,
-			top: -height / 2,
-			bottom: height / 2,
-		};
-
+	// Helper function to check if a cell intersects with the circular boundary
+	function cellIntersectsCircle(cellPolygon, radius) {
 		const tolerance = 1; // Small tolerance for floating point comparison
 
 		return cellPolygon.some(([x, y]) => {
-			return (
-				Math.abs(x - bounds.left) < tolerance ||
-				Math.abs(x - bounds.right) < tolerance ||
-				Math.abs(y - bounds.top) < tolerance ||
-				Math.abs(y - bounds.bottom) < tolerance
-			);
+			const distanceFromCenter = Math.sqrt(x * x + y * y);
+			return distanceFromCenter >= radius - tolerance;
 		});
+	}
+
+	// Function to clip a polygon against a circle
+	function clipPolygonToCircle(polygon, radius) {
+		// Simple approach: filter out vertices outside the circle
+		// For more precise clipping, you'd need a more complex algorithm
+		const clippedVertices = [];
+
+		for (let i = 0; i < polygon.length; i++) {
+			const [x, y] = polygon[i];
+			const distanceFromCenter = Math.sqrt(x * x + y * y);
+
+			// If vertex is inside circle, keep it
+			if (distanceFromCenter <= radius) {
+				clippedVertices.push([x, y]);
+			} else {
+				// Find intersection points with circle
+				const prevIndex = (i - 1 + polygon.length) % polygon.length;
+				const nextIndex = (i + 1) % polygon.length;
+				const prev = polygon[prevIndex];
+				const next = polygon[nextIndex];
+
+				// Check intersection with previous edge
+				const prevDist = Math.sqrt(prev[0] * prev[0] + prev[1] * prev[1]);
+				if (prevDist <= radius) {
+					const intersection = findCircleLineIntersection(prev, [x, y], radius);
+					if (intersection) clippedVertices.push(intersection);
+				}
+
+				// Check intersection with next edge
+				const nextDist = Math.sqrt(next[0] * next[0] + next[1] * next[1]);
+				if (nextDist <= radius) {
+					const intersection = findCircleLineIntersection([x, y], next, radius);
+					if (intersection) clippedVertices.push(intersection);
+				}
+			}
+		}
+
+		return clippedVertices.length >= 3 ? clippedVertices : null;
+	}
+
+	// Helper function to find intersection between line segment and circle
+	function findCircleLineIntersection([x1, y1], [x2, y2], radius) {
+		const dx = x2 - x1;
+		const dy = y2 - y1;
+		const dr = Math.sqrt(dx * dx + dy * dy);
+		const D = x1 * y2 - x2 * y1;
+
+		const discriminant = radius * radius * (dr * dr) - D * D;
+		if (discriminant < 0) return null; // No intersection
+
+		const sqrtDiscriminant = Math.sqrt(discriminant);
+		const sign = dy < 0 ? -1 : 1;
+
+		// Two possible intersection points, choose the one closer to the segment
+		const x_1 = (D * dy + sign * dx * sqrtDiscriminant) / (dr * dr);
+		const y_1 = (-D * dx + Math.abs(dy) * sqrtDiscriminant) / (dr * dr);
+
+		const x_2 = (D * dy - sign * dx * sqrtDiscriminant) / (dr * dr);
+		const y_2 = (-D * dx - Math.abs(dy) * sqrtDiscriminant) / (dr * dr);
+
+		// Choose the intersection point that's within the line segment
+		const t1 = dx !== 0 ? (x_1 - x1) / dx : (y_1 - y1) / dy;
+		const t2 = dx !== 0 ? (x_2 - x1) / dx : (y_2 - y1) / dy;
+
+		if (t1 >= 0 && t1 <= 1) return [x_1, y_1];
+		if (t2 >= 0 && t2 <= 1) return [x_2, y_2];
+
+		return null;
 	}
 
 	// Proper polygon offset function - moves each edge perpendicular to itself
@@ -832,8 +908,8 @@ function updateVoronoiPaths(originalLength, points, width, height) {
 		const cellPolygon = voronoi.cellPolygon(i);
 		if (!cellPolygon) continue;
 
-		// Skip cells that touch the boundary (edge cells)
-		if (cellTouchesBoundary(cellPolygon, width, height)) {
+		// Skip cells that extend beyond the circular boundary
+		if (cellIntersectsCircle(cellPolygon, radius)) {
 			continue;
 		}
 
@@ -921,9 +997,22 @@ function handleAddVoronoiPoint() {
 				const rect = voronoiContainer.getBoundingClientRect();
 				const width = voronoiContainer.clientWidth;
 				const height = voronoiContainer.clientHeight;
-				const x = e.clientX - rect.left - rect.width / 2;
-				const y = e.clientY - rect.top - rect.height / 2;
-				currentPointsState.push([x, y]);
+				
+				// Calculate click position relative to center
+				const clickX = e.clientX - rect.left - rect.width / 2;
+				const clickY = e.clientY - rect.top - rect.height / 2;
+				
+				// Convert pixel coordinates to normalized coordinates (-1 to 1)
+				const minDimension = Math.min(width, height);
+				const radius = minDimension / 2;
+				const maxCoordinate = radius * 0.8; // Same scaling as in rendering
+				
+				const normalizedX = Math.max(-1, Math.min(1, clickX / maxCoordinate));
+				const normalizedY = Math.max(-1, Math.min(1, clickY / maxCoordinate));
+				
+				console.log(`Adding normalized point: [${normalizedX}, ${normalizedY}] from pixel coords [${clickX}, ${clickY}]`);
+				
+				currentPointsState.push([normalizedX, normalizedY]);
 				updateVoronoiPaths(currentPointsState.get().points.length, currentPointsState.get().points, width, height);
 			});
 		}
@@ -935,12 +1024,12 @@ function handleAddVoronoiPoint() {
 function duplicateAndRotatePoints(points, duplicatesCount, center) {
 	console.log("duplicateAndRotatePoints: creating kaleidoscopic pattern");
 	console.log("Points:", points.length, "Duplicates count:", duplicatesCount);
-	
+
 	if (duplicatesCount === 0) {
 		console.log("No rotation duplicates, returning original points");
 		return [...points];
 	}
-	
+
 	const angleStep = 360 / (duplicatesCount + 1); // degrees
 	const radians = (angle) => (angle * Math.PI) / 180;
 
