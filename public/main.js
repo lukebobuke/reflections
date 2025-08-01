@@ -129,7 +129,11 @@ document.addEventListener("DOMContentLoaded", () => {
 	//----------------------------------------------------------------------------------------------------
 	window.addEventListener("scroll", () => {
 		if (header) {
-			if (window.scrollY > 0) {
+			// Only shift header if there's meaningful content to scroll
+			const doc = document.documentElement;
+			const hasVerticalScroll = doc.scrollHeight > window.innerHeight;
+			
+			if (hasVerticalScroll && window.scrollY > 5) {
 				header.classList.add("shifted-up");
 			} else {
 				header.classList.remove("shifted-up");
@@ -152,12 +156,21 @@ document.addEventListener("DOMContentLoaded", () => {
 			footer.classList.add("shifted-down");
 			return;
 		}
+		
 		const doc = document.documentElement;
-		const atBottom = Math.abs(window.innerHeight + window.pageYOffset - doc.scrollHeight - 0.1) < 2;
-		if (atBottom && !navPopup.classList.contains("active")) {
-			footer.classList.remove("shifted-down");
+		const hasVerticalScroll = doc.scrollHeight > window.innerHeight;
+		
+		// Only apply scroll-based footer logic if there's actually scrollable content
+		if (hasVerticalScroll) {
+			const atBottom = Math.abs(window.innerHeight + window.pageYOffset - doc.scrollHeight) < 5;
+			if (atBottom) {
+				footer.classList.remove("shifted-down");
+			} else {
+				footer.classList.add("shifted-down");
+			}
 		} else {
-			footer.classList.add("shifted-down");
+			// No scroll needed, keep footer visible
+			footer.classList.remove("shifted-down");
 		}
 	}
 	// #endregion
