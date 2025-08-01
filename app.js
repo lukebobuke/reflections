@@ -6,6 +6,7 @@ const app = express();
 require("dotenv").config();
 const path = require("node:path");
 const session = require("express-session");
+const compression = require('compression');
 // const cors = require("cors");
 const expressLayouts = require("express-ejs-layouts");
 
@@ -43,18 +44,10 @@ app.use(express.static(__dirname + "/public"));
 // #region Middleware
 // ----------------------------------------------------------------------------------------------------
 //middleware
-// app.use(cors());
-// app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.use(
-	express.static(path.join(__dirname, "public"), {
-		setHeaders: (res, path) => {
-			res.set("Access-Control-Allow-Origin", "*");
-		},
-	})
-);
+app.use(compression());
 // #endregion
 // ----------------------------------------------------------------------------------------------------
 
@@ -66,10 +59,13 @@ app.use(logger);
 app.use(errorHandler);
 app.use(
 	session({
-		secret: "your-secret-key", // use a secure secret in production
+		secret: process.env.SESSION_SECRET || "your-secret-key", // Use env variable
 		resave: false,
 		saveUninitialized: false,
-		cookie: { secure: false }, // set to true if using HTTPS
+		cookie: { 
+			secure: process.env.NODE_ENV === 'production', // Enable secure in production
+			maxAge: 24 * 60 * 60 * 1000 // 24 hours
+		},
 	})
 );
 app.use(populateUser);
