@@ -20,7 +20,7 @@
 :root {
 	/* Colors */
 	--glass-rgb: rgba(200, 200, 200, 0.1);
-	--glass-rgb-dark: rgba(0, 0, 0, 0.25);
+	--glass-rgb-dark: rgba(0, 0, 0, 0.35);
 	--highlight-rgb: 200, 200, 200, 0.3;
 	--border-rgb: 255, 255, 255, 1;
 	--shadow-rgb: 0, 0, 0, 0.35;
@@ -43,12 +43,12 @@
 	/* Dimensions */
 	--radius: 16px;
 	--padding: 2rem;
-	--padding-small: 1.5rem;
+	--padding-small: 1rem;
 	--nav-popup-height: 100vh;
 	--nav-popup-width: 16rem;
 	--nav-popup-yoffset: var(--header-height);
 	--header-height: 8rem;
-	--footer-height: 6rem;
+	--footer-height: 4rem;
 	/* Animations */
 	--transition-fast: 0.6s;
 	--transition-slow: 1.2s;
@@ -123,7 +123,7 @@ body {
 	width: 100vw;
 	height: 100vh;
 	z-index: -10;
-	background: url("/background_stainedglass_2.jpg") center center / cover no-repeat;
+	background: url("/background_stainedglass_1.jpg") center center / cover no-repeat;
 	/* background: rgb(55, 55, 55); */
 }
 #bg-video {
@@ -189,7 +189,8 @@ body {
 main.liquid-glass:not(#shards-section),
 #shard-crud-container,
 button.liquid-glass,
-.button-link.liquid-glass {
+.button-link.liquid-glass,
+footer.liquid-glass {
 	background: var(--glass-rgb-dark);
 }
 
@@ -257,8 +258,6 @@ i {
 	padding: var(--padding);
 	pointer-events: none;
 	transform: translateY(calc(-1 * (var(--header-height) + var(--nav-popup-height) + var(--padding) + var(--glass-thickness))));
-	transition: transform var(--transition-slow) cubic-bezier(var(--big-bezier));
-	transition-delay: var(--transition-fast);
 	gap: var(--glass-thickness);
 }
 
@@ -267,9 +266,21 @@ main {
 	flex-direction: column;
 	gap: var(--padding);
 	padding: var(--padding);
-	animation: main-slide-in var(--transition-fast) cubic-bezier(var(--big-bezier)) 0s 1;
 	position: relative;
+	flex: 1; /* Add this to make main fill available space */
 }
+
+/* Specific styling for shards page main */
+#shards-section {
+	display: flex;
+	flex-direction: column;
+	gap: var(--padding);
+	height: calc(100vh - var(--header-height) - var(--footer-height) - (4 * var(--padding)));
+	min-height: calc(100vh - var(--header-height) - var(--footer-height) - (4 * var(--padding)));
+	max-height: calc(100vh - var(--header-height) - var(--footer-height) - (4 * var(--padding)));
+	overflow: hidden; /* Prevent content from spilling out */
+}
+
 #edit-points-actions {
 	display: flex;
 	flex-direction: column;
@@ -410,22 +421,6 @@ ol {
 /* ----------------------------------------------------------------------------------------------------*/
 /* #region MARK: Shards */
 /* ----------------------------------------------------------------------------------------------------*/
-#shards-section {
-	display: flex;
-	flex-direction: column;
-	gap: var(--padding);
-	height: 50rem;
-}
-#shards-list-container {
-	margin-bottom: 2rem;
-	display: flex;
-	flex-direction: column;
-	gap: var(--glass-thickness);
-}
-.shard-list {
-	display: flex;
-	flex-direction: column;
-}
 .shard-info {
 	display: flex;
 	flex-direction: column;
@@ -613,6 +608,7 @@ ol {
 /* ----------------------------------------------------------------------------------------------------*/
 main {
 	transition: transform var(--transition-slow) cubic-bezier(var(--big-bezier));
+	animation: main-slide-in var(--transition-fast) cubic-bezier(var(--big-bezier)) 0s 1;
 }
 
 main.slide-right {
@@ -640,7 +636,10 @@ footer {
 #hide-shard-crud {
 	transition: background var(--transition-fast);
 }
-
+.nav-popup {
+	transition: transform var(--transition-slow) cubic-bezier(var(--big-bezier));
+	transition-delay: var(--transition-fast);
+}
 .nav-popup.active {
 	pointer-events: auto;
 	transform: translateY(0);
