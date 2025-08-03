@@ -63,7 +63,7 @@
 	--hover-distance-pressed: Calc(var(--hover-distance-unpressed) - var(--pressed-offset));
 	--hover-distance-popped: Calc(2 * var(--hover-distance));
 	/* Other */
-	--blur: 8px;
+	--blur: 6px;
 }
 /*#endregion*/
 

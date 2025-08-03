@@ -16,8 +16,14 @@
 		<div id="bgImage"></div>
 		<%- include('partials/navPopup', { currentPage }) %> <%- include('partials/header', { user, currentPage }) %> <%- body %> <%-
 		include('partials/footer') %>
+		
+		<!-- Only load polygon-offset on pages that need it -->
+		<% if (currentPage === 'shards') { %>
 		<script src="https://cdn.jsdelivr.net/npm/polygon-offset@1.0.0/index.min.js"></script>
-		<script src="FxFilter.js"></script>
-		<script type="module" src="main.js"></script>
+		<% } %>
+		
+		<!-- Use absolute path for FxFilter to avoid relative path issues -->
+		<script src="/FxFilter.js" onerror="console.log('FxFilter.js not found - skipping FX effects')"></script>
+		<script type="module" src="/main.js"></script>
 	</body>
 </html>

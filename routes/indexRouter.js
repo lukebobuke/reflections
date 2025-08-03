@@ -20,6 +20,7 @@ indexRouter.get("/contact", (req, res) => {
 // User home page route - renders the user home page after login/signup
 indexRouter.get("/dashboard", (req, res) => {
 	if (!req.user) {
+		console.log("User not authenticated, redirecting to login.");
 		return res.redirect("/login");
 	}
 	res.render("dashboardPage", { currentPage: "dashboard", user: req.user });
