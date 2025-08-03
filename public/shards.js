@@ -6,8 +6,11 @@ import { Delaunay } from "https://cdn.jsdelivr.net/npm/d3-delaunay@6/+esm";
 // ----------------------------------------------------------------------------------------------------
 const createAppState = () => {
 	let state = null;
+	let shardFormTimeout = null; // Add timeout tracking
 	const shardCrudContainer = document.querySelector("#shard-crud-container");
 	const editPointsActions = document.querySelector("#edit-points-actions");
+	const shardInfoPopup = document.querySelector("#shard-info-popup");
+
 	return {
 		get: function () {
 			return state;
@@ -15,7 +18,14 @@ const createAppState = () => {
 		set: {
 			viewShards: async () => {
 				if (!shardCrudContainer) return;
-				shardCrudContainer.classList.add("hidden");
+
+				// Clear any pending form show timeout
+				if (shardFormTimeout) {
+					clearTimeout(shardFormTimeout);
+					shardFormTimeout = null;
+				}
+
+				shardCrudContainer.classList.remove("active");
 				state = "viewShards";
 				console.log("App state set to viewShards");
 				editPointsActions.classList.remove("active");
@@ -55,20 +65,41 @@ const createAppState = () => {
 				randomSpark();
 				updateShardFormUI();
 				loadShardFormInfo();
-				shardCrudContainer.classList.remove("hidden");
+				shardInfoPopup.classList.remove("active");
+
+				// Add timeout before showing the form
+				shardFormTimeout = setTimeout(() => {
+					shardCrudContainer.classList.add("active");
+					shardFormTimeout = null;
+				}, 600);
+
 				console.log("App state set to shardCreation");
 			},
 			shardEditing: () => {
 				state = "shardEditing";
 				updateShardFormUI();
 				loadShardFormInfo();
-				shardCrudContainer.classList.remove("hidden");
+				shardInfoPopup.classList.remove("active");
+
+				// Add timeout before showing the form
+				shardFormTimeout = setTimeout(() => {
+					shardCrudContainer.classList.add("active");
+					shardFormTimeout = null;
+				}, 600);
+
 				console.log("App state set to shardEditing");
 			},
 			pointsEditing: () => {
 				state = "pointsEditing";
 				editPointsActions.classList.add("active");
-				shardCrudContainer.classList.add("hidden");
+
+				// Clear any pending form show timeout
+				if (shardFormTimeout) {
+					clearTimeout(shardFormTimeout);
+					shardFormTimeout = null;
+				}
+
+				shardCrudContainer.classList.remove("active");
 				console.log("App state set to pointsEditing");
 			},
 		},
@@ -479,24 +510,88 @@ function handleShardHover(shardContainer, shardCrudContainer) {
 		console.log("Shard container or shard CRUD container not found.");
 		return;
 	}
+
+	let currentHoveredIndex = null;
+	let transitionTimeout = null;
+
 	shardContainer.addEventListener("mouseover", function (e) {
 		if (appState.get() === "viewShards") {
 			const voronoiCell = e.target.closest(".voronoi-cell");
-			if (voronoiCell && shardContainer.contains(voronoiCell) && appState.get() !== "pointsEditing") {
-				// Find all corresponding elements with the same original index
+			const shardInfoPopup = document.querySelector("#shard-info-popup");
+			const shardInfoSpark = document.querySelector("#shard-info-spark");
+			const shardInfoText = document.querySelector("#shard-info-text");
+
+			if (!voronoiCell || !shardInfoPopup) return;
+			if (shardContainer.contains(voronoiCell) && appState.get() !== "pointsEditing") {
 				const originalIndex = voronoiCell.dataset.originalIndex;
+
+				// If hovering over the same shard, don't restart animation
+				if (currentHoveredIndex === originalIndex) return;
+
+				// Clear any pending transition
+				if (transitionTimeout) {
+					clearTimeout(transitionTimeout);
+					transitionTimeout = null;
+				}
+
+				// Find all corresponding elements with the same original index
 				const allVoronoiCells = shardContainer.querySelectorAll(`[data-original-index="${originalIndex}"]`);
 
 				allVoronoiCells.forEach((cell) => {
 					cell.classList.add("popped");
 					cell.classList.add("hovered");
 				});
+
+				// Find shard data for this cell
+				const shardData = currentShards.find((shard) => shard.point == originalIndex);
+
+				// Update content immediately
+
+				// If popup is already visible, hide it first then show with delay
+				if (shardInfoPopup.classList.contains("active")) {
+					shardInfoPopup.classList.remove("active");
+
+					// Short delay to allow hide animation, then show immediately
+					transitionTimeout = setTimeout(() => {
+						shardInfoPopup.classList.add("active");
+						transitionTimeout = null;
+					}, 1); // Very short delay
+				} else {
+					// Popup not visible, show with slight delay for smooth entry
+					transitionTimeout = setTimeout(() => {
+						shardInfoPopup.classList.add("active");
+						if (shardData) {
+							shardInfoSpark.textContent = shardData.spark || "";
+							shardInfoText.textContent = shardData.text || "";
+						} else {
+							shardInfoSpark.textContent = "Empty shard";
+							shardInfoText.textContent = "Click to create a memory";
+						}
+						transitionTimeout = null;
+					}, 600);
+				}
+
+				currentHoveredIndex = originalIndex;
 			}
 		}
 	});
+
 	shardContainer.addEventListener("mouseout", function (e) {
 		const voronoiCell = e.target.closest(".voronoi-cell");
-		if (voronoiCell && shardContainer.contains(voronoiCell)) {
+		const shardInfoPopup = document.querySelector("#shard-info-popup");
+
+		if (!voronoiCell || !shardInfoPopup) return;
+
+		// Check if we're actually leaving the shard area
+		const relatedTarget = e.relatedTarget;
+		if (relatedTarget && shardContainer.contains(relatedTarget)) {
+			const relatedCell = relatedTarget.closest(".voronoi-cell");
+			if (relatedCell && relatedCell.dataset.originalIndex === voronoiCell.dataset.originalIndex) {
+				return; // Still hovering over same shard
+			}
+		}
+
+		if (shardContainer.contains(voronoiCell)) {
 			// Find all corresponding elements with the same original index
 			const originalIndex = voronoiCell.dataset.originalIndex;
 			const allVoronoiCells = shardContainer.querySelectorAll(`[data-original-index="${originalIndex}"]`);
@@ -505,6 +600,16 @@ function handleShardHover(shardContainer, shardCrudContainer) {
 				cell.classList.remove("popped");
 				cell.classList.remove("hovered");
 			});
+
+			// Clear any pending transition
+			if (transitionTimeout) {
+				clearTimeout(transitionTimeout);
+				transitionTimeout = null;
+			}
+
+			// Hide popup immediately - no delay on exit
+			shardInfoPopup.classList.remove("active");
+			currentHoveredIndex = null;
 		}
 	});
 }

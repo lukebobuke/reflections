@@ -288,9 +288,21 @@ main {
 	gap: var(--padding-small);
 	padding: var(--padding);
 	width: 8rem;
-	position: absolute;
-	top: Calc(var(--header-height)+ var(--padding) + var(--padding));
+	position: fixed;
+	top: Calc(var(--header-height) + var(--padding));
 	left: var(--padding);
+}
+#shard-info-popup {
+	display: flex;
+	flex-direction: column;
+	gap: var(--padding-small);
+	padding: var(--padding);
+	width: 16rem;
+	height: 24rem;
+	position: fixed;
+	top: Calc(var(--header-height) + var(--padding));
+	right: var(--padding);
+	--glass-rgb: var(--glass-rgb-dark);
 }
 footer {
 	position: fixed !important;
@@ -422,7 +434,7 @@ ol {
 /* ----------------------------------------------------------------------------------------------------*/
 /* #region MARK: Shards */
 /* ----------------------------------------------------------------------------------------------------*/
-.shard-info {
+#shard-info-popup {
 	display: flex;
 	flex-direction: column;
 	gap: var(--glass-thickness);
@@ -627,9 +639,23 @@ main.slide-left {
 	transform: translateX(Calc(-8rem - var(--padding)));
 }
 
+#shard-info-popup {
+	transition: transform var(--transition-fast) cubic-bezier(var(--big-bezier));
+}
+
+#shard-info-popup:not(.active) {
+	transform: translateX(Calc(16rem + var(--padding)));
+}
+
 header,
 footer {
 	transition: transform 0.3s cubic-bezier(var(--small-bezier));
+}
+#shard-crud-container {
+	transition: left var(--transition-fast) cubic-bezier(var(--big-bezier));
+}
+#shard-crud-container:not(.active) {
+	left: 100%;
 }
 
 .menu-button,
@@ -706,7 +732,8 @@ button,
 .nav-popup {
 	z-index: 4;
 }
-#edit-points-actions {
+#edit-points-actions,
+#shard-info-popup {
 	z-index: 3;
 }
 header.shifted-up {
