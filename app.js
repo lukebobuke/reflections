@@ -18,6 +18,7 @@ const loginRouter = require("./routes/loginRouter");
 const populateUser = require("./middleware/populateUser");
 const shardRouter = require("./routes/shardRouter");
 const voronoiRouter = require("./routes/voronoiRouter");
+const sculptureRouter = require("./routes/sculptureRouter");
 
 // ----------------------------------------------------------------------------------------------------
 // #region View Engine
@@ -83,6 +84,7 @@ app.use("/login", loginRouter);
 app.use("/api/points", voronoiRouter);
 app.use("/shards", shardRouter);
 app.use("/", indexRouter);
+app.use("/api/sculptures", sculptureRouter);
 // #endregion
 // ----------------------------------------------------------------------------------------------------
 
