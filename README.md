@@ -1,6 +1,6 @@
 <!-- @format -->
 
-# backend_practice
+# reflections
 
 ## Project Architecture
 
@@ -25,7 +25,7 @@ This app follows a modular, organized structure for maintainability and scalabil
 ### Example File Structure
 
 ```
-backend_practice/
+reflections/
 ├── app.js
 ├── package.json
 ├── /routes

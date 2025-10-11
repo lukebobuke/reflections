@@ -1157,7 +1157,7 @@ function duplicateAndRotatePoints(points, duplicatesCount, center) {
 	return result;
 }
 function updateVoronoiWithShards(shards = []) {
-	console.log("updateVoronoiWithShards: applying shard data to voronoi cells");
+	console.log("updateVoronoiWithShards: applying shard data to voronoi cells.  Shards: ", shards);
 
 	// Use more efficient selector and batch operations
 	const voronoiCells = document.querySelectorAll(".voronoi-cell");
