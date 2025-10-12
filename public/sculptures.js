@@ -8,6 +8,7 @@ async function requestCreateSculpture(prompt, artStyle = "realistic") {
 	const response = await fetch("/api/sculptures", {
 		method: "POST",
 		headers: { "Content-Type": "application/json" },
+		credentials: "include", // <-- Add this line
 		body: JSON.stringify({ prompt, artStyle }),
 	});
 
@@ -102,7 +103,7 @@ async function requestDeleteSculpture(sculptureId) {
 // #region UI Event Handlers
 // ----------------------------------------------------------------------------------------------------
 function handleSubmitButtonClick() {
-	const submitButton = document.querySelector("#submit-shard-btn");
+	const submitButton = document.querySelector("#submit-shards-btn");
 	if (!submitButton) {
 		console.error("Submit button not found");
 		return;
@@ -113,74 +114,45 @@ function handleSubmitButtonClick() {
 		e.preventDefault();
 
 		try {
-			// Disable button and show loading state
 			submitButton.disabled = true;
 			submitButton.textContent = "Creating...";
 
-			// Get art style from form if available
-			const artStyleSelect = document.querySelector("#sculpture-art-style");
-			const artStyle = artStyleSelect ? artStyleSelect.value : "realistic";
-
 			// Call requestCreateSculpture instead of createSculptureFromShards
-			const sculpture = await requestCreateSculpture("assembled prompt from shards", artStyle);
+			const sculpture = await requestCreateSculpture();
 			// Show success message
 			alert("Sculpture creation started! Check your sculptures page for updates.");
 		} catch (error) {
 			console.error("Error creating sculpture:", error);
 			alert(`Failed to create sculpture: ${error.message}`);
 		} finally {
-			// Re-enable button
 			submitButton.disabled = false;
 			submitButton.textContent = "Create Sculpture";
 		}
 	});
 }
 
-function handleSculptureStatusUpdate() {
-	const updateButtons = document.querySelectorAll(".update-sculpture-status-btn");
-
-	updateButtons.forEach((button) => {
-		button.addEventListener("click", async (e) => {
-			console.log("handleSculptureStatusUpdate: update status button clicked");
-			e.preventDefault();
-
-			const sculptureId = button.dataset.sculptureId;
-			if (!sculptureId) {
-				console.error("No sculpture ID found");
-				return;
+// ----------------------------------------------------------------------------------------------------
+// #region Automatic Status Polling
+// ----------------------------------------------------------------------------------------------------
+function startSculptureStatusPolling(intervalMs = 5000) {
+	// Poll every intervalMs milliseconds
+	setInterval(async () => {
+		try {
+			const sculptures = await requestReadSculptures();
+			for (const sculpture of sculptures) {
+				// Only poll status for sculptures that are not completed
+				if (sculpture.status !== "completed") {
+					await requestUpdateSculptureStatus(sculpture.id);
+				}
 			}
-
-			try {
-				button.disabled = true;
-				button.textContent = "Updating...";
-
-				const updatedSculpture = await updateSculptureStatusRequest(sculptureId);
-				console.log("Sculpture status updated:", updatedSculpture);
-
-				// Refresh the page or update UI as needed
-				location.reload();
-			} catch (error) {
-				console.error("Error updating sculpture status:", error);
-				alert(`Failed to update sculpture: ${error.message}`);
-			} finally {
-				button.disabled = false;
-				button.textContent = "Update Status";
-			}
-		});
-	});
+			// Optionally, refresh the UI here if needed
+		} catch (error) {
+			console.error("Error polling sculpture status:", error);
+		}
+	}, intervalMs);
 }
 // ----------------------------------------------------------------------------------------------------
 // #endregion
 // ----------------------------------------------------------------------------------------------------
 
-export {
-	requestCreateSculpture,
-	requestCreateRefinedSculpture,
-	requestGetSculptureStatus,
-	requestFetchSculptures,
-	requestRefineSculpture,
-	requestDeleteSculpture,
-	requestUpdateSculptureStatus,
-	handleCreateSculptureButtonClick,
-	handleSculptureStatusUpdate,
-};
+export { handleSubmitButtonClick };

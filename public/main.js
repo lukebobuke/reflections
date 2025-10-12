@@ -17,6 +17,8 @@ import {
 	handleDecreaseRotationClick,
 } from "./shards.js";
 
+import { handleSubmitButtonClick } from "./sculptures.js";
+
 // Runs when the DOM is fully loaded
 document.addEventListener("DOMContentLoaded", () => {
 	console.log("Frontend JS loaded.");
@@ -40,6 +42,8 @@ document.addEventListener("DOMContentLoaded", () => {
 	handleShardClick();
 	handleIncreaseRotationClick();
 	handleDecreaseRotationClick();
+
+	handleSubmitButtonClick();
 	//----------------------------------------------------------------------------------------------------
 	// #region Menu/Nav Setup
 	// Get references to menu button, nav popup, and main content

@@ -8,13 +8,13 @@ const sculptureController = require("../controllers/sculptureController");
 sculptureRouter.post("/", sculptureController.createSculpture);
 
 // GET /api/sculptures - Get all sculptures
-sculptureRouter.get("/", sculptureController.getSculptures);
+sculptureRouter.get("/", sculptureController.readSculptures);
 
 // GET /api/sculptures/status/:taskId - Get sculpture status
-sculptureRouter.get("/status/:taskId", sculptureController.getSculptureStatus);
+sculptureRouter.get("/status/:taskId", sculptureController.readSculptureStatus);
 
 // POST /api/sculptures/:sculptureId/refine - Refine sculpture
-sculptureRouter.post("/:sculptureId/refine", sculptureController.refineSculpture);
+sculptureRouter.post("/:sculptureId/refine", sculptureController.createRefinedSculpture);
 
 // DELETE /api/sculptures/:sculptureId - Delete sculpture
 sculptureRouter.delete("/:sculptureId", sculptureController.deleteSculpture);

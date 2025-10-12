@@ -90,7 +90,7 @@ const getShardsAPI = async (req, res) => {
 			return res.status(401).json({ error: "Unauthorized" });
 		}
 		const shards = await shardModel.getShardsByUserId(user.id);
-		res.json( shards);
+		res.json(shards);
 	} catch (error) {
 		console.error("Error fetching shards:", error);
 		res.status(500).json({ error: "Internal Server Error" });

@@ -11,7 +11,6 @@ CREATE TABLE sculptures (
   id SERIAL PRIMARY KEY,
   user_id INTEGER REFERENCES users(id),
   prompt TEXT NOT NULL,
-  art_style VARCHAR(255) DEFAULT 'realistic',
   meshy_task_id VARCHAR(255),
   refine_task_id VARCHAR(255),
   model_url TEXT,

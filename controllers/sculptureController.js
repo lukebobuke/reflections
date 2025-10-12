@@ -9,10 +9,16 @@ const openai = new OpenAI({
 });
 
 // ----------------------------------------------------------------------------------------------------
-// #region Create Prompt
+// #region Generate Prompt
 // ----------------------------------------------------------------------------------------------------
-async function generatePersonalityAnalysis(userId) {
+async function helperGenerateSculpturePrompt(userId) {
+	console.log("helperGenerateSculpturePrompt: Fetching shards for user", userId);
 	const shards = await shardModel.getShardsByUserId(userId);
+	if (!shards || shards.length === 0) {
+		console.log("helperGenerateSculpturePrompt: No shards found for user", userId);
+		return null;
+	}
+	console.log("helperGenerateSculpturePrompt: Assembling shards into prompt");
 	let assembledShards = shards
 		.filter((shard) => shard.text && shard.text.trim() && shard.spark && shard.spark.trim())
 		.map((shard) => `Q: ${shard.spark.trim()}\nA: ${shard.text.trim()}`)
@@ -22,60 +28,48 @@ async function generatePersonalityAnalysis(userId) {
 
 	let generatedText = "";
 	try {
+		console.log("helperGenerateSculpturePrompt: Sending prompt to OpenAI");
 		const response = await openai.chat.completions.create({
 			model: "gpt-5-nano",
 			messages: [{ role: "user", content: personalityPrompt }],
 		});
 		generatedText = response.choices[0].message.content;
+		console.log("helperGenerateSculpturePrompt: Received personality analysis from OpenAI");
 	} catch (apiError) {
 		console.error("OpenAI API error:", apiError);
 		generatedText = "Error generating personality analysis.";
 	}
-	return generatedText;
+	console.log("helperGenerateSculpturePrompt: Final sculpture prompt assembled");
+	return `Create a realistic-looking abstract glass sculpture based on the following personality analysis:\n${generatedText}`;
 }
-
-async function createPersonalityAnalysis(req, res) {
-	try {
-		const userId = req.user?.id;
-		if (!userId) {
-			return res.status(401).json({ error: "Authentication required" });
-		}
-		const analysis = await generatePersonalityAnalysis(userId);
-		res.json({ personality_analysis: analysis });
-	} catch (error) {
-		console.error("Error in createPersonalityAnalysis:", error);
-		res.status(500).json({ error: "Internal server error" });
-	}
-}
-
 // ----------------------------------------------------------------------------------------------------
 // #endregion
 // ----------------------------------------------------------------------------------------------------
 
 // ----------------------------------------------------------------------------------------------------
-// #region Create Sculpture
+// #region Create
 // ----------------------------------------------------------------------------------------------------
 const createSculpture = async (req, res) => {
 	try {
-		const { prompt, artStyle = "realistic" } = req.body;
+		console.log("createSculpture: Starting sculpture creation");
 		const userId = req.user?.id;
+		const sculpturePrompt = await helperGenerateSculpturePrompt(userId);
 
 		if (!userId) {
+			console.log("createSculpture: No userId found, authentication required");
 			return res.status(401).json({ error: "Authentication required" });
 		}
 
-		if (!prompt) {
+		if (!sculpturePrompt) {
+			console.log("createSculpture: No prompt generated, cannot proceed");
 			return res.status(400).json({ error: "Prompt is required" });
 		}
 
-		// Optionally generate personality analysis here
-		const personalityAnalysis = await generatePersonalityAnalysis(userId);
-
-		// Create Meshy preview directly here
+		console.log("createSculpture: Sending preview request to Meshy");
 		const payload = {
 			mode: "preview",
-			prompt: prompt,
-			art_style: artStyle,
+			prompt: sculpturePrompt,
+			art_style: "realistic",
 			should_remesh: true,
 		};
 
@@ -89,22 +83,88 @@ const createSculpture = async (req, res) => {
 		});
 
 		if (!response.ok) {
-			throw new Error(`HTTP error! status: ${response.status}`);
+			const errorText = await response.text();
+			console.error("createSculpture: Meshy API error", response.status, errorText);
+			return res.status(response.status).json({
+				error: `Meshy API error: ${response.status}`,
+				message: errorText,
+			});
 		}
 
 		const previewResult = await response.json();
+		console.log("createSculpture: Meshy preview task started, taskId:", previewResult.result);
+
+		// Poll for preview task completion
+		let previewStatus;
+		let pollAttempts = 0;
+		const maxPollAttempts = 30; // e.g. poll for up to 30 * 2s = 60s
+		const pollIntervalMs = 30000;
+
+		console.log("createSculpture: Polling Meshy preview task status...");
+		while (pollAttempts < maxPollAttempts) {
+			previewStatus = await getMeshyTaskStatus(previewResult.result);
+			console.log(`createSculpture: Preview status poll #${pollAttempts + 1}:`, previewStatus.status);
+			if (previewStatus.status === "SUCCEEDED") break;
+			if (previewStatus.status === "FAILED") {
+				console.error("createSculpture: Meshy preview task failed");
+				break;
+			}
+			await new Promise((resolve) => setTimeout(resolve, pollIntervalMs));
+			pollAttempts++;
+		}
+
+		let refineTaskId = null;
+		let refineStatus = null;
+		if (previewStatus && previewStatus.status === "SUCCEEDED") {
+			try {
+				console.log("createSculpture: Starting refinement with Meshy");
+				const refineResult = await refineMeshyModel(previewResult.result);
+				refineTaskId = refineResult.result;
+				console.log("createSculpture: Meshy refine task started, refineTaskId:", refineTaskId);
+
+				// Add a short delay before polling
+				await new Promise((resolve) => setTimeout(resolve, 5000)); // 5 seconds
+
+				// Poll for refine task completion
+				let refinePollAttempts = 0;
+				const maxRefinePollAttempts = 30;
+				const refinePollIntervalMs = 30000;
+				console.log("createSculpture: Polling Meshy refine task status...");
+				while (refinePollAttempts < maxRefinePollAttempts) {
+					try {
+						refineStatus = await getMeshyTaskStatus(refineTaskId);
+						console.log(`createSculpture: Refine status poll #${refinePollAttempts + 1}:`, refineStatus.status);
+						if (refineStatus.status === "SUCCEEDED") break;
+						if (refineStatus.status === "FAILED") {
+							console.error("createSculpture: Meshy refine task failed");
+							break;
+						}
+					} catch (pollError) {
+						console.error("createSculpture: Error polling refine task status (likely not ready yet):", pollError.message);
+					}
+					await new Promise((resolve) => setTimeout(resolve, refinePollIntervalMs));
+					refinePollAttempts++;
+				}
+			} catch (refineError) {
+				console.error("createSculpture: Error starting refinement:", refineError);
+			}
+		} else {
+			console.error("createSculpture: Preview task did not succeed, skipping refinement");
+		}
 
 		// Save initial sculpture record
+		console.log("createSculpture: Saving sculpture record to database");
 		const sculptureData = {
-			prompt,
+			prompt: sculpturePrompt,
 			meshyTaskId: previewResult.result,
-			modelUrl: null,
-			thumbnailUrl: null,
-			status: "processing",
-			personalityAnalysis, // Optionally save this with the sculpture
+			refineTaskId: refineTaskId,
+			modelUrl: refineStatus && refineStatus.status === "SUCCEEDED" ? refineStatus.model_urls?.glb : null,
+			thumbnailUrl: refineStatus && refineStatus.status === "SUCCEEDED" ? refineStatus.thumbnail_url : null,
+			status: refineStatus && refineStatus.status === "SUCCEEDED" ? "completed" : refineTaskId ? "refining" : "processing",
 		};
 
 		const sculpture = await sculptureModel.createSculpture(userId, sculptureData);
+		console.log("createSculpture: Sculpture record saved, id:", sculpture.id);
 		res.json(sculpture);
 	} catch (error) {
 		console.error("Error creating sculpture:", error);
@@ -114,14 +174,52 @@ const createSculpture = async (req, res) => {
 		});
 	}
 };
+
+const createRefinedSculpture = async (req, res) => {
+	try {
+		console.log("createRefinedSculpture: Starting refinement for sculpture", req.params.sculptureId);
+		const { sculptureId } = req.params;
+		const userId = req.user?.id;
+
+		if (!userId) {
+			console.log("createRefinedSculpture: No userId found, authentication required");
+			return res.status(401).json({ error: "Authentication required" });
+		}
+
+		const sculpture = await sculptureModel.getSculptureById(sculptureId);
+
+		if (!sculpture || sculpture.userId !== userId) {
+			console.log("createRefinedSculpture: Sculpture not found or user mismatch");
+			return res.status(404).json({ error: "Sculpture not found" });
+		}
+
+		console.log("createRefinedSculpture: Sending refine request to Meshy");
+		const refineResult = await refineMeshyModel(sculpture.meshyTaskId);
+
+		console.log("createRefinedSculpture: Updating sculpture record with refineTaskId");
+		const updatedSculpture = await sculptureModel.updateSculpture(sculptureId, {
+			refineTaskId: refineResult.result,
+			status: "refining",
+		});
+
+		console.log("createRefinedSculpture: Refinement started for sculpture", sculptureId);
+		res.json(updatedSculpture);
+	} catch (error) {
+		console.error("Error refining sculpture:", error);
+		res.status(500).json({
+			error: "Failed to refine sculpture",
+			message: error.message,
+		});
+	}
+};
 // ----------------------------------------------------------------------------------------------------
 // #endregion
 // ----------------------------------------------------------------------------------------------------
 
 // ----------------------------------------------------------------------------------------------------
-// #region Get Sculptures
+// #region Read
 // ----------------------------------------------------------------------------------------------------
-const getSculptures = async (req, res) => {
+const readSculptures = async (req, res) => {
 	try {
 		const userId = req.user?.id;
 
@@ -136,14 +234,8 @@ const getSculptures = async (req, res) => {
 		res.status(500).json({ error: "Failed to fetch sculptures" });
 	}
 };
-// ----------------------------------------------------------------------------------------------------
-// #endregion
-// ----------------------------------------------------------------------------------------------------
 
-// ----------------------------------------------------------------------------------------------------
-// #region Get Sculpture Status
-// ----------------------------------------------------------------------------------------------------
-const getSculptureStatus = async (req, res) => {
+const readSculptureStatus = async (req, res) => {
 	try {
 		const { taskId } = req.params;
 		const status = await getMeshyTaskStatus(taskId);
@@ -161,88 +253,7 @@ const getSculptureStatus = async (req, res) => {
 // ----------------------------------------------------------------------------------------------------
 
 // ----------------------------------------------------------------------------------------------------
-// #region Refine Sculpture
-// ----------------------------------------------------------------------------------------------------
-const refineSculpture = async (req, res) => {
-	try {
-		const { sculptureId } = req.params;
-		const userId = req.user?.id;
-
-		if (!userId) {
-			return res.status(401).json({ error: "Authentication required" });
-		}
-
-		// Get the sculpture to get the preview task ID
-		const sculpture = await sculptureModel.getSculptureById(sculptureId);
-
-		if (!sculpture || sculpture.userId !== userId) {
-			return res.status(404).json({ error: "Sculpture not found" });
-		}
-
-		// Start refinement using the existing helper
-		const refineResult = await refineMeshyModel(sculpture.meshyTaskId);
-
-		// Update sculpture with refine task ID
-		const updatedSculpture = await sculptureModel.updateSculpture(sculptureId, {
-			refineTaskId: refineResult.result,
-			status: "refining",
-		});
-
-		res.json(updatedSculpture);
-	} catch (error) {
-		console.error("Error refining sculpture:", error);
-		res.status(500).json({
-			error: "Failed to refine sculpture",
-			message: error.message,
-		});
-	}
-};
-// ----------------------------------------------------------------------------------------------------
-// #endregion
-// ----------------------------------------------------------------------------------------------------
-
-// ----------------------------------------------------------------------------------------------------
-// #region Delete Sculpture
-// ----------------------------------------------------------------------------------------------------
-const deleteSculpture = async (req, res) => {
-	try {
-		const { sculptureId } = req.params;
-		const userId = req.user?.id;
-
-		if (!userId) {
-			return res.status(401).json({ error: "Authentication required" });
-		}
-
-		const sculpture = await sculptureModel.getSculptureById(sculptureId);
-
-		if (!sculpture || sculpture.userId !== userId) {
-			return res.status(404).json({ error: "Sculpture not found" });
-		}
-
-		// Delete from Meshy if task is still active
-		if (sculpture.meshyTaskId) {
-			await deleteMeshyTask(sculpture.meshyTaskId);
-		}
-		if (sculpture.refineTaskId) {
-			await deleteMeshyTask(sculpture.refineTaskId);
-		}
-
-		await sculptureModel.deleteSculpture(sculptureId);
-		res.json({ message: "Sculpture deleted successfully" });
-	} catch (error) {
-		console.error("Error deleting sculpture:", error);
-		res.status(500).json({
-			error: "Failed to delete sculpture",
-			message: error.message,
-		});
-	}
-};
-// ----------------------------------------------------------------------------------------------------
-// #endregion
-// ----------------------------------------------------------------------------------------------------
-
-// ----------------------------------------------------------------------------------------------------
-// #region Update Sculpture Status
+// #region Update
 // ----------------------------------------------------------------------------------------------------
 const updateSculptureStatus = async (req, res) => {
 	try {
@@ -280,6 +291,46 @@ const updateSculptureStatus = async (req, res) => {
 		console.error("Error updating sculpture status:", error);
 		res.status(500).json({
 			error: "Failed to update sculpture status",
+			message: error.message,
+		});
+	}
+};
+// ----------------------------------------------------------------------------------------------------
+// #endregion
+// ----------------------------------------------------------------------------------------------------
+
+// ----------------------------------------------------------------------------------------------------
+// #region Delete
+// ----------------------------------------------------------------------------------------------------
+const deleteSculpture = async (req, res) => {
+	try {
+		const { sculptureId } = req.params;
+		const userId = req.user?.id;
+
+		if (!userId) {
+			return res.status(401).json({ error: "Authentication required" });
+		}
+
+		const sculpture = await sculptureModel.getSculptureById(sculptureId);
+
+		if (!sculpture || sculpture.userId !== userId) {
+			return res.status(404).json({ error: "Sculpture not found" });
+		}
+
+		// Delete from Meshy if task is still active
+		if (sculpture.meshyTaskId) {
+			await deleteMeshyTask(sculpture.meshyTaskId);
+		}
+		if (sculpture.refineTaskId) {
+			await deleteMeshyTask(sculpture.refineTaskId);
+		}
+
+		await sculptureModel.deleteSculpture(sculptureId);
+		res.json({ message: "Sculpture deleted successfully" });
+	} catch (error) {
+		console.error("Error deleting sculpture:", error);
+		res.status(500).json({
+			error: "Failed to delete sculpture",
 			message: error.message,
 		});
 	}
@@ -347,12 +398,13 @@ async function deleteMeshyTask(taskId) {
 // #endregion
 // ----------------------------------------------------------------------------------------------------
 
+console.log("Meshy API Key:", process.env.MESHY_API_KEY);
+
 module.exports = {
-	createPersonalityAnalysis,
 	createSculpture,
-	getSculptures,
-	getSculptureStatus,
-	refineSculpture,
-	deleteSculpture,
+	createRefinedSculpture,
+	readSculptures,
+	readSculptureStatus,
 	updateSculptureStatus,
+	deleteSculpture,
 };
