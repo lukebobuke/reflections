@@ -1,6 +1,56 @@
 /** @format */
 
 const sculptureModel = require("../models/sculptureModel");
+const shardModel = require("../models/shardModel");
+// Import OpenAI API client
+const OpenAI = require("openai");
+const openai = new OpenAI({
+	apiKey: process.env.OPENAI_API_KEY,
+});
+
+// ----------------------------------------------------------------------------------------------------
+// #region Create Prompt
+// ----------------------------------------------------------------------------------------------------
+async function generatePersonalityAnalysis(userId) {
+	const shards = await shardModel.getShardsByUserId(userId);
+	let assembledShards = shards
+		.filter((shard) => shard.text && shard.text.trim() && shard.spark && shard.spark.trim())
+		.map((shard) => `Q: ${shard.spark.trim()}\nA: ${shard.text.trim()}`)
+		.join("\n\n");
+
+	const personalityPrompt = `Pretend that you are an expert psychologist and create a personality analysis regarding strengths, weaknesses, and character traits with the response being 600 characters or less from the following questions and answers:\n${assembledShards}`;
+
+	let generatedText = "";
+	try {
+		const response = await openai.chat.completions.create({
+			model: "gpt-5-nano",
+			messages: [{ role: "user", content: personalityPrompt }],
+		});
+		generatedText = response.choices[0].message.content;
+	} catch (apiError) {
+		console.error("OpenAI API error:", apiError);
+		generatedText = "Error generating personality analysis.";
+	}
+	return generatedText;
+}
+
+async function createPersonalityAnalysis(req, res) {
+	try {
+		const userId = req.user?.id;
+		if (!userId) {
+			return res.status(401).json({ error: "Authentication required" });
+		}
+		const analysis = await generatePersonalityAnalysis(userId);
+		res.json({ personality_analysis: analysis });
+	} catch (error) {
+		console.error("Error in createPersonalityAnalysis:", error);
+		res.status(500).json({ error: "Internal server error" });
+	}
+}
+
+// ----------------------------------------------------------------------------------------------------
+// #endregion
+// ----------------------------------------------------------------------------------------------------
 
 // ----------------------------------------------------------------------------------------------------
 // #region Create Sculpture
@@ -17,6 +67,9 @@ const createSculpture = async (req, res) => {
 		if (!prompt) {
 			return res.status(400).json({ error: "Prompt is required" });
 		}
+
+		// Optionally generate personality analysis here
+		const personalityAnalysis = await generatePersonalityAnalysis(userId);
 
 		// Create Meshy preview directly here
 		const payload = {
@@ -48,6 +101,7 @@ const createSculpture = async (req, res) => {
 			modelUrl: null,
 			thumbnailUrl: null,
 			status: "processing",
+			personalityAnalysis, // Optionally save this with the sculpture
 		};
 
 		const sculpture = await sculptureModel.createSculpture(userId, sculptureData);
@@ -294,6 +348,7 @@ async function deleteMeshyTask(taskId) {
 // ----------------------------------------------------------------------------------------------------
 
 module.exports = {
+	createPersonalityAnalysis,
 	createSculpture,
 	getSculptures,
 	getSculptureStatus,

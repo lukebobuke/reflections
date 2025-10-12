@@ -1,5 +1,6 @@
 /** @format */
 import { Delaunay } from "https://cdn.jsdelivr.net/npm/d3-delaunay@6/+esm";
+// import { createSculpturePrompt } from "./sculptures.js";
 
 // ----------------------------------------------------------------------------------------------------
 // #region App State
@@ -52,6 +53,8 @@ const createAppState = () => {
 					);
 					currentShards = await fetchShards();
 					updateVoronoiWithShards(currentShards);
+					// const personalityAnalysisPrompt = createPersonalityAnalysisPrompt();
+					// createSculpturePrompt();
 					if (typeof FxFilter !== "undefined") {
 						FxFilter.scanElements();
 					}
@@ -1212,4 +1215,5 @@ export {
 	exitPointsEditingState,
 	handleIncreaseRotationClick,
 	handleDecreaseRotationClick,
+	fetchShards,
 };
