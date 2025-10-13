@@ -20,7 +20,7 @@
 :root {
 	/* Colors */
 	--glass-rgb: rgba(200, 200, 200, 0.1);
-	--glass-rgb-dark: rgba(0, 0, 0, 0.35);
+	--glass-rgb-dark: rgba(255, 255, 255, 0.2);
 	--highlight-rgb: 200, 200, 200, 0.3;
 	--border-rgb: 255, 255, 255, 1;
 	--shadow-rgb: 0, 0, 0, 0.35;
@@ -39,7 +39,7 @@
 	--tint-blue: 72, 220, 253;
 	--tint-indigo: 115, 40, 255;
 	--tint-violet: 225, 0, 255;
-	--tint-opacity: 0.5;
+	--tint-opacity: 0.4;
 	/* Dimensions */
 	--radius: 16px;
 	--padding: 2rem;
@@ -800,3 +800,17 @@ body {
 }
 
 /* #endregion */
+
+.row-layout {
+	display: flex;
+	flex-direction: row !important;
+}
+
+#sculpture-3d-viewer {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	width: 50vw;
+	height: 60vh;
+	margin: auto;
+}

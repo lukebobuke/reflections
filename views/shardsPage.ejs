@@ -1,76 +1,9 @@
 <!-- @format -->
 
-<section id="shard-crud-container" class="liquid-glass shifted-up">
-	<h2 id="shard-crud-form-title">Create New Shard</h2>
-	<div id="spark-container">
-		<span id="spark-text" class="spark-text">Spark text not found.</span>
-		<button id="spark-refresh" class="glass button-small">
-			<i class="carved-glass fa-solid fa-arrows-rotate"></i>
-		</button>
-	</div>
-	<form id="shard-crud-form" data-shard-form-type="create" data-current-shard-id="" data-tint="0" data-glow="0">
-		<div class="form-input-container">
-			<input id="shard-form-text" class="glass" type="text" name="text" placeholder="Text" required />
-			<button class="glass" type="button" id="shard-form-delete-btn">
-				<i id="shard-form-delete-icon" class="carved-glass fa-solid fa-trash-can"></i>
-			</button>
-		</div>
-		<div id="tint-selector-outer-container">
-			<svg id="tint-selector" viewBox="-25 -25 250 250" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
-				<circle id="tint-outer-circle" cx="100" cy="100" r="120"></circle>
-				<ellipse data-tint="1" cx="100" cy="40" rx="40" ry="60" class="tint-petal tint-white" transform="rotate(0 100 100)"></ellipse>
-				<ellipse data-tint="2" cx="100" cy="40" rx="40" ry="60" class="tint-petal tint-red" transform="rotate(45 100 100)"></ellipse>
-				<ellipse data-tint="3" cx="100" cy="40" rx="40" ry="60" class="tint-petal tint-orange" transform="rotate(90 100 100)"></ellipse>
-				<ellipse data-tint="4" cx="100" cy="40" rx="40" ry="60" class="tint-petal tint-yellow" transform="rotate(135 100 100)"></ellipse>
-				<ellipse data-tint="5" cx="100" cy="40" rx="40" ry="60" class="tint-petal tint-green" transform="rotate(180 100 100)"></ellipse>
-				<ellipse data-tint="6" cx="100" cy="40" rx="40" ry="60" class="tint-petal tint-blue" transform="rotate(225 100 100)"></ellipse>
-				<ellipse data-tint="7" cx="100" cy="40" rx="40" ry="60" class="tint-petal tint-indigo" transform="rotate(270 100 100)"></ellipse>
-				<ellipse data-tint="8" cx="100" cy="40" rx="40" ry="60" class="tint-petal tint-violet" transform="rotate(315 100 100)"></ellipse>
-				<circle id="shard-form-glow-btn" cx="100" cy="100" r="50" class="shadow"></circle>
-			</svg>
-			<div id="tint-selector-inner-container">
-				<svg
-					id="tint-selector-embossed"
-					viewBox="-25 -25 250 250"
-					width="100%"
-					height="100%"
-					class="embossed-glass"
-					preserveAspectRatio="xMidYMid meet">
-					<circle cx="100" cy="100" r="120" class="embossed-petal"></circle>
-					<ellipse cx="100" cy="40" rx="40" ry="60" class="embossed-petal" transform="rotate(0 100 100)"></ellipse>
-					<ellipse cx="100" cy="40" rx="40" ry="60" class="embossed-petal" transform="rotate(45 100 100)"></ellipse>
-					<ellipse cx="100" cy="40" rx="40" ry="60" class="embossed-petal" transform="rotate(90 100 100)"></ellipse>
-					<ellipse cx="100" cy="40" rx="40" ry="60" class="embossed-petal" transform="rotate(135 100 100)"></ellipse>
-					<ellipse cx="100" cy="40" rx="40" ry="60" class="embossed-petal" transform="rotate(180 100 100)"></ellipse>
-					<ellipse cx="100" cy="40" rx="40" ry="60" class="embossed-petal" transform="rotate(225 100 100)"></ellipse>
-					<ellipse cx="100" cy="40" rx="40" ry="60" class="embossed-petal" transform="rotate(270 100 100)"></ellipse>
-					<ellipse cx="100" cy="40" rx="40" ry="60" class="embossed-petal" transform="rotate(315 100 100)"></ellipse>
-					<circle cx="100" cy="100" r="50" class="embossed-petal"></circle>
-				</svg>
-			</div>
-		</div>
-		<button class="glass" type="submit">
-			<span class="carved-glass" id="shard-form-submit-text">Create Shard</span>
-		</button>
-	</form>
-</section>
-<section id="edit-points-actions" class="liquid-glass shifted-up">
-	<button class="liquid-glass" id="hide-shard-crud" aria-label="Toggle Navigation">
-		<i class="carved-glass fa-solid fa-check" aria-label="Toggle Navigation"></i>
-	</button>
-	<button class="liquid-glass" id="increase-rotation" aria-label="Toggle Navigation">
-		<i class="carved-glass fa-solid fa-plus" aria-label="Toggle Navigation"></i>
-	</button>
-	<button class="liquid-glass" id="decrease-rotation" aria-label="Toggle Navigation">
-		<i class="carved-glass fa-solid fa-minus" aria-label="Toggle Navigation"></i>
-	</button>
-</section>
-<div id="shard-info-popup" class="liquid-glass shifted-up">
-	<span id="shard-info-spark" class="spark-text"></span>
-	<span id="shard-info-text"></span>
-</div>
-<main class="liquid-glass" id="shards-section">
-	<section id="show-and-submit">
+<title><%= hasSculpture ? "Sculpture" : "Mosaic" %></title>
+
+<main class="liquid-glass <%= hasSculpture ? 'row-layout' : '' %>" id="shards-section">
+	<section id="show-and-submit" class="<%= hasSculpture ? 'hidden' : '' %>">
 		<button class="liquid-glass" id="show-shard-crud" aria-label="Toggle Navigation">
 			<i class="carved-glass fa-solid fa-pencil" aria-label="Toggle Navigation"></i>
 		</button>
@@ -78,4 +11,73 @@
 			<span class="carved-glass">Submit</span>
 		</button>
 	</section>
+	<section id="shard-crud-container" class="liquid-glass shifted-up <%= hasSculpture ? 'hidden' : '' %>">
+		<h2 id="shard-crud-form-title">Create New Shard</h2>
+		<div id="spark-container">
+			<span id="spark-text" class="spark-text">Spark text not found.</span>
+			<button id="spark-refresh" class="glass button-small">
+				<i class="carved-glass fa-solid fa-arrows-rotate"></i>
+			</button>
+		</div>
+		<form id="shard-crud-form" data-shard-form-type="create" data-current-shard-id="" data-tint="0" data-glow="0">
+			<div class="form-input-container">
+				<input id="shard-form-text" class="glass" type="text" name="text" placeholder="Text" required />
+				<button class="glass" type="button" id="shard-form-delete-btn">
+					<i id="shard-form-delete-icon" class="carved-glass fa-solid fa-trash-can"></i>
+				</button>
+			</div>
+			<div id="tint-selector-outer-container">
+				<svg id="tint-selector" viewBox="-25 -25 250 250" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
+					<circle id="tint-outer-circle" cx="100" cy="100" r="120"></circle>
+					<ellipse data-tint="1" cx="100" cy="40" rx="40" ry="60" class="tint-petal tint-white" transform="rotate(0 100 100)"></ellipse>
+					<ellipse data-tint="2" cx="100" cy="40" rx="40" ry="60" class="tint-petal tint-red" transform="rotate(45 100 100)"></ellipse>
+					<ellipse data-tint="3" cx="100" cy="40" rx="40" ry="60" class="tint-petal tint-orange" transform="rotate(90 100 100)"></ellipse>
+					<ellipse data-tint="4" cx="100" cy="40" rx="40" ry="60" class="tint-petal tint-yellow" transform="rotate(135 100 100)"></ellipse>
+					<ellipse data-tint="5" cx="100" cy="40" rx="40" ry="60" class="tint-petal tint-green" transform="rotate(180 100 100)"></ellipse>
+					<ellipse data-tint="6" cx="100" cy="40" rx="40" ry="60" class="tint-petal tint-blue" transform="rotate(225 100 100)"></ellipse>
+					<ellipse data-tint="7" cx="100" cy="40" rx="40" ry="60" class="tint-petal tint-indigo" transform="rotate(270 100 100)"></ellipse>
+					<ellipse data-tint="8" cx="100" cy="40" rx="40" ry="60" class="tint-petal tint-violet" transform="rotate(315 100 100)"></ellipse>
+					<circle id="shard-form-glow-btn" cx="100" cy="100" r="50" class="shadow"></circle>
+				</svg>
+				<div id="tint-selector-inner-container">
+					<svg
+						id="tint-selector-embossed"
+						viewBox="-25 -25 250 250"
+						width="100%"
+						height="100%"
+						class="embossed-glass"
+						preserveAspectRatio="xMidYMid meet">
+						<circle cx="100" cy="100" r="120" class="embossed-petal"></circle>
+						<ellipse cx="100" cy="40" rx="40" ry="60" class="embossed-petal" transform="rotate(0 100 100)"></ellipse>
+						<ellipse cx="100" cy="40" rx="40" ry="60" class="embossed-petal" transform="rotate(45 100 100)"></ellipse>
+						<ellipse cx="100" cy="40" rx="40" ry="60" class="embossed-petal" transform="rotate(90 100 100)"></ellipse>
+						<ellipse cx="100" cy="40" rx="40" ry="60" class="embossed-petal" transform="rotate(135 100 100)"></ellipse>
+						<ellipse cx="100" cy="40" rx="40" ry="60" class="embossed-petal" transform="rotate(180 100 100)"></ellipse>
+						<ellipse cx="100" cy="40" rx="40" ry="60" class="embossed-petal" transform="rotate(225 100 100)"></ellipse>
+						<ellipse cx="100" cy="40" rx="40" ry="60" class="embossed-petal" transform="rotate(270 100 100)"></ellipse>
+						<ellipse cx="100" cy="40" rx="40" ry="60" class="embossed-petal" transform="rotate(315 100 100)"></ellipse>
+						<circle cx="100" cy="100" r="50" class="embossed-petal"></circle>
+					</svg>
+				</div>
+			</div>
+			<button class="glass" type="submit">
+				<span class="carved-glass" id="shard-form-submit-text">Create Shard</span>
+			</button>
+		</form>
+	</section>
+	<section id="edit-points-actions" class="liquid-glass shifted-up <%= hasSculpture ? 'hidden' : '' %>">
+		<button class="liquid-glass" id="hide-shard-crud" aria-label="Toggle Navigation">
+			<i class="carved-glass fa-solid fa-check" aria-label="Toggle Navigation"></i>
+		</button>
+		<button class="liquid-glass" id="increase-rotation" aria-label="Toggle Navigation">
+			<i class="carved-glass fa-solid fa-plus" aria-label="Toggle Navigation"></i>
+		</button>
+		<button class="liquid-glass" id="decrease-rotation" aria-label="Toggle Navigation">
+			<i class="carved-glass fa-solid fa-minus" aria-label="Toggle Navigation"></i>
+		</button>
+	</section>
+	<div id="shard-info-popup" class="liquid-glass shifted-up <%= hasSculpture ? 'hidden' : '' %>">
+		<span id="shard-info-spark" class="spark-text"></span>
+		<span id="shard-info-text"></span>
+	</div>
 </main>

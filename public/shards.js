@@ -272,6 +272,8 @@ function validateShardData(data) {
 // ----------------------------------------------------------------------------------------------------
 // #region Handle Shard Click
 // ----------------------------------------------------------------------------------------------------
+const hasSculpture = document.body.getAttribute("data-has-sculpture") === "true";
+
 function handleShardClick() {
 	const shardContainer = document.querySelector("#voronoi-group");
 	const shardCrudContainer = document.querySelector("#shard-crud-container");

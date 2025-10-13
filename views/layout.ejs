@@ -11,9 +11,19 @@
 		<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400..900&display=swap" rel="stylesheet" />
 		<link rel="stylesheet" href="/styles.css" />
 	</head>
-	<body data-user-logged-in="<%= user ? 'true' : '' %>">
+	<body data-user-logged-in="<%= user ? 'true' : '' %>" data-has-sculpture="<%= typeof hasSculpture !== 'undefined' ? hasSculpture : false %>">
 		<%- include('partials/filters') %>
-		<div id="bgImage"></div>
+		<!-- <div id="bgImage"></div> -->
+		<video
+			id="background-video"
+			autoplay
+			loop
+			muted
+			playsinline
+			style="position: fixed; right: 0; bottom: 0; min-width: 100vw; min-height: 100vh; z-index: -1; object-fit: cover">
+			<source src="smokeBackground.mp4" type="video/mp4" />
+			Your browser does not support the video tag.
+		</video>
 		<%- include('partials/navPopup', { currentPage }) %> <%- include('partials/header', { user, currentPage }) %> <%- body %> <%-
 		include('partials/footer') %>
 

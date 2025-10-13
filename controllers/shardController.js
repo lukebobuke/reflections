@@ -3,6 +3,7 @@
 /** @format */
 
 const shardModel = require("../models/shardModel");
+const sculptureModel = require("../models/sculptureModel");
 
 // ----------------------------------------------------------------------------------------------------
 // #region Render
@@ -17,7 +18,9 @@ const renderShardsPage = async (req, res) => {
 			return res.redirect("/login");
 		}
 		const shards = await shardModel.getShardsByUserId(user.id);
-		res.render("shardsPage", { currentPage: "shards", shards, user });
+		const sculptures = await sculptureModel.getSculpturesByUserId(user.id);
+		const hasSculpture = sculptures && sculptures.length > 0;
+		res.render("shardsPage", { currentPage: "Mosaic", shards, user, hasSculpture, pageTitle: "Mosaic" });
 	} catch (error) {
 		console.error("Error rendering shards page:", error);
 		res.status(500).send("Internal Server Error");

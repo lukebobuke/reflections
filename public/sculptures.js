@@ -125,8 +125,7 @@ function handleSubmitButtonClick() {
 			console.error("Error creating sculpture:", error);
 			alert(`Failed to create sculpture: ${error.message}`);
 		} finally {
-			submitButton.disabled = false;
-			submitButton.textContent = "Create Sculpture";
+			submitButton.classList.add("hidden");
 		}
 	});
 }
@@ -154,5 +153,62 @@ function startSculptureStatusPolling(intervalMs = 5000) {
 // ----------------------------------------------------------------------------------------------------
 // #endregion
 // ----------------------------------------------------------------------------------------------------
+
+function renderSculptureViewer(modelUrl) {
+	const shardsSection = document.getElementById("shards-section");
+	if (!shardsSection) return;
+
+	// Remove existing viewer if present
+	const existingViewer = document.getElementById("sculpture-3d-viewer");
+	if (existingViewer) existingViewer.remove();
+
+	// Create and append the viewer div as the last child
+	const viewerDiv = document.createElement("div");
+	viewerDiv.id = "sculpture-3d-viewer";
+	viewerDiv.className = "liquid-glass shifted-up";
+	viewerDiv.innerHTML = `
+		<p>Your sculpture is ready!</p>
+		<!-- Example: <model-viewer src="${modelUrl}" ...></model-viewer> -->
+	`;
+	shardsSection.appendChild(viewerDiv);
+
+	// Shrink and move the voronoi container
+	const voronoiGroup = document.querySelector(".voronoi-svg");
+	if (voronoiGroup) {
+		voronoiGroup.style.transform = "scale(0.4) translateX(-95%)";
+	}
+
+	// Change the page title
+	document.title = "Sculpture";
+
+	// Change header text to "Sculpture"
+	const headerTitle = document.querySelector("header h1, header .header-title");
+	if (headerTitle) {
+		headerTitle.textContent = "Sculpture";
+	}
+
+	// Change navbar link text to "Sculpture"
+	const mosaicNavLink = document.querySelector('nav a[href="/shards"] .carved-glass, nav a[href="/shards"] span.carved-glass');
+	if (mosaicNavLink) {
+		mosaicNavLink.textContent = "Sculpture";
+	}
+}
+
+// Example usage: call this after fetching sculpture data
+async function checkAndRenderSculptureViewer() {
+	const hasSculpture = document.body.getAttribute("data-has-sculpture") === "true";
+	if (hasSculpture) {
+		// Fetch sculpture data and get modelUrl
+		const sculptures = await requestReadSculptures();
+		if (sculptures && sculptures.length > 0 && sculptures[0].modelUrl) {
+			renderSculptureViewer(sculptures[0].modelUrl);
+		} else {
+			renderSculptureViewer(""); // fallback if no modelUrl
+		}
+	}
+}
+
+// Call this on page load
+document.addEventListener("DOMContentLoaded", checkAndRenderSculptureViewer);
 
 export { handleSubmitButtonClick };
