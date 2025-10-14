@@ -398,8 +398,6 @@ async function deleteMeshyTask(taskId) {
 // #endregion
 // ----------------------------------------------------------------------------------------------------
 
-console.log("Meshy API Key:", process.env.MESHY_API_KEY);
-
 module.exports = {
 	createSculpture,
 	createRefinedSculpture,

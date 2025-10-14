@@ -19,6 +19,7 @@ const populateUser = require("./middleware/populateUser");
 const shardRouter = require("./routes/shardRouter");
 const voronoiRouter = require("./routes/voronoiRouter");
 const sculptureRouter = require("./routes/sculptureRouter");
+const shardController = require("./controllers/shardController");
 
 // ----------------------------------------------------------------------------------------------------
 // #region View Engine
@@ -85,6 +86,7 @@ app.use("/api/points", voronoiRouter);
 app.use("/shards", shardRouter);
 app.use("/", indexRouter);
 app.use("/api/sculptures", sculptureRouter);
+app.get("/api/user-model", shardController.fetchUserModel);
 // #endregion
 // ----------------------------------------------------------------------------------------------------
 

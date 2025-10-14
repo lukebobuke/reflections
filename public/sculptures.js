@@ -155,60 +155,98 @@ function startSculptureStatusPolling(intervalMs = 5000) {
 // ----------------------------------------------------------------------------------------------------
 
 function renderSculptureViewer(modelUrl) {
+	console.log("renderSculptureViewer: called with modelUrl =", modelUrl);
 	const shardsSection = document.getElementById("shards-section");
-	if (!shardsSection) return;
+	if (!shardsSection) {
+		console.log("renderSculptureViewer: shards-section not found");
+		return;
+	}
 
 	// Remove existing viewer if present
 	const existingViewer = document.getElementById("sculpture-3d-viewer");
-	if (existingViewer) existingViewer.remove();
+	if (existingViewer) {
+		console.log("renderSculptureViewer: removing existing viewer");
+		existingViewer.remove();
+	}
+
+	// Directly use modelUrl for displayUrl
+	const displayUrl = modelUrl;
+
+	// Check if model-viewer script is loaded
+	if (!window.customElements || !customElements.get("model-viewer")) {
+		console.warn("renderSculptureViewer: <model-viewer> script not loaded or not registered.");
+	}
 
 	// Create and append the viewer div as the last child
 	const viewerDiv = document.createElement("div");
 	viewerDiv.id = "sculpture-3d-viewer";
-	viewerDiv.className = "liquid-glass shifted-up";
 	viewerDiv.innerHTML = `
-		<p>Your sculpture is ready!</p>
-		<!-- Example: <model-viewer src="${modelUrl}" ...></model-viewer> -->
+		${
+			displayUrl
+				? `<model-viewer src="${displayUrl}" alt="Your Sculpture" camera-controls style="width:100%;height:400px;display:block;"></model-viewer>`
+				: `<p>Model not available yet.</p>`
+		}
 	`;
 	shardsSection.appendChild(viewerDiv);
+	console.log("renderSculptureViewer: viewer appended");
 
 	// Shrink and move the voronoi container
 	const voronoiGroup = document.querySelector(".voronoi-svg");
 	if (voronoiGroup) {
+		console.log("renderSculptureViewer: shrinking and moving voronoi group");
 		voronoiGroup.style.transform = "scale(0.4) translateX(-95%)";
 	}
 
 	// Change the page title
 	document.title = "Sculpture";
+	console.log("renderSculptureViewer: page title set to Sculpture");
 
 	// Change header text to "Sculpture"
 	const headerTitle = document.querySelector("header h1, header .header-title");
 	if (headerTitle) {
+		console.log("renderSculptureViewer: updating header text");
 		headerTitle.textContent = "Sculpture";
 	}
 
 	// Change navbar link text to "Sculpture"
 	const mosaicNavLink = document.querySelector('nav a[href="/shards"] .carved-glass, nav a[href="/shards"] span.carved-glass');
 	if (mosaicNavLink) {
+		console.log("renderSculptureViewer: updating nav link text");
 		mosaicNavLink.textContent = "Sculpture";
 	}
 }
 
-// Example usage: call this after fetching sculpture data
-async function checkAndRenderSculptureViewer() {
-	const hasSculpture = document.body.getAttribute("data-has-sculpture") === "true";
-	if (hasSculpture) {
-		// Fetch sculpture data and get modelUrl
+async function fetchAndDisplaySculpture() {
+	console.log("fetchAndDisplaySculpture: fetching sculpture(s) from backend");
+	try {
 		const sculptures = await requestReadSculptures();
-		if (sculptures && sculptures.length > 0 && sculptures[0].modelUrl) {
-			renderSculptureViewer(sculptures[0].modelUrl);
+		console.log("fetchAndDisplaySculpture: sculptures fetched", sculptures);
+		if (sculptures && sculptures.length > 0) {
+			const sculpture = sculptures[0];
+			console.log("fetchAndDisplaySculpture: sculpture object:", sculpture);
+			// Always use /api/user-model for Meshy models
+			let modelUrl = "";
+			if (sculpture.model_url && sculpture.model_url.includes("assets.meshy.ai")) {
+				modelUrl = "/api/user-model";
+			} else {
+				modelUrl = sculpture.model_url || "";
+			}
+			console.log("fetchAndDisplaySculpture: modelUrl variable before passing to renderSculptureViewer:", modelUrl);
+			renderSculptureViewer(modelUrl);
 		} else {
-			renderSculptureViewer(""); // fallback if no modelUrl
+			console.log("fetchAndDisplaySculpture: no sculpture found, rendering fallback viewer");
+			renderSculptureViewer(""); // fallback if no sculpture
 		}
+	} catch (error) {
+		console.error("fetchAndDisplaySculpture: error fetching sculpture", error);
+		renderSculptureViewer(""); // fallback if error
 	}
 }
 
-// Call this on page load
-document.addEventListener("DOMContentLoaded", checkAndRenderSculptureViewer);
+// Call this on page load instead of checkAndRenderSculptureViewer
+document.addEventListener("DOMContentLoaded", () => {
+	console.log("DOMContentLoaded: calling fetchAndDisplaySculpture");
+	fetchAndDisplaySculpture();
+});
 
 export { handleSubmitButtonClick };

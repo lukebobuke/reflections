@@ -177,6 +177,51 @@ const deleteShard = async (req, res) => {
 // #endregion
 // ----------------------------------------------------------------------------------------------------
 
+// ----------------------------------------------------------------------------------------------------
+// #region Fetch User Model from Meshy
+// ----------------------------------------------------------------------------------------------------
+const fetchUserModel = async (req, res) => {
+	try {
+		const user = req.user;
+		if (!user || !user.id) {
+			return res.status(401).json({ error: "Unauthorized" });
+		}
+		const sculptures = await sculptureModel.getSculpturesByUserId(user.id);
+		console.log("fetchUserModel sculptures for user:", sculptures);
+		// Use model_url if that's your schema
+		const url = sculptures && sculptures.length > 0 ? sculptures[0].model_url : null;
+		console.log("fetchUserModel: model_url for user:", url);
+		if (!url) {
+			return res.status(404).json({ error: "No model URL found for user" });
+		}
+		const response = await fetch(url, {
+			headers: {
+				"User-Agent": "Mozilla/5.0",
+				Accept: "application/octet-stream,*/*",
+				Referer: url,
+			},
+		});
+		if (!response.ok) {
+			return res.status(502).send("Failed to fetch remote model: " + response.status);
+		}
+		const arrayBuffer = await response.arrayBuffer();
+		const buffer = Buffer.from(arrayBuffer);
+		const contentType = response.headers.get("content-type");
+		if (url.endsWith(".glb") || (contentType && contentType.includes("application/octet-stream"))) {
+			res.set("Content-Type", "model/gltf-binary");
+		} else {
+			res.set("Content-Type", contentType || "application/octet-stream");
+		}
+		res.send(buffer);
+	} catch (error) {
+		console.error("Error fetching user model from Meshy:", error);
+		res.status(500).send("Error fetching user model");
+	}
+};
+// ----------------------------------------------------------------------------------------------------
+// #endregion
+// ----------------------------------------------------------------------------------------------------
+
 module.exports = {
 	renderShardsPage,
 	createShard,
@@ -185,4 +230,5 @@ module.exports = {
 	getShardById,
 	updateShard,
 	deleteShard,
+	fetchUserModel,
 };
