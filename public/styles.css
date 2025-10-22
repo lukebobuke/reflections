@@ -63,7 +63,7 @@
 	--hover-distance-pressed: Calc(var(--hover-distance-unpressed) - var(--pressed-offset));
 	--hover-distance-popped: Calc(2 * var(--hover-distance));
 	/* Other */
-	--blur: 6px;
+	--blur: 10px;
 }
 /*#endregion*/
 
@@ -153,6 +153,12 @@ body {
 		/* top right thickened edge */ inset calc(-1 * var(--glass-thickness)) var(--glass-thickness) 4px 0px rgba(200, 200, 200, 0.25),
 		/* bottom left thickened edge */ calc(-1 * var(--glass-thickness)) var(--glass-thickness) 0px 0px rgba(220, 220, 220, 0.25);
 	background: var(--glass-rgb);
+
+	/* Ensure FX overlays and filters are confined to this element */
+	position: relative; /* create containing block for absolutely positioned FX elements */
+	overflow: hidden; /* clip any FX overlay to this element */
+	isolation: isolate; /* create a new stacking context so effects don't bleed */
+	/* keep existing visual behaviour */
 }
 .glass {
 	box-shadow: 
@@ -186,12 +192,12 @@ body {
 	z-index: -1;
 } */
 
-main.liquid-glass:not(#shards-section),
 #shard-crud-container,
-button.liquid-glass,
-.button-link.liquid-glass,
-footer.liquid-glass {
-	background: var(--glass-rgb-dark);
+button,
+.button-link,
+footer,
+.light-background {
+	background: var(--glass-rgb-dark) !important;
 }
 
 .carved-glass {
@@ -271,10 +277,13 @@ i {
 main {
 	display: flex;
 	flex-direction: column;
-	gap: var(--padding);
-	padding: var(--padding);
+	/* gap: var(--padding); */
+	/* padding: var(--padding); */
 	position: relative;
 	/* flex: 1;  */
+}
+section {
+	padding: var(--padding);
 }
 
 /* Specific styling for shards page main */
@@ -362,13 +371,13 @@ form {
 	display: flex;
 	flex-direction: column;
 	gap: var(--padding-small);
-	align-items: center;
 	position: fixed;
 	top: Calc(var(--header-height) + var(--padding));
 	width: 40rem;
 	left: Calc(50% - 20rem);
 	text-align: center;
 	padding: var(--padding);
+	height: 27rem;
 }
 
 input,
@@ -395,7 +404,6 @@ button,
 	font-weight: 600;
 	font-size: 1rem;
 	text-transform: uppercase;
-	background: none;
 }
 
 button:hover,
@@ -801,11 +809,6 @@ body {
 
 /* #endregion */
 
-.row-layout {
-	display: flex;
-	flex-direction: row !important;
-}
-
 #sculpture-3d-viewer {
 	display: flex;
 	justify-content: center;
@@ -813,4 +816,47 @@ body {
 	width: 50vw;
 	height: 60vh;
 	margin: auto;
+}
+
+/* ...existing code... */
+
+/* main reusable popup */
+#main-popup {
+	position: fixed;
+	left: 50%;
+	top: 50%;
+	transform: translate(-50%, -50%);
+	z-index: 10001;
+	min-width: 320px;
+	max-width: 90%;
+}
+
+/* Ensure .hidden still hides; but add a smoother visual transition when toggling */
+#main-popup.hidden {
+	pointer-events: none;
+	transform: translate(-50%, -48%);
+}
+
+/* status area — scrollable list of messages */
+#main-popup-status {
+	margin-top: 0.5rem;
+	max-height: 220px;
+	overflow-y: auto;
+	padding-right: 0.5rem;
+	font-size: 0.95rem;
+	color: rgba(var(--text-color), 0.95);
+}
+
+/* buttons container and buttons */
+#main-popup-buttons {
+	display: flex;
+	gap: 0.75rem;
+	justify-content: center;
+	margin-top: 1rem;
+	flex-wrap: wrap;
+}
+
+/* specific visibility helper (keeps markup simple) */
+#main-popup-buttons .hidden {
+	display: none !important;
 }

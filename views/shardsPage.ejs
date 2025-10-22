@@ -2,15 +2,81 @@
 
 <title><%= hasSculpture ? "Sculpture" : "Mosaic" %></title>
 
-<main class="liquid-glass <%= hasSculpture ? 'row-layout' : '' %>" id="shards-section">
-	<section id="show-and-submit" class="<%= hasSculpture ? 'hidden' : '' %>">
-		<button class="liquid-glass" id="show-shard-crud" aria-label="Toggle Navigation">
-			<i class="carved-glass fa-solid fa-pencil" aria-label="Toggle Navigation"></i>
-		</button>
-		<button class="liquid-glass button-link" id="submit-shards-btn">
-			<span class="carved-glass">Submit</span>
-		</button>
+<main class="<%= hasSculpture ? 'row-layout' : '' %>">
+	<!-- Sculpture container: present in DOM (hidden when no sculpture) so scripts can target it -->
+	<section id="sculpture-container" class="liquid-glass <%= hasSculpture ? '' : 'hidden' %>">
+		<!-- Static model-viewer element — script will set its src when a model is available -->
+		<model-viewer
+			id="sculpture-model"
+			alt="Your Sculpture"
+			camera-controls
+			disable-zoom
+			style="width: 100%; height: 400px; display: block"></model-viewer>
 	</section>
+	<!-- <section id="sculpture-container" class="liquid-glass"></section> -->
+	<section id="shards-section" class="liquid-glass">
+		<div id="show-and-submit" class="<%= hasSculpture ? 'hidden' : '' %>">
+			<button class="liquid-glass" id="show-shard-crud" aria-label="Toggle Navigation">
+				<i class="carved-glass fa-solid fa-pencil" aria-label="Toggle Navigation"></i>
+			</button>
+			<button class="liquid-glass button-link" id="submit-shards-btn">
+				<span class="carved-glass">Submit</span>
+			</button>
+		</div>
+	</section>
+	<section class="liquid-glass light-background">
+		<div>
+			<h2>About Reflections</h2>
+			<!-- Abstract depth-of-concept section -->
+			<p>
+				Understanding of self begins from scattered fragments. Sharp, shallow reflections. However, through an intensity and focus of inner
+				illumination, these pieces fuse into an annealed, seamless whole that transcends all separable shards.
+			</p>
+			<p>
+				At first glance, we appear as a scatter of facets: trinkets glinting with the light of memory and feeling, each one seemingly distinct
+				and touchable. Like fragments on a workbench, they can be held up, examined, admired. But alone, they remain brittle
+				reflections—partial truths that shimmer but do not endure, to be merely glanced at but never gazed upon.
+			</p>
+			<p>
+				When swept into the furnace of introspection, the facets begin to soften at their edges. Colors bleed and cracks melt away, and the
+				pieces interact as their borders dissolve. They refract and shape each other’s internal tensions, forging new and unexpected contours
+				and hues. A new shard introduced doesn’t merely add—it shifts the entire molten pool, altering the emergent whole in ways that cannot
+				be untangled.
+			</p>
+			<p>
+				The form crystalizes. The scattered, splintered self becomes an annealed, indivisible sculpture, and in this state no single facet can
+				be teased apart without destroying the integrity of the whole. There exists now a lens through which one perceives oneself and the
+				world with a depth and clarity impossible when clinging to individual pieces.
+			</p>
+		</div>
+		<!-- Personal invitation & intent -->
+		<div>
+			<h2>Why Reflections Matters</h2>
+			<p>
+				Reflections is designed to help you explore every shard of your identity—your memories, your emotions, your truths—and to honor how
+				they fit into the larger whole. Here you’re invited to cast each fragment into a virtual forge: choose a prompt that resonates, give
+				it a tint that captures its mood, and lock it in place as part of your personal mosaic.
+			</p>
+			<p>
+				As you gather and shape these shards, you’ll see patterns emerge—threads of clarity you might have overlooked. Each entry is both a
+				mirror and a window: you gaze inward, and the app adapts to highlight what matters most to you.
+			</p>
+		</div>
+		<!-- Technical, “boring” description -->
+		<div>
+			<h2>How Reflections Works</h2>
+			<p>
+				When you create a shard, you select a guiding prompt (“spark”), enter your text, choose a tint, and toggle its glow. All of your
+				shards form a cloud you can revisit, edit, or remove at any time.
+			</p>
+			<p>
+				Soon, these shards will drive the generation of a 3D glass sculpture that symbolizes your journey. For now, each shard appears in a
+				dynamic list; later, you’ll watch as they fuse into a seamless, interactive crystal you can rotate, examine, and even download for 3D
+				printing.
+			</p>
+		</div>
+	</section>
+
 	<section id="shard-crud-container" class="liquid-glass shifted-up <%= hasSculpture ? 'hidden' : '' %>">
 		<h2 id="shard-crud-form-title">Create New Shard</h2>
 		<div id="spark-container">
@@ -65,6 +131,7 @@
 			</button>
 		</form>
 	</section>
+
 	<section id="edit-points-actions" class="liquid-glass shifted-up <%= hasSculpture ? 'hidden' : '' %>">
 		<button class="liquid-glass" id="hide-shard-crud" aria-label="Toggle Navigation">
 			<i class="carved-glass fa-solid fa-check" aria-label="Toggle Navigation"></i>
@@ -76,8 +143,32 @@
 			<i class="carved-glass fa-solid fa-minus" aria-label="Toggle Navigation"></i>
 		</button>
 	</section>
+
 	<div id="shard-info-popup" class="liquid-glass shifted-up <%= hasSculpture ? 'hidden' : '' %>">
 		<span id="shard-info-spark" class="spark-text"></span>
 		<span id="shard-info-text"></span>
 	</div>
+
+	<!-- Reusable main popup (initially hidden). Scripts can show/hide and update content. -->
+	<section
+		id="main-popup"
+		class="liquid-glass hidden"
+		style="
+			position: fixed;
+			left: 50%;
+			top: 50%;
+			transform: translate(-50%, -50%);
+			z-index: 10001;
+			min-width: 320px;
+			max-width: 90%;
+			padding: 1rem;
+		">
+		<p id="main-popup-text"></p>
+		<div id="main-popup-status" style="text-align: left; margin-top: 0.5rem; max-height: 200px; overflow: auto"></div>
+		<div id="main-popup-buttons" style="display: flex; gap: 0.75rem; justify-content: center; margin-top: 1rem">
+			<button id="main-popup-back" class="glass" type="button">Back</button>
+			<button id="main-popup-submit" class="liquid-glass" type="button">Submit</button>
+			<button id="main-popup-ok" class="liquid-glass hidden" type="button">OK</button>
+		</div>
+	</section>
 </main>

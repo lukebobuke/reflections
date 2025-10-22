@@ -53,11 +53,6 @@ const createAppState = () => {
 					);
 					currentShards = await fetchShards();
 					updateVoronoiWithShards(currentShards);
-					// const personalityAnalysisPrompt = createPersonalityAnalysisPrompt();
-					// createSculpturePrompt();
-					if (typeof FxFilter !== "undefined") {
-						FxFilter.scanElements();
-					}
 				} catch (error) {
 					console.error("Error in viewShards state:", error);
 				}

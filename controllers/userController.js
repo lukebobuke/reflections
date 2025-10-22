@@ -83,8 +83,13 @@ const login = async (req, res) => {
 		}
 		// If the credentials are valid, set the user ID in the session and redirect to the user home page
 		req.session.userId = user.id;
-		console.log("User logged in successfully:", user);
-		res.redirect("/dashboard"); //
+		req.session.save(function (err) {
+			if (err) {
+				console.error("Session save error:", err);
+				// fallback: still redirect but log
+			}
+			return res.redirect("/shards"); // or send JSON if using fetch
+		});
 	} catch (err) {
 		console.error("Error logging in user:", err);
 		res.status(500).send("Internal Server Error");

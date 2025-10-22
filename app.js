@@ -64,13 +64,13 @@ app.use(compression());
 // ----------------------------------------------------------------------------------------------------
 //app-level custom middleware
 app.use(logger);
-app.use(errorHandler);
+
 app.use(
 	session({
 		secret: "your-secret-key", // use a secure secret in production
 		resave: false,
 		saveUninitialized: false,
-		cookie: { secure: false }, // set to true if using HTTPS
+		cookie: { secure: false, sameSite: "lax" }, // added sameSite for stable cookie behavior
 	})
 );
 app.use(populateUser);
@@ -100,10 +100,13 @@ app.use((req, res) => {
 // #endregion
 // ----------------------------------------------------------------------------------------------------
 
+//error handler middleware should be last
+app.use(errorHandler);
+
 //get port from env file
 const port = process.env.PORT || 3000;
 
 //bootstrap server
 app.listen(port, () => {
-	console.log(`My first Express app!  Listening on port ${port}`);
+	console.log(`Server is running on http://localhost:${port}`);
 });
