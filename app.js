@@ -5,7 +5,6 @@ const express = require("express");
 const app = express();
 require("dotenv").config();
 const path = require("node:path");
-const session = require("express-session");
 const compression = require("compression");
 // const cors = require("cors");
 const expressLayouts = require("express-ejs-layouts");
@@ -65,14 +64,46 @@ app.use(compression());
 //app-level custom middleware
 app.use(logger);
 
+// Replace current session / db setup with the following (or adapt to your existing db code):
+const session = require("express-session");
+const pg = require("pg");
+const PgSession = require("connect-pg-simple")(session);
+
+// Create a PG pool using DATABASE_URL (Render provides this for managed DBs).
+// Enable SSL in production environments (Render requires it for managed DB connections).
+const pool = new pg.Pool({
+	connectionString: process.env.DATABASE_URL || undefined,
+	ssl: process.env.NODE_ENV === "production" ? { rejectUnauthorized: false } : false,
+});
+
+// Optional: simple health log for DB connectivity (non-blocking)
+pool.connect()
+	.then((client) => {
+		client.release();
+		console.log("Postgres pool connected");
+	})
+	.catch((err) => {
+		console.error("Postgres pool connection error (will retry on demand):", err.message || err);
+	});
+
+// Use connect-pg-simple as session store so sessions persist (do not use MemoryStore in production)
 app.use(
 	session({
-		secret: "your-secret-key", // use a secure secret in production
+		store: new PgSession({
+			pool: pool,
+			tableName: "session",
+		}),
+		secret: process.env.SESSION_SECRET || "please-change-this-in-prod",
 		resave: false,
 		saveUninitialized: false,
-		cookie: { secure: false, sameSite: "lax" }, // added sameSite for stable cookie behavior
+		cookie: {
+			secure: process.env.NODE_ENV === "production", // true on HTTPS
+			sameSite: "lax",
+			maxAge: 1000 * 60 * 60 * 24 * 7, // 1 week
+		},
 	})
 );
+
 app.use(populateUser);
 // #endregion
 // ----------------------------------------------------------------------------------------------------
