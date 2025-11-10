@@ -64,34 +64,16 @@ app.use(compression());
 //app-level custom middleware
 app.use(logger);
 
-// Replace the previous unconditional DB / session setup with a guarded version.
-
+// Replace the previous DB / session setup with the requested Pool snippet.
 const session = require("express-session");
-const pg = require("pg");
+const { Pool } = require("pg"); // replaced previous pg require
 let pool = null;
 
-const databaseUrl =
-	process.env.DATABASE_URL ||
-	(process.env.PGHOST
-		? `postgres://${encodeURIComponent(process.env.PGUSER || "postgres")}:${encodeURIComponent(process.env.PGPASSWORD || "")}@${
-				process.env.PGHOST
-		  }:${process.env.PGPORT || "5432"}/${process.env.PGDATABASE || "reflections"}`
-		: undefined);
-
-if (databaseUrl) {
-	// Only require connect-pg-simple when we actually will use it (avoids MODULE_NOT_FOUND if not installed)
-	let PgSession;
-	try {
-		PgSession = require("connect-pg-simple")(session);
-	} catch (err) {
-		console.warn("connect-pg-simple not available; falling back to MemoryStore for sessions.", err.message || err);
-		PgSession = null;
-	}
-
-	// create pool
-	pool = new pg.Pool({
-		connectionString: databaseUrl,
-		ssl: process.env.NODE_ENV === "production" ? { rejectUnauthorized: false } : false,
+if (process.env.DATABASE_URL) {
+	// Create a pool using DATABASE_URL and enable SSL (rejectUnauthorized: false)
+	pool = new Pool({
+		connectionString: process.env.DATABASE_URL,
+		ssl: { rejectUnauthorized: false },
 	});
 
 	// health log
@@ -104,8 +86,16 @@ if (databaseUrl) {
 			console.error("Postgres pool connection error (will retry on demand):", err.message || err);
 		});
 
+	// use connect-pg-simple if available, otherwise fall back to MemoryStore
+	let PgSession = null;
+	try {
+		PgSession = require("connect-pg-simple")(session);
+	} catch (err) {
+		console.warn("connect-pg-simple not available; falling back to MemoryStore for sessions.", err.message || err);
+		PgSession = null;
+	}
+
 	if (PgSession) {
-		// Use PG-backed session store
 		app.use(
 			session({
 				store: new PgSession({
@@ -123,7 +113,6 @@ if (databaseUrl) {
 			})
 		);
 	} else {
-		// fallback to MemoryStore if PgSession couldn't be loaded
 		console.warn("Using MemoryStore for sessions because connect-pg-simple was not available.");
 		app.use(
 			session({
@@ -134,9 +123,9 @@ if (databaseUrl) {
 		);
 	}
 } else {
-	// No DB configured — do not attempt to connect. Use MemoryStore and warn clearly.
+	// No DATABASE_URL provided — keep MemoryStore but warn
 	console.warn(
-		"NO DATABASE CONFIGURED: databaseUrl is not set. Using in-memory session store. Database-backed features (signup/login) will fail until DATABASE_URL is set."
+		"NO DATABASE CONFIGURED: DATABASE_URL is not set. Using in-memory session store. Database-backed features (signup/login) will fail until DATABASE_URL is set."
 	);
 	app.use(
 		session({

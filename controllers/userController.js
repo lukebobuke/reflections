@@ -40,6 +40,11 @@ const createUser = async (req, res) => {
 		req.session.userId = user.id;
 		res.redirect("/dashboard");
 	} catch (err) {
+		// Improve logging for connection errors
+		if (err.code === "ECONNREFUSED" || (err.message && err.message.includes("ECONNREFUSED"))) {
+			console.error("Database connection refused. Is DATABASE_URL set and reachable?", err);
+			return res.status(502).send("Database unavailable");
+		}
 		if (err.code === "23505") {
 			res.status(400).send("That email already exists.");
 		} else if (err.code === "23502") {
