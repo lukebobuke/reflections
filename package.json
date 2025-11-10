@@ -23,7 +23,8 @@
 		"express-session": "^1.18.1",
 		"node-fetch": "^3.3.2",
 		"openai": "^6.3.0",
-		"pg": "^8.16.2"
+		"pg": "^8.16.2",
+		"connect-pg-simple": "^8.0.0"
 	},
 	"devDependencies": {
 		"jest": "^29.0.0"
