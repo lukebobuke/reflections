@@ -4,7 +4,7 @@ const fs = require("fs");
 const path = require("path");
 const { Pool } = require("pg");
 
-// Minimal runner: reads migrations/001_create_tables.sql and runs it once.
+// Minimal runner: reads migrations/create_tables.sql and runs it once.
 // Usage: ensure DATABASE_URL is set, then `npm run create_tables`.
 
 (async function main() {
@@ -14,7 +14,7 @@ const { Pool } = require("pg");
 		process.exit(2);
 	}
 
-	const sqlPath = path.join(__dirname, "..", "migrations", "001_create_tables.sql");
+	const sqlPath = path.join(__dirname, "..", "migrations", "create_tables.sql");
 	if (!fs.existsSync(sqlPath)) {
 		console.error("SQL file not found:", sqlPath);
 		process.exit(1);
