@@ -3,6 +3,7 @@
 //import modules
 const express = require("express");
 const app = express();
+app.set("trust proxy", 1);
 require("dotenv").config();
 const path = require("node:path");
 const compression = require("compression");
@@ -52,7 +53,7 @@ app.use(
 		setHeaders: (res, path) => {
 			res.set("Access-Control-Allow-Origin", "*");
 		},
-	})
+	}),
 );
 app.use(compression());
 // #endregion
@@ -110,7 +111,7 @@ if (process.env.DATABASE_URL) {
 					sameSite: "lax",
 					maxAge: 1000 * 60 * 60 * 24 * 7,
 				},
-			})
+			}),
 		);
 	} else {
 		console.warn("Using MemoryStore for sessions because connect-pg-simple was not available.");
@@ -119,20 +120,20 @@ if (process.env.DATABASE_URL) {
 				secret: process.env.SESSION_SECRET || "please-change-this-in-prod",
 				resave: false,
 				saveUninitialized: false,
-			})
+			}),
 		);
 	}
 } else {
 	// No DATABASE_URL provided — keep MemoryStore but warn
 	console.warn(
-		"NO DATABASE CONFIGURED: DATABASE_URL is not set. Using in-memory session store. Database-backed features (signup/login) will fail until DATABASE_URL is set."
+		"NO DATABASE CONFIGURED: DATABASE_URL is not set. Using in-memory session store. Database-backed features (signup/login) will fail until DATABASE_URL is set.",
 	);
 	app.use(
 		session({
 			secret: process.env.SESSION_SECRET || "please-change-this-in-prod",
 			resave: false,
 			saveUninitialized: false,
-		})
+		}),
 	);
 }
 
