@@ -9,6 +9,7 @@ const createSculpture = async (userId, sculptureData) => {
 	const values = [
 		userId,
 		sculptureData.prompt,
+		sculptureData.personalityAnalysis || null,
 		sculptureData.meshyTaskId,
 		sculptureData.refineTaskId || null,
 		sculptureData.modelUrl,
@@ -17,8 +18,8 @@ const createSculpture = async (userId, sculptureData) => {
 		sculptureData.fileSize || null,
 	];
 	const query = `
-		INSERT INTO sculptures (user_id, prompt, meshy_task_id, refine_task_id, model_url, thumbnail_url, status, file_size)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+		INSERT INTO sculptures (user_id, prompt, personality_analysis, meshy_task_id, refine_task_id, model_url, thumbnail_url, status, file_size)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
 		RETURNING *
 	`;
 	const result = await db.query(query, values);

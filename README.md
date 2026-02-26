@@ -23,7 +23,7 @@ This app follows a modular, organized structure for maintainability and scalabil
 4. Views are rendered using EJS templates from `/views`.
 
 ### Example File Structure
-
+s
 ```
 reflections/
 ├── app.js

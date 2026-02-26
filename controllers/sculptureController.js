@@ -26,21 +26,27 @@ async function helperGenerateSculpturePrompt(userId) {
 
 	const personalityPrompt = `Pretend that you are an expert psychologist and create a personality analysis regarding strengths, weaknesses, and character traits with the response being 600 characters or less from the following questions and answers:\n${assembledShards}`;
 
-	let generatedText = "";
+	let personalityAnalysis = "";
 	try {
 		console.log("helperGenerateSculpturePrompt: Sending prompt to OpenAI");
 		const response = await openai.chat.completions.create({
 			model: "gpt-5-nano",
 			messages: [{ role: "user", content: personalityPrompt }],
 		});
-		generatedText = response.choices[0].message.content;
+		personalityAnalysis = response.choices[0].message.content;
 		console.log("helperGenerateSculpturePrompt: Received personality analysis from OpenAI");
 	} catch (apiError) {
 		console.error("OpenAI API error:", apiError);
-		generatedText = "Error generating personality analysis.";
+		personalityAnalysis = "Error generating personality analysis.";
 	}
+
+	const sculpturePrompt = `Create a realistic-looking abstract glass sculpture based on the following personality analysis:\n${personalityAnalysis}`;
+
 	console.log("helperGenerateSculpturePrompt: Final sculpture prompt assembled");
-	return `Create a realistic-looking abstract glass sculpture based on the following personality analysis:\n${generatedText}`;
+	return {
+		prompt: sculpturePrompt,
+		personalityAnalysis: personalityAnalysis,
+	};
 }
 // ----------------------------------------------------------------------------------------------------
 // #endregion
@@ -53,17 +59,20 @@ const createSculpture = async (req, res) => {
 	try {
 		console.log("createSculpture: Starting sculpture creation");
 		const userId = req.user?.id;
-		const sculpturePrompt = await helperGenerateSculpturePrompt(userId);
 
 		if (!userId) {
 			console.log("createSculpture: No userId found, authentication required");
 			return res.status(401).json({ error: "Authentication required" });
 		}
 
-		if (!sculpturePrompt) {
+		const promptData = await helperGenerateSculpturePrompt(userId);
+
+		if (!promptData) {
 			console.log("createSculpture: No prompt generated, cannot proceed");
-			return res.status(400).json({ error: "Prompt is required" });
+			return res.status(400).json({ error: "Unable to generate sculpture prompt. Please add some journal entries first." });
 		}
+
+		const { prompt: sculpturePrompt, personalityAnalysis } = promptData;
 
 		console.log("createSculpture: Sending preview request to Meshy");
 		const payload = {
@@ -94,77 +103,27 @@ const createSculpture = async (req, res) => {
 		const previewResult = await response.json();
 		console.log("createSculpture: Meshy preview task started, taskId:", previewResult.result);
 
-		// Poll for preview task completion
-		let previewStatus;
-		let pollAttempts = 0;
-		const maxPollAttempts = 30; // e.g. poll for up to 30 * 2s = 60s
-		const pollIntervalMs = 30000;
-
-		console.log("createSculpture: Polling Meshy preview task status...");
-		while (pollAttempts < maxPollAttempts) {
-			previewStatus = await getMeshyTaskStatus(previewResult.result);
-			console.log(`createSculpture: Preview status poll #${pollAttempts + 1}:`, previewStatus.status);
-			if (previewStatus.status === "SUCCEEDED") break;
-			if (previewStatus.status === "FAILED") {
-				console.error("createSculpture: Meshy preview task failed");
-				break;
-			}
-			await new Promise((resolve) => setTimeout(resolve, pollIntervalMs));
-			pollAttempts++;
-		}
-
-		let refineTaskId = null;
-		let refineStatus = null;
-		if (previewStatus && previewStatus.status === "SUCCEEDED") {
-			try {
-				console.log("createSculpture: Starting refinement with Meshy");
-				const refineResult = await refineMeshyModel(previewResult.result);
-				refineTaskId = refineResult.result;
-				console.log("createSculpture: Meshy refine task started, refineTaskId:", refineTaskId);
-
-				// Add a short delay before polling
-				await new Promise((resolve) => setTimeout(resolve, 5000)); // 5 seconds
-
-				// Poll for refine task completion
-				let refinePollAttempts = 0;
-				const maxRefinePollAttempts = 30;
-				const refinePollIntervalMs = 30000;
-				console.log("createSculpture: Polling Meshy refine task status...");
-				while (refinePollAttempts < maxRefinePollAttempts) {
-					try {
-						refineStatus = await getMeshyTaskStatus(refineTaskId);
-						console.log(`createSculpture: Refine status poll #${refinePollAttempts + 1}:`, refineStatus.status);
-						if (refineStatus.status === "SUCCEEDED") break;
-						if (refineStatus.status === "FAILED") {
-							console.error("createSculpture: Meshy refine task failed");
-							break;
-						}
-					} catch (pollError) {
-						console.error("createSculpture: Error polling refine task status (likely not ready yet):", pollError.message);
-					}
-					await new Promise((resolve) => setTimeout(resolve, refinePollIntervalMs));
-					refinePollAttempts++;
-				}
-			} catch (refineError) {
-				console.error("createSculpture: Error starting refinement:", refineError);
-			}
-		} else {
-			console.error("createSculpture: Preview task did not succeed, skipping refinement");
-		}
-
-		// Save initial sculpture record
+		// Save sculpture record immediately with status "processing"
 		console.log("createSculpture: Saving sculpture record to database");
 		const sculptureData = {
 			prompt: sculpturePrompt,
+			personalityAnalysis: personalityAnalysis,
 			meshyTaskId: previewResult.result,
-			refineTaskId: refineTaskId,
-			modelUrl: refineStatus && refineStatus.status === "SUCCEEDED" ? refineStatus.model_urls?.glb : null,
-			thumbnailUrl: refineStatus && refineStatus.status === "SUCCEEDED" ? refineStatus.thumbnail_url : null,
-			status: refineStatus && refineStatus.status === "SUCCEEDED" ? "completed" : refineTaskId ? "refining" : "processing",
+			refineTaskId: null,
+			modelUrl: null,
+			thumbnailUrl: null,
+			status: "processing",
 		};
 
 		const sculpture = await sculptureModel.createSculpture(userId, sculptureData);
 		console.log("createSculpture: Sculpture record saved, id:", sculpture.id);
+
+		// Start background polling (fire and forget - don't await)
+		pollSculptureTasksInBackground(sculpture.id, previewResult.result).catch((err) => {
+			console.error("Background polling error for sculpture", sculpture.id, ":", err);
+		});
+
+		// Return immediately to client
 		res.json(sculpture);
 	} catch (error) {
 		console.error("Error creating sculpture:", error);
@@ -335,6 +294,126 @@ const deleteSculpture = async (req, res) => {
 		});
 	}
 };
+// ----------------------------------------------------------------------------------------------------
+// #endregion
+// ----------------------------------------------------------------------------------------------------
+
+// ----------------------------------------------------------------------------------------------------
+// #region Background Polling
+// ----------------------------------------------------------------------------------------------------
+async function pollSculptureTasksInBackground(sculptureId, previewTaskId) {
+	try {
+		console.log(`[Background Polling ${sculptureId}] Starting preview task polling for taskId:`, previewTaskId);
+
+		// Poll preview task
+		let previewStatus;
+		let pollAttempts = 0;
+		const maxPollAttempts = 60; // 60 attempts × 10s = 10 minutes
+		const pollIntervalMs = 10000; // 10 seconds
+
+		while (pollAttempts < maxPollAttempts) {
+			await new Promise((resolve) => setTimeout(resolve, pollIntervalMs));
+			pollAttempts++;
+
+			try {
+				previewStatus = await getMeshyTaskStatus(previewTaskId);
+				console.log(`[Background Polling ${sculptureId}] Preview poll #${pollAttempts}:`, previewStatus.status);
+
+				if (previewStatus.status === "SUCCEEDED") {
+					console.log(`[Background Polling ${sculptureId}] Preview task succeeded, starting refinement`);
+					break;
+				}
+
+				if (previewStatus.status === "FAILED") {
+					console.error(`[Background Polling ${sculptureId}] Preview task failed`);
+					await sculptureModel.updateSculpture(sculptureId, { status: "failed" });
+					return;
+				}
+			} catch (pollError) {
+				console.error(`[Background Polling ${sculptureId}] Error polling preview status:`, pollError.message);
+				// Continue polling on transient errors
+			}
+		}
+
+		// Check if preview timed out
+		if (!previewStatus || previewStatus.status !== "SUCCEEDED") {
+			console.error(`[Background Polling ${sculptureId}] Preview task timed out after ${pollAttempts} attempts`);
+			await sculptureModel.updateSculpture(sculptureId, { status: "timeout" });
+			return;
+		}
+
+		// Start refinement
+		let refineTaskId;
+		try {
+			console.log(`[Background Polling ${sculptureId}] Starting refinement`);
+			const refineResult = await refineMeshyModel(previewTaskId);
+			refineTaskId = refineResult.result;
+
+			// Update database with refine task ID
+			await sculptureModel.updateSculpture(sculptureId, {
+				refineTaskId: refineTaskId,
+				status: "refining",
+			});
+
+			console.log(`[Background Polling ${sculptureId}] Refine task started:`, refineTaskId);
+		} catch (refineError) {
+			console.error(`[Background Polling ${sculptureId}] Error starting refinement:`, refineError);
+			await sculptureModel.updateSculpture(sculptureId, { status: "failed" });
+			return;
+		}
+
+		// Poll refine task
+		await new Promise((resolve) => setTimeout(resolve, 5000)); // Initial 5s delay
+
+		let refineStatus;
+		let refinePollAttempts = 0;
+		const maxRefinePollAttempts = 120; // 120 attempts × 10s = 20 minutes
+
+		while (refinePollAttempts < maxRefinePollAttempts) {
+			await new Promise((resolve) => setTimeout(resolve, pollIntervalMs));
+			refinePollAttempts++;
+
+			try {
+				refineStatus = await getMeshyTaskStatus(refineTaskId);
+				console.log(`[Background Polling ${sculptureId}] Refine poll #${refinePollAttempts}:`, refineStatus.status);
+
+				if (refineStatus.status === "SUCCEEDED") {
+					console.log(`[Background Polling ${sculptureId}] Refine task succeeded`);
+
+					// Update database with final results
+					await sculptureModel.updateSculpture(sculptureId, {
+						status: "completed",
+						modelUrl: refineStatus.model_urls?.glb || null,
+						thumbnailUrl: refineStatus.thumbnail_url || null,
+					});
+
+					console.log(`[Background Polling ${sculptureId}] Sculpture completed successfully`);
+					return;
+				}
+
+				if (refineStatus.status === "FAILED") {
+					console.error(`[Background Polling ${sculptureId}] Refine task failed`);
+					await sculptureModel.updateSculpture(sculptureId, { status: "failed" });
+					return;
+				}
+			} catch (pollError) {
+				console.error(`[Background Polling ${sculptureId}] Error polling refine status:`, pollError.message);
+				// Continue polling on transient errors
+			}
+		}
+
+		// Refine timed out
+		console.error(`[Background Polling ${sculptureId}] Refine task timed out after ${refinePollAttempts} attempts`);
+		await sculptureModel.updateSculpture(sculptureId, { status: "timeout" });
+	} catch (error) {
+		console.error(`[Background Polling ${sculptureId}] Unexpected error:`, error);
+		try {
+			await sculptureModel.updateSculpture(sculptureId, { status: "failed" });
+		} catch (dbError) {
+			console.error(`[Background Polling ${sculptureId}] Failed to update status to failed:`, dbError);
+		}
+	}
+}
 // ----------------------------------------------------------------------------------------------------
 // #endregion
 // ----------------------------------------------------------------------------------------------------

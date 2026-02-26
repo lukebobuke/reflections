@@ -15,6 +15,7 @@ CREATE TABLE IF NOT EXISTS sculptures (
   id SERIAL PRIMARY KEY,
   user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
   prompt TEXT NOT NULL,
+  personality_analysis TEXT,
   meshy_task_id VARCHAR(255),
   refine_task_id VARCHAR(255),
   model_url TEXT,
