@@ -1,5 +1,11 @@
 /** @format */
-
+if (navigator.userAgent.includes("Firefox")) {
+	document.addEventListener("DOMContentLoaded", () => {
+		document.querySelectorAll(".liquid-glass").forEach((el) => {
+			el.classList.replace("liquid-glass", "glass");
+		});
+	});
+}
 class FxFilter {
 	static elements = new WeakMap(); // Track elements and their state
 	static filters = new Map(); // Registry for custom filters

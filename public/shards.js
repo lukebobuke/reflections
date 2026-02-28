@@ -3,6 +3,40 @@ import { Delaunay } from "https://cdn.jsdelivr.net/npm/d3-delaunay@6/+esm";
 // import { createSculpturePrompt } from "./sculptures.js";
 
 // ----------------------------------------------------------------------------------------------------
+// #region Loading Spinner
+// ----------------------------------------------------------------------------------------------------
+function showLoadingSpinner() {
+	const shardsSection = document.querySelector("#shards-section");
+	if (!shardsSection) return;
+
+	// Remove existing spinner if present
+	hideLoadingSpinner();
+
+	const spinner = document.createElement("div");
+	spinner.id = "shards-loading-spinner";
+	spinner.className = "shards-loading-spinner";
+	spinner.innerHTML = `
+		<div class="spinner-ring"></div>
+		<p class="spinner-text">Loading shards...</p>
+	`;
+	shardsSection.appendChild(spinner);
+}
+
+function hideLoadingSpinner() {
+	const spinner = document.querySelector("#shards-loading-spinner");
+	if (!spinner) return;
+
+	// Fade out smoothly
+	spinner.style.opacity = "0";
+	setTimeout(() => {
+		spinner.remove();
+	}, 600); // Match --transition-fast
+}
+// ----------------------------------------------------------------------------------------------------
+// #endregion
+// ----------------------------------------------------------------------------------------------------
+
+// ----------------------------------------------------------------------------------------------------
 // #region App State
 // ----------------------------------------------------------------------------------------------------
 const createAppState = () => {
@@ -19,6 +53,9 @@ const createAppState = () => {
 		set: {
 			viewShards: async () => {
 				if (!shardCrudContainer) return;
+
+				// Show loading spinner
+				showLoadingSpinner();
 
 				// Clear any pending form show timeout
 				if (shardFormTimeout) {
@@ -48,13 +85,17 @@ const createAppState = () => {
 					}
 					updateVoronoiPaths(
 						currentPointsState.get().points.length,
-						currentPointsState.get().points
+						currentPointsState.get().points,
 						// Remove width and height - let the function calculate them
 					);
 					currentShards = await fetchShards();
 					updateVoronoiWithShards(currentShards);
+					// Hide loading spinner after everything is ready
+					hideLoadingSpinner();
 				} catch (error) {
 					console.error("Error in viewShards state:", error);
+					// Hide spinner even on error
+					hideLoadingSpinner();
 				}
 			},
 			shardCreation: () => {
@@ -492,7 +533,7 @@ function exitPointsEditingState(pressable) {
 		console.log(
 			`exitPointsEditingState - passing to editPointArray: ${currentPointsState.get().points}, rotationCount: ${
 				currentPointsState.get().rotationCount
-			}`
+			}`,
 		);
 		editPointArray(currentPointsState.get().points, currentPointsState.get().rotationCount);
 		appState.set.viewShards();

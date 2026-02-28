@@ -1,6 +1,22 @@
 /** @format */
 
 // ----------------------------------------------------------------------------------------------------
+// #region Progress Bar Configuration
+// ----------------------------------------------------------------------------------------------------
+const SCULPTURE_STAGES = {
+	ANALYZING: { label: "Analyzing your reflections...", duration: 18000, apiStatus: null },
+	SCULPTING: { label: "Sculpting your form...", duration: 600000, apiStatus: "processing" },
+	REFINING: { label: "Refining your sculpture...", duration: 540000, apiStatus: "refining" },
+};
+
+let currentStage = null;
+let progressTimer = null;
+let stageStartTime = null;
+// ----------------------------------------------------------------------------------------------------
+// #endregion
+// ----------------------------------------------------------------------------------------------------
+
+// ----------------------------------------------------------------------------------------------------
 // #region CRUD Requests
 // ----------------------------------------------------------------------------------------------------
 async function requestCreateSculpture(prompt, artStyle = "realistic") {
@@ -156,7 +172,12 @@ function handleSubmitButtonClick() {
 			// hide action buttons while processing
 			updatedEls.btnBack.classList.add("hidden");
 			newSubmit.classList.add("hidden");
-			addMainPopupStatus("Starting personality analysis...");
+
+			// Create progress bar UI
+			createProgressBarUI();
+
+			// Start first stage immediately
+			startProgressStage("ANALYZING");
 
 			try {
 				// Start sculpture creation request
@@ -164,9 +185,6 @@ function handleSubmitButtonClick() {
 
 				const taskId = sculptureResponse.task_id || sculptureResponse.taskId || sculptureResponse.task || null;
 				const sculptureId = sculptureResponse.id || sculptureResponse.sculpture_id || null;
-
-				addMainPopupStatus("Personality analysis complete.");
-				addMainPopupStatus("Sculpture job submitted.");
 
 				// Polling
 				let attempts = 0;
@@ -187,26 +205,29 @@ function handleSubmitButtonClick() {
 						}
 
 						const statusText =
-							statusObj && (statusObj.status || statusObj.state || statusObj.task_status)
-								? statusObj.status || statusObj.state || statusObj.task_status
-								: "pending";
-						addMainPopupStatus(`Status: ${statusText}`);
+							statusObj && (statusObj.status || statusObj.state || statusObj.task_status) ?
+								statusObj.status || statusObj.state || statusObj.task_status
+							:	"pending";
+
+						// Update progress based on status
+						updateProgressFromStatus(statusText);
 
 						if (statusText === "completed" || statusText === "done" || statusText === "finished") {
-							addMainPopupStatus("Sculpture creation completed.");
+							showProgressComplete(true);
 							clearInterval(pollHandle);
 							// show OK button
 							const okBtn = getMainPopupElements().btnOk;
 							if (okBtn) okBtn.classList.remove("hidden");
 						} else if (attempts >= maxAttempts) {
-							addMainPopupStatus("Timed out waiting for completion. Check sculptures page later.");
+							showProgressComplete(false);
+							addMainPopupStatus("⏱ Taking longer than expected. Check back soon.");
 							clearInterval(pollHandle);
 							const okBtn = getMainPopupElements().btnOk;
 							if (okBtn) okBtn.classList.remove("hidden");
 						}
 					} catch (err) {
 						console.error("Error polling sculpture status:", err);
-						addMainPopupStatus("Error checking status: " + (err.message || err));
+						addMainPopupStatus("⚠ Error checking status: " + (err.message || err));
 						clearInterval(pollHandle);
 						const okBtn = getMainPopupElements().btnOk;
 						if (okBtn) okBtn.classList.remove("hidden");
@@ -218,7 +239,7 @@ function handleSubmitButtonClick() {
 				}, 0);
 			} catch (err) {
 				console.error("Error during sculpture creation:", err);
-				addMainPopupStatus("Failed to start sculpture creation: " + (err.message || err));
+				addMainPopupStatus("⚠ Failed to start sculpture creation: " + (err.message || err));
 				const okBtn = getMainPopupElements().btnOk;
 				if (okBtn) okBtn.classList.remove("hidden");
 			}
@@ -291,6 +312,145 @@ function addMainPopupStatus(msg) {
 	el.status.appendChild(line);
 	el.status.scrollTop = el.status.scrollHeight;
 }
+
+// ----------------------------------------------------------------------------------------------------
+// #region Progress Bar UI Helpers
+// ----------------------------------------------------------------------------------------------------
+function createProgressBarUI() {
+	const el = getMainPopupElements();
+	if (!el) return;
+
+	// Clear existing status content
+	el.status.innerHTML = "";
+
+	// Create progress container
+	const progressContainer = document.createElement("div");
+	progressContainer.id = "sculpture-progress-container";
+	progressContainer.className = "sculpture-progress-container";
+
+	// Create three stage rows
+	Object.entries(SCULPTURE_STAGES).forEach(([key, stage], index) => {
+		const stageRow = document.createElement("div");
+		stageRow.className = "progress-stage";
+		stageRow.id = `progress-stage-${index + 1}`;
+
+		const label = document.createElement("div");
+		label.className = "progress-label";
+		label.textContent = stage.label;
+
+		const barContainer = document.createElement("div");
+		barContainer.className = "progress-bar-container";
+
+		const barFill = document.createElement("div");
+		barFill.className = "progress-bar-fill";
+		barFill.style.width = "0%";
+
+		barContainer.appendChild(barFill);
+		stageRow.appendChild(label);
+		stageRow.appendChild(barContainer);
+		progressContainer.appendChild(stageRow);
+	});
+
+	el.status.appendChild(progressContainer);
+}
+
+function startProgressStage(stageKey) {
+	const stages = Object.keys(SCULPTURE_STAGES);
+	const stageIndex = stages.indexOf(stageKey);
+	if (stageIndex === -1) return;
+
+	currentStage = stageKey;
+	stageStartTime = Date.now();
+
+	// Mark this stage as active
+	const stageRow = document.getElementById(`progress-stage-${stageIndex + 1}`);
+	if (stageRow) {
+		stageRow.classList.add("active");
+	}
+
+	// Animate the progress bar
+	const stage = SCULPTURE_STAGES[stageKey];
+	animateProgressBar(stageIndex + 1, stage.duration);
+}
+
+function animateProgressBar(stageNumber, duration) {
+	const stageRow = document.getElementById(`progress-stage-${stageNumber}`);
+	if (!stageRow) return;
+
+	const barFill = stageRow.querySelector(".progress-bar-fill");
+	if (!barFill) return;
+
+	// Clear any existing timer
+	if (progressTimer) {
+		clearInterval(progressTimer);
+	}
+
+	const startTime = Date.now();
+	const updateInterval = 100; // Update every 100ms
+
+	progressTimer = setInterval(() => {
+		const elapsed = Date.now() - startTime;
+		const progress = Math.min((elapsed / duration) * 100, 100);
+		barFill.style.width = `${progress}%`;
+
+		if (progress >= 100) {
+			clearInterval(progressTimer);
+			progressTimer = null;
+		}
+	}, updateInterval);
+}
+
+function completeProgressStage(stageNumber) {
+	const stageRow = document.getElementById(`progress-stage-${stageNumber}`);
+	if (!stageRow) return;
+
+	const barFill = stageRow.querySelector(".progress-bar-fill");
+	if (barFill) {
+		barFill.style.width = "100%";
+	}
+	stageRow.classList.remove("active");
+	stageRow.classList.add("complete");
+}
+
+function updateProgressFromStatus(status) {
+	if (!status) return;
+
+	// Map API status to stages
+	if (status === "processing" && currentStage !== "SCULPTING") {
+		// Complete analyzing stage, start sculpting
+		completeProgressStage(1);
+		startProgressStage("SCULPTING");
+	} else if (status === "refining" && currentStage !== "REFINING") {
+		// Complete sculpting stage, start refining
+		completeProgressStage(2);
+		startProgressStage("REFINING");
+	} else if (status === "completed") {
+		// Complete all stages
+		if (progressTimer) {
+			clearInterval(progressTimer);
+			progressTimer = null;
+		}
+		completeProgressStage(1);
+		completeProgressStage(2);
+		completeProgressStage(3);
+	}
+}
+
+function showProgressComplete(success = true) {
+	const el = getMainPopupElements();
+	if (!el) return;
+
+	const container = document.getElementById("sculpture-progress-container");
+	if (!container) return;
+
+	const message = document.createElement("div");
+	message.className = "progress-complete-message";
+	message.textContent = success ? "✓ Sculpture creation completed!" : "Sculpture creation in progress...";
+	container.appendChild(message);
+}
+// ----------------------------------------------------------------------------------------------------
+// #endregion
+// ----------------------------------------------------------------------------------------------------
 
 // ----------------------------------------------------------------------------------------------------
 // #region Automatic Status Polling
