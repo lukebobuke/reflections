@@ -43,6 +43,25 @@ const getSculptureById = async (sculptureId) => {
 	const result = await db.query(query, [sculptureId]);
 	return result.rows[0];
 };
+
+const getPublicFeed = async () => {
+	const query = `
+		SELECT 
+			s.id,
+			s.thumbnail_url,
+			s.model_url,
+			s.personality_analysis,
+			s.created_at,
+			u.name AS username
+		FROM sculptures s
+		JOIN users u ON s.user_id = u.id
+		WHERE s.status = 'completed'
+		ORDER BY s.created_at DESC
+		LIMIT 10
+	`;
+	const result = await db.query(query);
+	return result.rows;
+};
 // ----------------------------------------------------------------------------------------------------
 // #endregion
 // ----------------------------------------------------------------------------------------------------
@@ -113,6 +132,7 @@ module.exports = {
 	getSculpturesByUserId,
 	updateSculptureStatus,
 	getSculptureById,
+	getPublicFeed,
 	updateSculpture,
 	deleteSculpture,
 };

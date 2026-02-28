@@ -2,6 +2,16 @@
 
 <main class="liquid-glass">
 	<section>
-		<p>Sculpture feed coming soon.</p>
+		<h2>Recent Sculptures</h2>
+		<% if (!user) { %>
+		<p style="text-align: center; margin-bottom: var(--padding); color: rgba(var(--text-color), 0.8);">
+			Explore sculptures created by our community. 
+			<a href="/signup" class="liquid-glass button-link" style="display: inline-block; margin-left: 0.5rem;">
+				<span class="carved-glass">Create Your Own</span>
+			</a>
+		</p>
+		<% } %>
+		<div id="sculpture-feed"></div>
 	</section>
 </main>
+<script type="module" src="/index.js"></script>

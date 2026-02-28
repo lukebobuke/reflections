@@ -207,6 +207,16 @@ const readSculptureStatus = async (req, res) => {
 		});
 	}
 };
+
+const readPublicFeed = async (req, res) => {
+	try {
+		const sculptures = await sculptureModel.getPublicFeed();
+		res.json(sculptures);
+	} catch (error) {
+		console.error("Error fetching public feed:", error);
+		res.status(500).json({ error: "Failed to fetch public feed" });
+	}
+};
 // ----------------------------------------------------------------------------------------------------
 // #endregion
 // ----------------------------------------------------------------------------------------------------
@@ -482,6 +492,7 @@ module.exports = {
 	createRefinedSculpture,
 	readSculptures,
 	readSculptureStatus,
+	readPublicFeed,
 	updateSculptureStatus,
 	deleteSculpture,
 };

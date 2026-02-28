@@ -7,6 +7,9 @@ const sculptureController = require("../controllers/sculptureController");
 // POST /api/sculptures - Create new sculpture
 sculptureRouter.post("/", sculptureController.createSculpture);
 
+// GET /api/sculptures/feed - Get public feed of completed sculptures
+sculptureRouter.get("/feed", sculptureController.readPublicFeed);
+
 // GET /api/sculptures - Get all sculptures
 sculptureRouter.get("/", sculptureController.readSculptures);
 

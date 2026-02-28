@@ -11,7 +11,7 @@
 		<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400..900&display=swap" rel="stylesheet" />
 		<link rel="stylesheet" href="/styles.css" />
 	</head>
-	<body data-user-logged-in="<%= user ? 'true' : '' %>" data-has-sculpture="<%= typeof hasSculpture !== 'undefined' ? hasSculpture : false %>">
+	<body data-logged-in="<%= user ? 'true' : 'false' %>" data-user-logged-in="<%= user ? 'true' : '' %>" data-has-sculpture="<%= typeof hasSculpture !== 'undefined' ? hasSculpture : false %>">
 		<%- include('partials/filters') %>
 		<!-- <div id="bgImage"></div> -->
 		<video
