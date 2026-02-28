@@ -1233,6 +1233,11 @@ function updateVoronoiWithShards(shards = []) {
 			}
 		}
 	});
+
+	// Re-scan for FxFilter effects now that content is rendered and has dimensions
+	if (window.FxFilter) {
+		window.FxFilter.scanElements();
+	}
 }
 // ----------------------------------------------------------------------------------------------------
 // #endregion

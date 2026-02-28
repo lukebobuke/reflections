@@ -114,7 +114,8 @@ class FxFilter {
 
 	static getFxFilterValue(element) {
 		const computed = getComputedStyle(element);
-		return computed.getPropertyValue("--fx-filter").trim() || null;
+		const value = computed.getPropertyValue("--fx-filter").trim() || null;
+		return value;
 	}
 
 	static addFxContainer(element, filterValue, parsedFilter) {
@@ -340,6 +341,13 @@ FxFilter.add({
 	callback: (element, refraction = 1, offset = 10, chromatic = 0) => {
 		const width = Math.round(element.offsetWidth);
 		const height = Math.round(element.offsetHeight);
+
+		// Skip if element has no dimensions (not yet rendered or hidden)
+		if (width === 0 || height === 0) {
+			console.warn("⚠️ liquid-glass: Element has zero dimensions, skipping", element);
+			return "";
+		}
+
 		const refractionValue = parseFloat(refraction) / 2 || 0;
 		const offsetValue = (parseFloat(offset) || 0) / 2;
 		const chromaticValue = parseFloat(chromatic) || 0;
