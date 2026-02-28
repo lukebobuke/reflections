@@ -271,8 +271,16 @@ class FxFilter {
 			if (filterOptions && filterOptions.updatesOn) {
 				const computed = getComputedStyle(element);
 				filterOptions.updatesOn.forEach((styleProp) => {
-					const value = computed.getPropertyValue(styleProp);
-					trackedStyles.set(styleProp, value);
+					// For width/height, track actual rendered dimensions instead of CSS values
+					// This ensures we detect visibility changes (display:none -> visible)
+					if (styleProp === "width") {
+						trackedStyles.set(styleProp, element.offsetWidth.toString());
+					} else if (styleProp === "height") {
+						trackedStyles.set(styleProp, element.offsetHeight.toString());
+					} else {
+						const value = computed.getPropertyValue(styleProp);
+						trackedStyles.set(styleProp, value);
+					}
 				});
 			}
 		});
