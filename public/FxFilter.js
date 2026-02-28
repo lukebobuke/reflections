@@ -20,16 +20,18 @@ class FxFilter {
 			const callback = arguments[1];
 			this.filters.set(name, callback);
 			this.filterOptions.set(name, { name, callback, updatesOn: [] });
+			console.log(`🔧 Registered filter: "${name}"`);
 		} else {
 			// New format: add({name, callback, updatesOn})
 			const { name, callback, updatesOn = [] } = options;
 			this.filters.set(name, callback);
 			this.filterOptions.set(name, { name, callback, updatesOn });
+			console.log(`🔧 Registered filter: "${name}" with updatesOn: [${updatesOn.join(", ")}]`);
 		}
 	}
 
 	static init() {
-		console.log("FxFilter.init() called");
+		console.log("🔄 FxFilter.init() called");
 
 		// Register --fx-filter as a proper CSS custom property
 		if ("CSS" in window && "registerProperty" in CSS) {
@@ -40,14 +42,18 @@ class FxFilter {
 					inherits: false,
 					initialValue: "",
 				});
+				console.log("✅ --fx-filter property registered");
 			} catch (e) {
-				console.log("CSS registerProperty not supported or already registered");
+				console.log("⚠️ CSS registerProperty not supported or already registered");
 			}
 		}
 
 		if (!this.running) {
+			console.log("🚀 Starting FxFilter animation loop");
 			this.running = true;
 			this.tick();
+		} else {
+			console.log("⚡ FxFilter already running - skipping duplicate initialization");
 		}
 	}
 
@@ -58,7 +64,7 @@ class FxFilter {
 
 	static scanElements() {
 		// Scan only elements that could have --fx-filter (not our generated containers)
-		document.querySelectorAll("*:not(.fx-container)").forEach((element) => {
+		document.querySelectorAll("*:not(.fx-container):not(svg)").forEach((element) => {
 			const fxFilter = this.getFxFilterValue(element);
 			const storedState = this.elements.get(element);
 
@@ -119,6 +125,7 @@ class FxFilter {
 
 		// Parse filter value (use cached if provided)
 		const { orderedFilters, customFilters } = parsedFilter || this.parseFilterValue(filterValue);
+		console.log("Parsed filters:", { orderedFilters, customFilters });
 
 		// Build the combined filter list
 		const filterParts = [];
@@ -159,11 +166,16 @@ class FxFilter {
                 <div class="fx-container" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; backdrop-filter: ${backdropFilter}; background: transparent; pointer-events: none; z-index: -1; overflow: hidden; border-radius: inherit;"></div>
             `;
 
+			console.log("Applied combined filter:", backdropFilter);
 			this.elements.set(element, { filter: filterValue, hasContainer: true });
+		} else {
+			console.log("No valid filters found");
 		}
 	}
 
 	static createUnifiedSVG(customFilters) {
+		console.log("createUnifiedSVG called with:", customFilters);
+
 		const svg = document.createElement("svg");
 		svg.style.cssText = "position: absolute; width: 0; height: 0; pointer-events: none;";
 
@@ -171,7 +183,9 @@ class FxFilter {
 		let svgContent = "";
 
 		customFilters.forEach((filter, index) => {
+			console.log("Processing filter:", filter.name, "with params:", filter.params);
 			const callback = this.filters.get(filter.name);
+			console.log("Callback found:", !!callback);
 
 			if (callback) {
 				// Create unique ID for this filter instance
@@ -180,11 +194,14 @@ class FxFilter {
 
 				// Render filter content with callback, passing parameters as arguments
 				const filterContent = callback(...filter.params);
+				console.log("Filter content generated:", filterContent);
 				svgContent += `<filter id="${filterId}" x="-20%" y="-20%" width="140%" height="140%">${filterContent}</filter>`;
 			}
 		});
 
+		console.log("Final SVG content:", svgContent);
 		svg.innerHTML = svgContent;
+		console.log("SVG element created:", svg);
 		return { svg, filterIds };
 	}
 
@@ -195,6 +212,8 @@ class FxFilter {
 	static parseFilterValue(filterValue) {
 		// Parse: saturate(2) frosted-glass(8, 0.15) blur(10px)
 		// Return: { orderedFilters: [...], customFilters: [...] }
+
+		console.log("🔍 Parsing filter value:", filterValue);
 
 		const orderedFilters = []; // Maintains original order
 		const customFilters = [];
@@ -207,7 +226,10 @@ class FxFilter {
 			const filterName = match[1];
 			const params = match[2];
 
+			console.log(`📝 Found filter: ${filterName} with params: "${params}"`);
+
 			if (this.filters.has(filterName)) {
+				console.log(`✅ Custom filter "${filterName}" found in registry`);
 				// It's a registered custom filter
 				let paramArray = [];
 				if (params.trim() !== "") {
@@ -221,15 +243,18 @@ class FxFilter {
 						})
 						.filter((p) => p !== undefined);
 				}
+				console.log(`📋 Parsed params for "${filterName}":`, paramArray);
 				const customFilter = { name: filterName, params: paramArray };
 				customFilters.push(customFilter);
 				orderedFilters.push({ type: "custom", filter: customFilter });
 			} else {
+				console.log(`🎨 CSS filter: ${filterName}(${params})`);
 				// It's a native CSS filter
 				orderedFilters.push({ type: "css", filter: `${filterName}(${params})` });
 			}
 		}
 
+		console.log("📊 Parse results:", { orderedFilters, customFilters });
 		return {
 			orderedFilters: orderedFilters,
 			customFilters: customFilters,
@@ -260,6 +285,7 @@ class FxFilter {
 
 		for (const [prop, value] of newStyles) {
 			if (oldStyles.get(prop) !== value) {
+				console.log(`🔄 Style change detected: ${prop} changed from "${oldStyles.get(prop)}" to "${value}"`);
 				return true;
 			}
 		}
@@ -400,6 +426,7 @@ FxFilter.add({
 			const offsetX = (maxDimension - width) / 2;
 			const offsetY = (maxDimension - height) / 2;
 			ctx.putImageData(imageData, -Math.round(offsetX), -Math.round(offsetY));
+			console.log("Displacement map applied to canvas", width, height, canvas.toDataURL());
 			// Apply border radius mask if needed
 			if (borderRadius > 0) {
 				const maskCanvas = new OffscreenCanvas(width, height);
