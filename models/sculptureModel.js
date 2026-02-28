@@ -92,17 +92,6 @@ const updateSculpture = async (sculptureId, updateData) => {
 	const result = await db.query(query, values);
 	return result.rows[0];
 };
-
-const incrementDownloadCount = async (sculptureId) => {
-	const query = `
-		UPDATE sculptures 
-		SET download_count = download_count + 1, updated_at = CURRENT_TIMESTAMP
-		WHERE id = $1 
-		RETURNING *
-	`;
-	const result = await db.query(query, [sculptureId]);
-	return result.rows[0];
-};
 // ----------------------------------------------------------------------------------------------------
 // #endregion
 // ----------------------------------------------------------------------------------------------------
@@ -126,5 +115,4 @@ module.exports = {
 	getSculptureById,
 	updateSculpture,
 	deleteSculpture,
-	incrementDownloadCount,
 };

@@ -77,11 +77,11 @@ const validateShardUser = async (shardId, userId) => {
 const editShard = async (shardId, shardData) => {
 	const query = `
         UPDATE shards
-        SET spark = $1, text = $2, tint = $3, glow = $4
-        WHERE id = $5
+        SET spark = $1, text = $2, tint = $3, glow = $4, point = $5
+        WHERE id = $6
         RETURNING *
     `;
-	const values = [shardData.spark, shardData.text, shardData.tint, shardData.glow, shardId];
+	const values = [shardData.spark, shardData.text, shardData.tint, shardData.glow, shardData.point, shardId];
 	const result = await db.query(query, values);
 	if (!result.rows || result.rows.length === 0) {
 		throw new Error("Shard not found");
