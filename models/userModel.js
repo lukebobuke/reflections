@@ -16,7 +16,7 @@ const createUser = ({ name, email, password }) => {
 const getUserByEmail = async (email) => {
 	const user = await db.query("SELECT * FROM users WHERE email = $1", [email]);
 	if (!user.rows || user.rows.length === 0) {
-		throw new Error("User not found");
+		return null;
 	}
 	return user.rows[0]; // returns an object with all columns as properties
 };

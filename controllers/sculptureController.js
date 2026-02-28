@@ -147,7 +147,7 @@ const createRefinedSculpture = async (req, res) => {
 
 		const sculpture = await sculptureModel.getSculptureById(sculptureId);
 
-		if (!sculpture || sculpture.userId !== userId) {
+		if (!sculpture || sculpture.user_id !== userId) {
 			console.log("createRefinedSculpture: Sculpture not found or user mismatch");
 			return res.status(404).json({ error: "Sculpture not found" });
 		}
@@ -225,7 +225,7 @@ const updateSculptureStatus = async (req, res) => {
 
 		const sculpture = await sculptureModel.getSculptureById(sculptureId);
 
-		if (!sculpture || sculpture.userId !== userId) {
+		if (!sculpture || sculpture.user_id !== userId) {
 			return res.status(404).json({ error: "Sculpture not found" });
 		}
 
@@ -272,7 +272,7 @@ const deleteSculpture = async (req, res) => {
 
 		const sculpture = await sculptureModel.getSculptureById(sculptureId);
 
-		if (!sculpture || sculpture.userId !== userId) {
+		if (!sculpture || sculpture.user_id !== userId) {
 			return res.status(404).json({ error: "Sculpture not found" });
 		}
 
