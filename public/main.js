@@ -145,6 +145,14 @@ function initShardsPageGuide() {
 
 	const { stage, hasSculpture, patternLocked, isNewSignup, isFirstSculpture } = state;
 
+	console.log(
+		`Phase: ${
+			hasSculpture ? "Sculpture view"
+			: patternLocked ? "Shard creation"
+			: "Pattern creation"
+		}`,
+	);
+
 	// Stage 3 first time — sculpture just completed
 	if (hasSculpture && isFirstSculpture) {
 		setTimeout(() => {
@@ -185,6 +193,8 @@ async function handleDoneWithPattern() {
 
 	btn.addEventListener("click", async () => {
 		try {
+			console.log("Pattern: Saving and locking pattern");
+
 			// Save the current point state to backend
 			const { points, rotationCount } = currentPointsState.get();
 
@@ -219,6 +229,8 @@ async function handleDoneWithPattern() {
 			const showAndSubmit = document.getElementById("show-and-submit");
 			if (patternControls) patternControls.classList.add("hidden");
 			if (showAndSubmit) showAndSubmit.classList.remove("hidden");
+
+			console.log("Phase: Pattern locked → transitioning to shard creation");
 
 			// Show the shard creation guide message
 			guideManager.show("patternLocked");
@@ -271,7 +283,7 @@ function initHeaderScroll() {
 // #region DOMContentLoaded
 // ----------------------------------------------------------------------------------------------------
 document.addEventListener("DOMContentLoaded", () => {
-	console.log("Frontend JS loaded.");
+	console.log("App: Initializing Reflections");
 
 	fetchSculptureFeed();
 	maybeShowWelcomeGuide();

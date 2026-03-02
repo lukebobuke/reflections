@@ -65,13 +65,11 @@ const createAppState = () => {
 
 				shardCrudContainer.classList.remove("active");
 				state = "viewShards";
-				console.log("App state set to viewShards");
 				if (editPointsActions) editPointsActions.classList.remove("active");
 				// Fetch and update shards when returning to viewShards
 				try {
 					const pointsData = await fetchPointArray();
 					if (!pointsData) {
-						console.log("Points array does not exist - creating empty array.");
 						try {
 							await createPointArray([[0, 0]], 0);
 						} catch (createError) {
@@ -111,8 +109,6 @@ const createAppState = () => {
 					shardCrudContainer.classList.add("active");
 					shardFormTimeout = null;
 				}, 600);
-
-				console.log("App state set to shardCreation");
 			},
 			shardEditing: () => {
 				state = "shardEditing";
@@ -125,8 +121,6 @@ const createAppState = () => {
 					shardCrudContainer.classList.add("active");
 					shardFormTimeout = null;
 				}, 600);
-
-				console.log("App state set to shardEditing");
 			},
 			pointsEditing: () => {
 				state = "pointsEditing";
@@ -139,7 +133,6 @@ const createAppState = () => {
 				}
 
 				shardCrudContainer.classList.remove("active");
-				console.log("App state set to pointsEditing");
 			},
 		},
 	};
@@ -153,12 +146,10 @@ function handleHideShardCrudClick() {
 	const crudContainer = document.querySelector("#shard-crud-container");
 	if (!crudContainer) return;
 	document.addEventListener("click", (e) => {
-		console.log("handleHideShardCrudClick: document click - check if outside CRUD container");
 		// Check if we're in a state where we should close the form
 		if (appState.get() === "shardCreation" || appState.get() === "shardEditing") {
 			// If the click is outside the container, close the form
 			if (!crudContainer.contains(e.target)) {
-				console.log("Clicked outside shardCrudContainer. Hiding shard CRUD container");
 				appState.set.viewShards();
 			}
 		}
@@ -172,28 +163,23 @@ function handleHideShardCrudClick() {
 // #region API Calls
 // ----------------------------------------------------------------------------------------------------
 async function createShardRequest(data) {
-	console.log("createShardRequest: sending POST to create shard");
 	const response = await fetch("/shards", {
 		method: "POST",
 		headers: { "Content-Type": "application/json" },
 		body: JSON.stringify(data),
 	});
-	console.log("response:", response);
 	if (!response.ok) {
 		throw new Error("From shards.js, failed to create shard");
 	}
 	const shards = await response.json();
-	console.log("Shard creation response:", shards);
 	return shards;
 }
 async function editShardRequest(shardId, data) {
-	console.log("editShardRequest: sending PUT to update shard");
 	const response = await fetch(`/shards/${shardId}`, {
 		method: "PUT",
 		headers: { "Content-Type": "application/json" },
 		body: JSON.stringify(data),
 	});
-	console.log("Edit shard response status:", response.status);
 	if (!response.ok) {
 		throw new Error("From shards.js, failed to update shard");
 	}
@@ -201,17 +187,14 @@ async function editShardRequest(shardId, data) {
 	return shards;
 }
 async function deleteShardRequest(shardId) {
-	console.log("deleteShardRequest: sending DELETE for shard");
 	const response = await fetch(`/shards/${shardId}`, { method: "DELETE" });
 	if (!response.ok) {
 		throw new Error("From shards.js, failed to delete shard");
 	}
-	console.log("Delete shard response:", response);
 	const shards = await response.json();
 	return shards;
 }
 async function fetchShards() {
-	console.log("fetchShards: fetching user shards from API");
 	const response = await fetch("/shards/api/user-shards");
 	if (!response.ok) {
 		throw new Error("Failed to fetch shards");
@@ -219,7 +202,6 @@ async function fetchShards() {
 	return await response.json();
 }
 async function fetchPointArray() {
-	console.log("fetchPointArray: fetching points array from API");
 	const response = await fetch("/api/points");
 	if (response.status === 404) {
 		// No point arrays found for this user
@@ -228,11 +210,9 @@ async function fetchPointArray() {
 	if (!response.ok) {
 		throw new Error("Failed to fetch points");
 	}
-	console.log("fetchPointArray response:", response);
 	return await response.json();
 }
 async function createPointArray(points, rotationCount) {
-	console.log("createPointArray: sending POST to create points array");
 	const response = await fetch("/api/points", {
 		method: "POST",
 		headers: { "Content-Type": "application/json" },
@@ -246,7 +226,6 @@ async function createPointArray(points, rotationCount) {
 	}
 }
 async function editPointArray(points, rotationCount) {
-	console.log("editPointArray: sending PUT to edit points array");
 	try {
 		const response = await fetch("/api/points", {
 			method: "PUT",
@@ -261,7 +240,6 @@ async function editPointArray(points, rotationCount) {
 		}
 		// Handle the response if needed
 		const result = await response.json();
-		console.log("Points updated successfully:", result);
 		return result;
 	} catch (error) {
 		console.error("Error updating points:", error);
@@ -276,7 +254,6 @@ async function editPointArray(points, rotationCount) {
 // #region Validation
 // ----------------------------------------------------------------------------------------------------
 function validateShardData(data) {
-	console.log("validateShardData: validating shard form data");
 	const { spark, text, tint, glow, point } = data;
 	if (!spark || typeof spark !== "string") {
 		throw new Error("ValidateShardData in shards.js: Invalid spark text");
@@ -315,18 +292,14 @@ function handleShardClick() {
 	const shardCrudContainer = document.querySelector("#shard-crud-container");
 	const shardCrudForm = document.querySelector("#shard-crud-form");
 	if (!shardContainer || !shardCrudContainer || !shardCrudForm) {
-		console.log("One or more required elements are missing.");
 		return;
 	}
 	shardContainer.addEventListener("click", function (e) {
-		console.log("handleShardClick: voronoi-group click - check for cell click");
 		if (appState.get() === "viewShards") {
 			e.stopPropagation();
 			const voronoiCell = e.target.closest(".voronoi-cell");
-			console.log("Voronoi Cell clicked:", voronoiCell);
 			// display create shard CRUD form
 			if (voronoiCell && shardContainer.contains(voronoiCell) && !voronoiCell.dataset.shardId) {
-				console.log("shard CRUD form initialized");
 				appState.set.shardCreation();
 				currentShardState.set({ point: voronoiCell.dataset.originalIndex });
 			}
@@ -365,7 +338,6 @@ function handleShardClick() {
 // #region Handle Shard CRUD
 // ----------------------------------------------------------------------------------------------------
 function createCurrentShardState() {
-	console.log("createCurrentShardState: initializing shard state manager");
 	let state = {
 		id: null,
 		text: "",
@@ -381,7 +353,6 @@ function createCurrentShardState() {
 		},
 		set: function (data) {
 			state = { ...state, ...data };
-			console.log("Current shard state updated:", state);
 		},
 		clear: function () {
 			state = {
@@ -392,7 +363,6 @@ function createCurrentShardState() {
 				spark: null,
 				point: 0,
 			};
-			console.log("Current shard state cleared.");
 		},
 	};
 }
@@ -403,7 +373,6 @@ function handleCreateShardClick() {
 	const shardCrudForm = document.querySelector("#shard-crud-form");
 	if (!shardCrudForm || !shardCrudContainer) return;
 	shardCrudForm.addEventListener("submit", async function (e) {
-		console.log("handleCreateShardClick: form submit - create shard");
 		if (appState.get() === "shardCreation") {
 			e.preventDefault();
 			try {
@@ -415,7 +384,6 @@ function handleCreateShardClick() {
 				const point = currentShardState.get().point;
 				const rawData = { spark, text, tint, glow, point };
 				const validatedData = validateShardData(rawData);
-				console.log("Validated data for shard creation:", validatedData);
 				currentShards = await createShardRequest(validatedData);
 				appState.set.viewShards();
 			} catch (error) {
@@ -430,7 +398,6 @@ function handleEditShardClick() {
 	const shardCrudContainer = document.querySelector("#shard-crud-container");
 	if (!shardCrudForm || !shardCrudContainer) return;
 	shardCrudForm.addEventListener("submit", async function (e) {
-		console.log("handleEditShardClick: form submit - edit shard");
 		if (appState.get() === "shardEditing") {
 			const shardId = currentShardState.get().id;
 			if (!shardId) throw new Error("Shard ID is missing.");
@@ -459,7 +426,6 @@ function handleDeleteShardClick() {
 	const formDeleteButton = document.getElementById("shard-form-delete-btn");
 	if (!formDeleteButton) return;
 	formDeleteButton.addEventListener("click", async function () {
-		console.log("handleDeleteShardClick: delete button click - delete shard");
 		const shardId = currentShardState.get().id;
 		if (!shardId) {
 			alert("No shard selected for deletion.");
@@ -483,7 +449,6 @@ function handleDeleteShardClick() {
 // #region Handle Points Crud
 // ----------------------------------------------------------------------------------------------------
 function createCurrentPointsState() {
-	console.log("createCurrentPointsState: initializing points state manager");
 	let currentPoints = [];
 	let currentRotationCount = 0;
 	return {
@@ -510,12 +475,9 @@ function enterPointsEditingState(pressable) {
 		return;
 	}
 	pressable.addEventListener("click", () => {
-		console.log("enterPointsEditingState: edit points button clicked");
 		if (appState.get() === "pointsEditing") {
-			console.log("Points edit is already enabled.");
 			return;
 		}
-		console.log("Edit button clicked.");
 		appState.set.pointsEditing();
 	});
 }
@@ -525,16 +487,9 @@ function exitPointsEditingState(pressable) {
 		return;
 	}
 	pressable.addEventListener("click", () => {
-		console.log("exitPointsEditingState: finish edit button clicked");
 		if (appState.get() !== "pointsEditing") {
-			console.log("Points edit is already disabled.");
 			return;
 		}
-		console.log(
-			`exitPointsEditingState - passing to editPointArray: ${currentPointsState.get().points}, rotationCount: ${
-				currentPointsState.get().rotationCount
-			}`,
-		);
 		editPointArray(currentPointsState.get().points, currentPointsState.get().rotationCount);
 		appState.set.viewShards();
 	});
@@ -548,7 +503,6 @@ function exitPointsEditingState(pressable) {
 // ----------------------------------------------------------------------------------------------------
 function handleShardHover(shardContainer, shardCrudContainer) {
 	if (!shardContainer || !shardCrudContainer) {
-		console.log("Shard container or shard CRUD container not found.");
 		return;
 	}
 
@@ -662,7 +616,6 @@ function handleShardHover(shardContainer, shardCrudContainer) {
 // #region Shard Form State
 // ----------------------------------------------------------------------------------------------------
 function updateShardFormUI() {
-	console.log("updateShardFormUI: updating form UI for current state");
 	const shardCrudFormTitle = document.getElementById("shard-crud-form-title");
 	const sparkRefreshButton = document.getElementById("spark-refresh");
 	const submitText = document.getElementById("shard-form-submit-text");
@@ -684,7 +637,6 @@ function updateShardFormUI() {
 	}
 }
 function loadShardFormInfo() {
-	console.log("loadShardFormInfo: loading shard data into form");
 	const shardCrudForm = document.querySelector("#shard-crud-form");
 	const sparkText = document.querySelector("#spark-text");
 	const tintPetals = document.querySelectorAll(".tint-petal");
@@ -711,17 +663,14 @@ function handleGlowClick() {
 	const glowButton = document.querySelector("#shard-form-glow-btn");
 	const shardCrudForm = document.querySelector("#shard-crud-form");
 	if (!glowButton || !shardCrudForm) {
-		console.log("Glow button or form not found.");
 		return;
 	}
 	glowButton.addEventListener("click", () => {
-		console.log("handleGlowClick: glow button clicked");
 		if (currentShardState.get().glow === 0) {
 			currentShardState.set({ glow: 1 });
 		} else {
 			currentShardState.set({ glow: 0 });
 		}
-		console.log("Updated glow state:", currentShardState.get().glow);
 		loadShardFormInfo();
 	});
 }
@@ -729,12 +678,10 @@ function handleTintClick() {
 	const tintPetals = document.querySelectorAll(".tint-petal");
 	const shardCrudForm = document.querySelector("#shard-crud-form");
 	if (!tintPetals || !shardCrudForm) {
-		console.log("tintPetal or shardCrudForm not found.");
 		return;
 	}
 	tintPetals.forEach((tintPetal) => {
 		tintPetal.addEventListener("click", () => {
-			console.log("handleTintClick: tint petal clicked");
 			tintPetals.forEach((tintPetal) => {
 				if (tintPetal.classList.contains("tint-selected")) {
 					tintPetals.forEach((tintPetal) => {
@@ -750,7 +697,6 @@ function handleTintClick() {
 	});
 }
 function randomSpark() {
-	console.log("randomSpark: generating random spark text");
 	const sparks = [
 		"Which hue best reflects the emotion you carry today?",
 		"Name a moment that cracked your heart.",
@@ -779,10 +725,8 @@ function handleSparkRefreshClick() {
 	if (!sparkRefreshButton || !sparkText) return;
 
 	sparkRefreshButton.addEventListener("click", () => {
-		console.log("handleSparkRefreshClick: spark refresh button clicked");
 		randomSpark();
 		loadShardFormInfo();
-		console.log("Spark text refreshed:", currentShardState.get().spark);
 	});
 }
 // ----------------------------------------------------------------------------------------------------
@@ -1129,7 +1073,6 @@ function handleAddVoronoiPoint() {
 	}, 16); // ~60fps
 
 	voronoiContainer.addEventListener("click", (e) => {
-		console.log("handleAddVoronoiPoint: shards-section click - add point if editing");
 		if (appState.get() === "pointsEditing") {
 			requestAnimationFrame(() => {
 				const rect = voronoiContainer.getBoundingClientRect();

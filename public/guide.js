@@ -71,6 +71,8 @@ function createGuideManager() {
 		const msg = GUIDE_MESSAGES[messageKey];
 		if (!msg) return false;
 
+		console.log(`Guide: Showing "${messageKey}" popup`);
+
 		el.text.textContent = overrideText || msg.text;
 		el.status.innerHTML = "";
 
@@ -94,6 +96,7 @@ function createGuideManager() {
 	function hide() {
 		const el = getElements();
 		if (!el) return;
+		console.log("Guide: Popup dismissed");
 		el.popup.classList.add("hidden");
 	}
 
