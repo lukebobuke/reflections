@@ -20,10 +20,6 @@ function renderSculptureFeed(sculptures) {
 			overflow: hidden;
 		`;
 
-		// Set sticky positioning and z-index for stacking effect
-		card.style.top = `calc(var(--header-height) + var(--padding) + ${index * 2}rem)`;
-		card.style.zIndex = index + 1;
-
 		// Left column: thumbnail
 		const leftColumn = document.createElement("div");
 		leftColumn.style.cssText = `

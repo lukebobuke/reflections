@@ -1015,16 +1015,10 @@ body {
 }
 
 .feed-card {
-	position: sticky;
 	height: 20rem;
 	box-shadow:
 		0 var(--glass-thickness) calc(var(--glass-thickness) * 2) rgba(var(--shadow-rgb)),
 		0 var(--hover-distance) calc(var(--hover-distance) * 2) rgba(var(--shadow-rgb));
-	margin-bottom: calc(-18rem); /* Overlap by about 2rem (20rem - 2rem = 18rem) */
-}
-
-.feed-card:last-child {
-	margin-bottom: 0; /* No overlap for the last card */
 }
 /* ----------------------------------------------------------------------------------------------------*/
 /* #endregion */
