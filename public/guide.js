@@ -81,12 +81,15 @@ function createGuideManager() {
 		el.btnSubmit.classList.toggle("hidden", !msg.buttons.submit);
 		el.btnOk.classList.toggle("hidden", !msg.buttons.ok);
 
-		// Re-wire continue button to dismiss by default on every show()
-		if (el.btnContinue) {
+		// Re-wire continue button to dismiss by default on every show() (only if button is shown)
+		if (el.btnContinue && msg.buttons.continue) {
 			const newBtn = el.btnContinue.cloneNode(true);
 			el.btnContinue.parentNode.replaceChild(newBtn, el.btnContinue);
 			el.btnContinue = newBtn; // Update reference to point to new button
-			newBtn.addEventListener("click", () => hide());
+			newBtn.addEventListener("click", () => {
+				console.log("Guide: Continue button clicked");
+				hide();
+			});
 		}
 
 		el.popup.classList.remove("hidden");
