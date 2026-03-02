@@ -88,10 +88,24 @@ function createGuideManager() {
 			el.btnContinue.parentNode.replaceChild(newBtn, el.btnContinue);
 			el.btnContinue = newBtn; // Update reference to point to new button
 			console.log("Guide: New button created", newBtn);
-			newBtn.addEventListener("click", () => {
-				console.log("Guide: Continue button clicked");
-				hide();
-			});
+
+			// Add listener with capture phase to ensure it fires first
+			newBtn.addEventListener(
+				"click",
+				(e) => {
+					console.log("Guide: Continue button clicked (capture)", e);
+					e.preventDefault();
+					e.stopPropagation();
+					hide();
+				},
+				{ capture: true },
+			);
+
+			// Also test with a direct onclick
+			newBtn.onclick = () => {
+				console.log("Guide: Continue button onclick fired");
+			};
+
 			console.log("Guide: Listener attached to button");
 		} else {
 			console.log("Guide: Skipping continue button listener", { hasButton: !!el.btnContinue, shouldShow: msg.buttons.continue });
