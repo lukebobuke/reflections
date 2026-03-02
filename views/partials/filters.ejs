@@ -63,7 +63,7 @@
 			<!-- Upper Right Inner Shadow (60° angle) -->
 			<feConvolveMatrix in="SourceAlpha" order="3" kernelMatrix="-2 2 1 -1 -1 0 -2 -1 -2" divisor="2.2" result="bevelEdges" />
 			<feFlood flood-color="white" flood-opacity=".8" result="light" />
-			<feMorphology in="bevelEdges" operator="dilate" radius="." result="bevelEdges" />
+			<feMorphology in="bevelEdges" operator="dilate" radius=".5" result="bevelEdges" />
 			<feComposite in="light" in2="bevelEdges" operator="in" result="upperRightShadow" />
 			<feColorMatrix in="upperRightShadow" result="upperRightShadow" type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 0.5 0" />
 

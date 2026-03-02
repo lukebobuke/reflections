@@ -89,6 +89,15 @@ function createGuideManager() {
 			el.btnContinue = newBtn; // Update reference to point to new button
 			console.log("Guide: New button created", newBtn);
 
+			// Test if ANY events reach the button
+			newBtn.addEventListener("mousedown", (e) => {
+				console.log("Guide: mousedown detected on button", e);
+			});
+
+			newBtn.addEventListener("mouseup", (e) => {
+				console.log("Guide: mouseup detected on button", e);
+			});
+
 			// Add listener with capture phase to ensure it fires first
 			newBtn.addEventListener(
 				"click",
@@ -106,9 +115,24 @@ function createGuideManager() {
 				console.log("Guide: Continue button onclick fired");
 			};
 
+			// Check computed style
+			setTimeout(() => {
+				const styles = window.getComputedStyle(newBtn);
+				console.log("Guide: Button computed styles", {
+					display: styles.display,
+					pointerEvents: styles.pointerEvents,
+					visibility: styles.visibility,
+					zIndex: styles.zIndex,
+					position: styles.position,
+				});
+			}, 100);
+
 			console.log("Guide: Listener attached to button");
 		} else {
-			console.log("Guide: Skipping continue button listener", { hasButton: !!el.btnContinue, shouldShow: msg.buttons.continue });
+			console.log("Guide: Skipping continue button listener", {
+				hasButton: !!el.btnContinue,
+				shouldShow: msg.buttons.continue,
+			});
 		}
 
 		el.popup.classList.remove("hidden");
