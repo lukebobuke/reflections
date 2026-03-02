@@ -83,6 +83,7 @@ function createGuideManager() {
 		if (el.btnContinue) {
 			const newBtn = el.btnContinue.cloneNode(true);
 			el.btnContinue.parentNode.replaceChild(newBtn, el.btnContinue);
+			el.btnContinue = newBtn; // Update reference to point to new button
 			newBtn.addEventListener("click", () => hide());
 		}
 

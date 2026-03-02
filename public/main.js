@@ -163,9 +163,6 @@ function initShardsPageGuide() {
 			// Show on new signup, or if pattern not yet locked (always show until locked)
 			setTimeout(() => {
 				guideManager.show("patternCreation");
-				const el = guideManager.getElements();
-				if (!el) return;
-				el.btnContinue.addEventListener("click", () => guideManager.hide(), { once: true });
 			}, 400);
 		} else {
 			// Stage 2b: shard creation — show if we just locked the pattern
@@ -225,9 +222,6 @@ async function handleDoneWithPattern() {
 
 			// Show the shard creation guide message
 			guideManager.show("patternLocked");
-			const el = guideManager.getElements();
-			if (!el) return;
-			el.btnContinue.addEventListener("click", () => guideManager.hide(), { once: true });
 		} catch (err) {
 			console.error("Error in done-with-pattern:", err);
 			guideManager.addStatus("Something went wrong saving your pattern. Please try again.");
