@@ -3,33 +3,35 @@
 <svg width="0" height="0" style="position: absolute">
 	<defs>
 		<filter id="glassCarveBevel" x="-50%" y="-50%" width="200%" height="200%">
-			<!-- Outer shadow -->
-			<feDropShadow dx="-2" dy="2" stdDeviation="0" flood-color="black" flood-opacity="0.6" result="outerRaw" />
-			<feMorphology in="SourceAlpha" operator="dilate" radius="1" result="expandedAlpha" />
-			<feComposite in="outerRaw" in2="expandedAlpha" operator="out" result="outerMasked" />
-
 			<!-- Upper Right Inner Edge (60° angle) -->
-			<feConvolveMatrix in="SourceAlpha" order="3" kernelMatrix="0 2 1 -1 -1 0 -2 -1 0" divisor="5" result="bevelEdges" />
+			<feConvolveMatrix in="SourceAlpha" order="3" kernelMatrix="0 2 1 -1 -1 0 -2 -1 0" divisor="3" result="bevelEdges" />
 			<feFlood flood-color="black" flood-opacity="1" result="light" />
+			<feMorphology in="bevelEdges" operator="dilate" radius=".3" result="bevelEdges" />
 			<feComposite in="light" in2="bevelEdges" operator="in" result="upperRightBevel" />
+			<feColorMatrix in="upperRightBevel" result="upperRightBevel" type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 .5 0" />
 
 			<!-- Lower Left Inner Edge (60° angle) -->
-			<feConvolveMatrix in="SourceAlpha" order="3" kernelMatrix="0 -1 -2 0 -1 -1 1 2 0" divisor="5" result="bevelEdges" />
-			<feFlood flood-color="white" flood-opacity=".8" result="light" />
+			<feConvolveMatrix in="SourceAlpha" order="3" kernelMatrix="0 -1 -2 0 -1 -1 1 2 0" divisor="3" result="bevelEdges" />
+			<feFlood flood-color="white" flood-opacity=".75" result="light" />
+			<feMorphology in="bevelEdges" operator="dilate" radius=".1" result="bevelEdges" />
 			<feComposite in="light" in2="bevelEdges" operator="in" result="lowerLeftHighlight" />
+			<feColorMatrix in="lowerLeftHighlight" result="lowerLeftHighlight" type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 .75 0" />
 
 			<!-- Lower Left Inner Highlight (60° angle) -->
 			<feConvolveMatrix in="SourceAlpha" order="3" kernelMatrix="-6 -1 -2 0 -1 -1 1 2 -6" divisor="1" result="bevelEdges" />
-			<feFlood flood-color="white" flood-opacity="1" result="light" />
+			<feFlood flood-color="white" flood-opacity="10" result="light" />
+			<feMorphology in="bevelEdges" operator="dilate" radius=".1" result="bevelEdges" />
 			<feComposite in="light" in2="bevelEdges" operator="in" result="lowerLeftBevel" />
+			<feColorMatrix in="lowerLeftBevel" result="lowerLeftBevel" type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 .75 0" />
 
 			<!-- Upper Right Inner Shadow (60° angle) -->
-			<feConvolveMatrix in="SourceAlpha" order="3" kernelMatrix="-2 2 1 -1 -1 0 -2 -1 -2" divisor="3" result="bevelEdges" />
-			<feFlood flood-color="black" flood-opacity=".8" result="light" />
+			<feConvolveMatrix in="SourceAlpha" order="3" kernelMatrix="-2 2 1 -1 -1 0 -2 -1 -2" divisor="2" result="bevelEdges" />
+			<feFlood flood-color="black" flood-opacity="10" result="light" />
+			<feMorphology in="bevelEdges" operator="dilate" radius=".3" result="bevelEdges" />
 			<feComposite in="light" in2="bevelEdges" operator="in" result="upperRightShadow" />
+			<feColorMatrix in="upperRightShadow" result="upperRightShadow" type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 0.5 0" />
 
 			<feMerge>
-				<!-- Optional: <feMergeNode in="outerMasked"/> -->
 				<feMergeNode in="upperRightBevel" />
 				<feMergeNode in="lowerLeftBevel" />
 				<feMergeNode in="lowerLeftHighlight" />
@@ -37,33 +39,35 @@
 			</feMerge>
 		</filter>
 		<filter id="glassEmboss" x="-50%" y="-50%" width="200%" height="200%">
-			<!-- Outer shadow -->
-			<feDropShadow dx="-2" dy="2" stdDeviation="0" flood-color="black" flood-opacity="0.6" result="outerRaw" />
-			<feMorphology in="SourceAlpha" operator="dilate" radius="1" result="expandedAlpha" />
-			<feComposite in="outerRaw" in2="expandedAlpha" operator="out" result="outerMasked" />
-
 			<!-- Upper Right Inner Edge (60° angle) -->
-			<feConvolveMatrix in="SourceAlpha" order="3" kernelMatrix="0 2 1 -1 -1 0 -2 -1 0" divisor="5" result="bevelEdges" />
+			<feConvolveMatrix in="SourceAlpha" order="3" kernelMatrix="0 2 1 -1 -1 0 -2 -1 0" divisor="3.7" result="bevelEdges" />
 			<feFlood flood-color="white" flood-opacity="1" result="light" />
+			<feMorphology in="bevelEdges" operator="dilate" radius=".5" result="bevelEdges" />
 			<feComposite in="light" in2="bevelEdges" operator="in" result="upperRightBevel" />
+			<feColorMatrix in="upperRightBevel" result="upperRightBevel" type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 .5 0" />
 
 			<!-- Lower Left Inner Edge (60° angle) -->
-			<feConvolveMatrix in="SourceAlpha" order="3" kernelMatrix="0 -1 -2 0 -1 -1 1 2 0" divisor="5" result="bevelEdges" />
+			<feConvolveMatrix in="SourceAlpha" order="3" kernelMatrix="0 -1 -2 0 -1 -1 1 2 0" divisor="3.7" result="bevelEdges" />
 			<feFlood flood-color="black" flood-opacity=".8" result="light" />
+			<feMorphology in="bevelEdges" operator="dilate" radius=".5" result="bevelEdges" />
 			<feComposite in="light" in2="bevelEdges" operator="in" result="lowerLeftHighlight" />
+			<feColorMatrix in="lowerLeftHighlight" result="lowerLeftHighlight" type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 0.5 0" />
 
 			<!-- Lower Left Inner Highlight (60° angle) -->
 			<feConvolveMatrix in="SourceAlpha" order="3" kernelMatrix="-6 -1 -2 0 -1 -1 1 2 -6" divisor="1" result="bevelEdges" />
 			<feFlood flood-color="black" flood-opacity="1" result="light" />
+			<feMorphology in="bevelEdges" operator="dilate" radius=".5" result="bevelEdges" />
 			<feComposite in="light" in2="bevelEdges" operator="in" result="lowerLeftBevel" />
+			<feColorMatrix in="lowerLeftBevel" result="lowerLeftBevel" type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 .5 0" />
 
 			<!-- Upper Right Inner Shadow (60° angle) -->
-			<feConvolveMatrix in="SourceAlpha" order="3" kernelMatrix="-2 2 1 -1 -1 0 -2 -1 -2" divisor="3" result="bevelEdges" />
+			<feConvolveMatrix in="SourceAlpha" order="3" kernelMatrix="-2 2 1 -1 -1 0 -2 -1 -2" divisor="2.2" result="bevelEdges" />
 			<feFlood flood-color="white" flood-opacity=".8" result="light" />
+			<feMorphology in="bevelEdges" operator="dilate" radius="." result="bevelEdges" />
 			<feComposite in="light" in2="bevelEdges" operator="in" result="upperRightShadow" />
+			<feColorMatrix in="upperRightShadow" result="upperRightShadow" type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 0.5 0" />
 
 			<feMerge>
-				<!-- Optional: <feMergeNode in="outerMasked"/> -->
 				<feMergeNode in="upperRightBevel" />
 				<feMergeNode in="lowerLeftBevel" />
 				<feMergeNode in="lowerLeftHighlight" />
