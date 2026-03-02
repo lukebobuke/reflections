@@ -66,7 +66,7 @@ const createAppState = () => {
 				shardCrudContainer.classList.remove("active");
 				state = "viewShards";
 				console.log("App state set to viewShards");
-				editPointsActions.classList.remove("active");
+				if (editPointsActions) editPointsActions.classList.remove("active");
 				// Fetch and update shards when returning to viewShards
 				try {
 					const pointsData = await fetchPointArray();
@@ -130,7 +130,7 @@ const createAppState = () => {
 			},
 			pointsEditing: () => {
 				state = "pointsEditing";
-				editPointsActions.classList.add("active");
+				if (editPointsActions) editPointsActions.classList.add("active");
 
 				// Clear any pending form show timeout
 				if (shardFormTimeout) {

@@ -79,6 +79,13 @@ function createGuideManager() {
 		el.btnSubmit.classList.toggle("hidden", !msg.buttons.submit);
 		el.btnOk.classList.toggle("hidden", !msg.buttons.ok);
 
+		// Re-wire continue button to dismiss by default on every show()
+		if (el.btnContinue) {
+			const newBtn = el.btnContinue.cloneNode(true);
+			el.btnContinue.parentNode.replaceChild(newBtn, el.btnContinue);
+			newBtn.addEventListener("click", () => hide());
+		}
+
 		el.popup.classList.remove("hidden");
 		return true;
 	}
