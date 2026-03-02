@@ -83,13 +83,18 @@ function createGuideManager() {
 
 		// Re-wire continue button to dismiss by default on every show() (only if button is shown)
 		if (el.btnContinue && msg.buttons.continue) {
+			console.log("Guide: Attaching continue button listener", el.btnContinue);
 			const newBtn = el.btnContinue.cloneNode(true);
 			el.btnContinue.parentNode.replaceChild(newBtn, el.btnContinue);
 			el.btnContinue = newBtn; // Update reference to point to new button
+			console.log("Guide: New button created", newBtn);
 			newBtn.addEventListener("click", () => {
 				console.log("Guide: Continue button clicked");
 				hide();
 			});
+			console.log("Guide: Listener attached to button");
+		} else {
+			console.log("Guide: Skipping continue button listener", { hasButton: !!el.btnContinue, shouldShow: msg.buttons.continue });
 		}
 
 		el.popup.classList.remove("hidden");
