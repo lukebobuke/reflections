@@ -118,18 +118,12 @@ function maybeShowWelcomeGuide() {
 
 	// Short delay so the feed has a chance to render first
 	setTimeout(() => {
-		guideManager.show("welcome");
-		const el = guideManager.getElements();
-		if (!el) return;
-
-		el.btnContinue.addEventListener(
-			"click",
-			() => {
+		guideManager.show("welcome", null, {
+			continue: () => {
 				localStorage.setItem("reflections_welcome_seen", "1");
 				guideManager.hide();
 			},
-			{ once: true },
-		);
+		});
 	}, 800);
 }
 // ----------------------------------------------------------------------------------------------------
@@ -157,9 +151,6 @@ function initShardsPageGuide() {
 	if (hasSculpture && isFirstSculpture) {
 		setTimeout(() => {
 			guideManager.show("sculptureComplete");
-			const el = guideManager.getElements();
-			if (!el) return;
-			el.btnOk.addEventListener("click", () => guideManager.hide(), { once: true });
 		}, 600);
 		return;
 	}
@@ -284,6 +275,9 @@ function initHeaderScroll() {
 // ----------------------------------------------------------------------------------------------------
 document.addEventListener("DOMContentLoaded", () => {
 	console.log("App: Initializing Reflections");
+
+	// Initialize guide event listeners
+	guideManager.init();
 
 	fetchSculptureFeed();
 	maybeShowWelcomeGuide();

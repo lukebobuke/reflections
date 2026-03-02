@@ -50,6 +50,10 @@ const GUIDE_MESSAGES = {
 // ----------------------------------------------------------------------------------------------------
 
 function createGuideManager() {
+	// Track current state for event delegation
+	let currentMessageKey = null;
+	let customHandlers = {}; // Store custom handlers per message key and button type
+
 	function getElements() {
 		const popup = document.getElementById("main-popup");
 		if (!popup) return null;
@@ -64,77 +68,101 @@ function createGuideManager() {
 		};
 	}
 
-	function show(messageKey, overrideText = null) {
+	// Initialize persistent event listeners once
+	function init() {
+		const el = getElements();
+		if (!el) {
+			console.warn("Guide: Could not initialize - popup elements not found");
+			return;
+		}
+
+		// Continue button - check for custom handler or just dismiss
+		el.btnContinue.addEventListener("click", (e) => {
+			e.preventDefault();
+			e.stopPropagation();
+			console.log(`Guide: Continue clicked for "${currentMessageKey}"`);
+
+			const handler = customHandlers[currentMessageKey]?.continue;
+			if (handler) {
+				handler();
+			} else {
+				hide();
+			}
+		});
+
+		// OK button - check for custom handler or just dismiss
+		el.btnOk.addEventListener("click", (e) => {
+			e.preventDefault();
+			e.stopPropagation();
+			console.log(`Guide: OK clicked for "${currentMessageKey}"`);
+
+			const handler = customHandlers[currentMessageKey]?.ok;
+			if (handler) {
+				handler();
+			} else {
+				hide();
+			}
+		});
+
+		// Back button - handle based on current state
+		el.btnBack.addEventListener("click", (e) => {
+			e.preventDefault();
+			e.stopPropagation();
+			console.log(`Guide: Back clicked for "${currentMessageKey}"`);
+
+			const handler = customHandlers[currentMessageKey]?.back;
+			if (handler) {
+				handler();
+			} else {
+				hide();
+			}
+		});
+
+		// Submit button - handle based on current state
+		el.btnSubmit.addEventListener("click", (e) => {
+			e.preventDefault();
+			e.stopPropagation();
+			console.log(`Guide: Submit clicked for "${currentMessageKey}"`);
+
+			const handler = customHandlers[currentMessageKey]?.submit;
+			if (handler) {
+				handler();
+			} else {
+				hide();
+			}
+		});
+
+		console.log("Guide: Event listeners initialized");
+	}
+
+	function show(messageKey, overrideText = null, handlers = null) {
 		const el = getElements();
 		if (!el) return false;
 
 		const msg = GUIDE_MESSAGES[messageKey];
 		if (!msg) return false;
 
+		// Update current state
+		currentMessageKey = messageKey;
+
+		// Register custom handlers if provided
+		if (handlers) {
+			customHandlers[messageKey] = handlers;
+		}
+
 		console.log(`Guide: Showing "${messageKey}" popup`);
 
+		// Update UI
 		el.text.textContent = overrideText || msg.text;
 		el.status.innerHTML = "";
 
+		// Toggle button visibility based on message configuration
 		el.btnBack.classList.toggle("hidden", !msg.buttons.back);
 		el.btnContinue.classList.toggle("hidden", !msg.buttons.continue);
 		el.btnSubmit.classList.toggle("hidden", !msg.buttons.submit);
 		el.btnOk.classList.toggle("hidden", !msg.buttons.ok);
 
-		// Re-wire continue button to dismiss by default on every show() (only if button is shown)
-		if (el.btnContinue && msg.buttons.continue) {
-			console.log("Guide: Attaching continue button listener", el.btnContinue);
-			const newBtn = el.btnContinue.cloneNode(true);
-			el.btnContinue.parentNode.replaceChild(newBtn, el.btnContinue);
-			el.btnContinue = newBtn; // Update reference to point to new button
-			console.log("Guide: New button created", newBtn);
-
-			// Test if ANY events reach the button
-			newBtn.addEventListener("mousedown", (e) => {
-				console.log("Guide: mousedown detected on button", e);
-			});
-
-			newBtn.addEventListener("mouseup", (e) => {
-				console.log("Guide: mouseup detected on button", e);
-			});
-
-			// Add listener with capture phase to ensure it fires first
-			newBtn.addEventListener(
-				"click",
-				(e) => {
-					console.log("Guide: Continue button clicked (capture)", e);
-					e.preventDefault();
-					e.stopPropagation();
-					hide();
-				},
-				{ capture: true },
-			);
-
-			// Also test with a direct onclick
-			newBtn.onclick = () => {
-				console.log("Guide: Continue button onclick fired");
-			};
-
-			// Check computed style
-			setTimeout(() => {
-				const styles = window.getComputedStyle(newBtn);
-				console.log("Guide: Button computed styles", {
-					display: styles.display,
-					pointerEvents: styles.pointerEvents,
-					visibility: styles.visibility,
-					zIndex: styles.zIndex,
-					position: styles.position,
-				});
-			}, 100);
-
-			console.log("Guide: Listener attached to button");
-		} else {
-			console.log("Guide: Skipping continue button listener", {
-				hasButton: !!el.btnContinue,
-				shouldShow: msg.buttons.continue,
-			});
-		}
-
+		// Show popup
 		el.popup.classList.remove("hidden");
 		return true;
 	}
@@ -144,6 +172,15 @@ function createGuideManager() {
 		if (!el) return;
 		console.log("Guide: Popup dismissed");
 		el.popup.classList.add("hidden");
+	}
+
+	function setHandlers(handlers) {
+		if (currentMessageKey && handlers) {
+			customHandlers[currentMessageKey] = {
+				...customHandlers[currentMessageKey],
+				...handlers,
+			};
+		}
 	}
 
 	function addStatus(msg) {
@@ -233,7 +270,19 @@ function createGuideManager() {
 		el.btnOk.classList.remove("hidden");
 	}
 
-	return { show, hide, addStatus, showProgressBar, getProgressElements, completeProgressStage, activateProgressStage, showOkButton, getElements };
+	return {
+		init,
+		show,
+		hide,
+		setHandlers,
+		addStatus,
+		showProgressBar,
+		getProgressElements,
+		completeProgressStage,
+		activateProgressStage,
+		showOkButton,
+		getElements,
+	};
 }
 
 const guideManager = createGuideManager();

@@ -116,33 +116,28 @@ function handleSubmitButtonClick() {
 						line.textContent = "The form has crystallized.";
 						el.status.appendChild(line);
 						guideManager.showOkButton();
-
-						el.btnOk.addEventListener(
-							"click",
-							() => {
-								window.location.reload();
-							},
-							{ once: true },
-						);
+						guideManager.setHandlers({
+							ok: () => window.location.reload(),
+						});
 					} else if (attempts >= maxAttempts) {
 						clearInterval(pollHandle);
 						guideManager.addStatus("This is taking longer than expected. Check back soon.");
 						guideManager.showOkButton();
-						el.btnOk.addEventListener("click", () => guideManager.hide(), { once: true });
+						guideManager.setHandlers({ ok: () => guideManager.hide() });
 					}
 				} catch (err) {
 					console.error("Error polling sculpture status:", err);
 					guideManager.addStatus("Error checking status: " + (err.message || err));
 					clearInterval(pollHandle);
 					guideManager.showOkButton();
-					el.btnOk.addEventListener("click", () => guideManager.hide(), { once: true });
+					guideManager.setHandlers({ ok: () => guideManager.hide() });
 				}
 			}, pollMs);
 		} catch (err) {
 			console.error("Error during sculpture creation:", err);
 			guideManager.addStatus("Failed to start: " + (err.message || err));
 			guideManager.showOkButton();
-			el.btnOk.addEventListener("click", () => guideManager.hide(), { once: true });
+			guideManager.setHandlers({ ok: () => guideManager.hide() });
 		}
 	});
 }
