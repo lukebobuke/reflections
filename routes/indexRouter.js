@@ -3,30 +3,34 @@
 const { Router } = require("express");
 const indexRouter = Router();
 
-// Root route - serves homepage or welcome message
+// Root route — home page
 indexRouter.get("/", (req, res) => {
-	res.render("index", { currentPage: "home", user: req.user });
-});
-
-// About route - renders the about page
-indexRouter.get("/about", (req, res) => {
-	res.render("aboutPage", { currentPage: "about", user: req.user });
+	// showWelcome: only for non-logged-in users; tracked in localStorage client-side
+	res.render("index", {
+		currentPage: "home",
+		pageTitle: "Reflections",
+		user: req.user,
+		stage: req.user ? "3" : "1",
+		showWelcome: true, // client checks localStorage to decide whether to actually show it
+	});
 });
 
 indexRouter.get("/contact", (req, res) => {
-	res.render("contact", { currentPage: "contact", user: req.user });
+	res.render("contact", { currentPage: "contact", pageTitle: "Contact", user: req.user, stage: req.user ? "3" : "1" });
 });
 
-// User home page route - renders the user home page after login/signup
 indexRouter.get("/dashboard", (req, res) => {
 	if (!req.user) {
-		console.log("User not authenticated, redirecting to login.");
 		return res.redirect("/login");
 	}
-	res.render("dashboardPage", { currentPage: "dashboard", user: req.user });
+	res.render("dashboardPage", {
+		currentPage: "dashboard",
+		pageTitle: "Dashboard",
+		user: req.user,
+		stage: "3",
+	});
 });
 
-// Log out route - destroys the session and redirects to login
 indexRouter.get("/logout", (req, res) => {
 	req.session.destroy((err) => {
 		if (err) {
@@ -36,10 +40,5 @@ indexRouter.get("/logout", (req, res) => {
 		res.redirect("/login");
 	});
 });
-
-// Example placeholder for future custom routes
-// indexRouter.get("/example", (req, res) => {
-//     res.send("This is an example route.");
-// });
 
 module.exports = indexRouter;

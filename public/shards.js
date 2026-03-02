@@ -1254,9 +1254,8 @@ export {
 	handleTintClick,
 	handleSparkRefreshClick,
 	handleAddVoronoiPoint,
-	enterPointsEditingState,
-	exitPointsEditingState,
 	handleIncreaseRotationClick,
 	handleDecreaseRotationClick,
 	fetchShards,
+	currentPointsState,
 };

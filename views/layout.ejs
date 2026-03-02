@@ -4,14 +4,21 @@
 <html lang="en">
 	<head>
 		<meta charset="UTF-8" />
-		<title>Reflections</title>
+		<title><%= typeof pageTitle !== 'undefined' ? pageTitle : 'Reflections' %></title>
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 		<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400..900&display=swap" rel="stylesheet" />
 		<link rel="stylesheet" href="/styles.css" />
+		<link rel="stylesheet" href="/stage-overrides.css" />
 	</head>
-	<body data-logged-in="<%= user ? 'true' : 'false' %>" data-user-logged-in="<%= user ? 'true' : '' %>" data-has-sculpture="<%= typeof hasSculpture !== 'undefined' ? hasSculpture : false %>">
+	<body
+		data-logged-in="<%= user ? 'true' : 'false' %>"
+		data-user-logged-in="<%= user ? 'true' : '' %>"
+		data-has-sculpture="<%= typeof hasSculpture !== 'undefined' ? hasSculpture : false %>"
+		data-stage="<%= typeof stage !== 'undefined' ? stage : '1' %>"
+		data-current-page="<%= typeof currentPage !== 'undefined' ? currentPage : '' %>"
+	>
 		<%- include('partials/filters') %>
 		<video
 			id="background-video"
@@ -23,17 +30,13 @@
 			<source src="/smokeBackground.mp4" type="video/mp4" />
 			Your browser does not support the video tag.
 		</video>
-		<%- include('partials/navPopup', { currentPage }) %> <%- include('partials/header', { user, currentPage }) %> <%- body %> <%-
-		include('partials/footer') %>
 
-		<!-- Only load polygon-offset on pages that need it -->
-		<!-- <% if (currentPage === 'shards') { %>
-		<script src="https://cdn.jsdelivr.net/npm/polygon-offset@1.0.0/index.min.js"></script>
-		<% } %> -->
+		<% if (typeof stage === 'undefined' || stage !== '2') { %>
+			<%- include('partials/header', { user, currentPage, stage: typeof stage !== 'undefined' ? stage : '1', hasSculpture: typeof hasSculpture !== 'undefined' ? hasSculpture : false }) %>
+		<% } %>
 
-		<!-- <script type="module">
-			src = "https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2";
-		</script> -->
+		<%- body %>
+
 		<script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
 		<script src="/FxFilter.js" onerror="console.log('FxFilter.js not found - skipping FX effects')"></script>
 		<script type="module" src="/main.js"></script>

@@ -7,10 +7,19 @@ const sculptureController = require("../controllers/sculptureController");
 // POST /api/sculptures - Create new sculpture
 sculptureRouter.post("/", sculptureController.createSculpture);
 
+// POST /api/sculptures/mark-first-sculpture - Flag session so first-sculpture guide shows on reload
+sculptureRouter.post("/mark-first-sculpture", (req, res) => {
+	if (req.session) {
+		req.session.isFirstSculpture = true;
+		req.session.save(() => {});
+	}
+	res.json({ ok: true });
+});
+
 // GET /api/sculptures/feed - Get public feed of completed sculptures
 sculptureRouter.get("/feed", sculptureController.readPublicFeed);
 
-// GET /api/sculptures - Get all sculptures
+// GET /api/sculptures - Get all sculptures for current user
 sculptureRouter.get("/", sculptureController.readSculptures);
 
 // GET /api/sculptures/status/:taskId - Get sculpture status

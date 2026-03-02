@@ -11,13 +11,14 @@ import {
 	handleTintClick,
 	handleSparkRefreshClick,
 	handleAddVoronoiPoint,
-	enterPointsEditingState,
-	exitPointsEditingState,
 	handleIncreaseRotationClick,
 	handleDecreaseRotationClick,
+	currentPointsState,
+	fetchShards,
 } from "./shards.js";
 
 import { handleSubmitButtonClick } from "./sculptures.js";
+import { guideManager } from "./guide.js";
 
 // ----------------------------------------------------------------------------------------------------
 // #region Sculpture Feed
@@ -25,99 +26,50 @@ import { handleSubmitButtonClick } from "./sculptures.js";
 function renderSculptureFeed(sculptures) {
 	const feedContainer = document.getElementById("sculpture-feed");
 	if (!feedContainer) return;
-
-	// Clear existing content
 	feedContainer.innerHTML = "";
 
-	// Create and append each sculpture card
 	sculptures.forEach((sculpture, index) => {
-		// Create card container
 		const card = document.createElement("div");
 		card.className = "liquid-glass feed-card";
-		card.style.cssText = `
-			display: flex;
-			overflow: hidden;
-		`;
-
-		// Set sticky positioning and z-index for stacking effect
+		card.style.cssText = `display: flex; overflow: hidden;`;
 		card.style.top = `calc(var(--header-height) + var(--padding) + ${index * 2}rem)`;
 		card.style.zIndex = index + 1;
 
-		// Left column: thumbnail
 		const leftColumn = document.createElement("div");
-		leftColumn.style.cssText = `
-			flex: 1;
-			display: flex;
-			align-items: center;
-			justify-content: center;
-			background: rgba(var(--glass-rgb-dark));
-			overflow: hidden;
-		`;
+		leftColumn.style.cssText = `flex: 1; display: flex; align-items: center; justify-content: center; background: rgba(var(--glass-rgb-dark)); overflow: hidden;`;
 
 		if (sculpture.thumbnail_url) {
 			const img = document.createElement("img");
 			img.src = sculpture.thumbnail_url;
 			img.alt = `Sculpture by ${sculpture.username}`;
-			img.style.cssText = `
-				width: 100%;
-				height: 100%;
-				object-fit: cover;
-			`;
+			img.style.cssText = `width: 100%; height: 100%; object-fit: cover;`;
 			leftColumn.appendChild(img);
 		} else {
 			leftColumn.innerHTML = '<p style="color: rgba(var(--text-color), 0.5);">No Image</p>';
 		}
 
-		// Right column: metadata and analysis
 		const rightColumn = document.createElement("div");
-		rightColumn.style.cssText = `
-			flex: 1;
-			padding: var(--padding);
-			display: flex;
-			flex-direction: column;
-			overflow: hidden;
-		`;
+		rightColumn.style.cssText = `flex: 1; padding: var(--padding); display: flex; flex-direction: column; overflow: hidden;`;
 
-		// Username and date
 		const metadata = document.createElement("p");
-		metadata.style.cssText = `
-			font-size: 0.875rem;
-			color: rgba(var(--text-color), 0.7);
-			margin-bottom: var(--padding-small);
-			flex-shrink: 0;
-		`;
-		const formattedDate = new Date(sculpture.created_at).toLocaleDateString("en-US", {
-			year: "numeric",
-			month: "long",
-			day: "numeric",
-		});
+		metadata.style.cssText = `font-size: 0.875rem; color: rgba(var(--text-color), 0.7); margin-bottom: var(--padding-small); flex-shrink: 0;`;
+		const formattedDate = new Date(sculpture.created_at).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
 		metadata.textContent = `by ${sculpture.username} • ${formattedDate}`;
 		rightColumn.appendChild(metadata);
 
-		// Personality analysis (scrollable)
 		if (sculpture.personality_analysis) {
 			const analysisContainer = document.createElement("div");
-			analysisContainer.style.cssText = `
-				flex: 1;
-				overflow-y: auto;
-				margin-bottom: var(--padding-small);
-				line-height: 1.6;
-			`;
+			analysisContainer.style.cssText = `flex: 1; overflow-y: auto; margin-bottom: var(--padding-small); line-height: 1.6;`;
 			analysisContainer.textContent = sculpture.personality_analysis;
 			rightColumn.appendChild(analysisContainer);
 		}
 
-		// View 3D Model link
 		if (sculpture.model_url) {
 			const link = document.createElement("a");
 			link.href = sculpture.model_url;
 			link.target = "_blank";
 			link.className = "liquid-glass button-link";
-			link.style.cssText = `
-				display: inline-block;
-				margin-top: auto;
-				flex-shrink: 0;
-			`;
+			link.style.cssText = `display: inline-block; margin-top: auto; flex-shrink: 0;`;
 			const span = document.createElement("span");
 			span.className = "carved-glass";
 			span.textContent = "View 3D Model";
@@ -125,7 +77,6 @@ function renderSculptureFeed(sculptures) {
 			rightColumn.appendChild(link);
 		}
 
-		// Assemble card
 		card.appendChild(leftColumn);
 		card.appendChild(rightColumn);
 		feedContainer.appendChild(card);
@@ -134,231 +85,228 @@ function renderSculptureFeed(sculptures) {
 
 async function fetchSculptureFeed() {
 	const feedContainer = document.getElementById("sculpture-feed");
-
-	// Only run if feed container exists (on home page)
 	if (!feedContainer) return;
-
 	try {
-		console.log("Fetching sculpture feed...");
 		const response = await fetch("/api/sculptures/feed");
-
-		if (!response.ok) {
-			throw new Error(`HTTP error! status: ${response.status}`);
-		}
-
+		if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 		const sculptures = await response.json();
-
 		if (!sculptures || sculptures.length === 0) {
 			feedContainer.innerHTML =
 				'<p style="text-align: center; color: rgba(var(--text-color), 0.7);">No sculptures yet. Be the first to create one!</p>';
 			return;
 		}
-
-		// Render the feed using the new function
 		renderSculptureFeed(sculptures);
-		console.log(`Loaded ${sculptures.length} sculptures to feed`);
 	} catch (error) {
 		console.error("Error fetching sculpture feed:", error);
-		feedContainer.innerHTML =
-			'<p style="text-align: center; color: rgba(var(--text-color), 0.7);">Failed to load sculptures. Please try again later.</p>';
+		feedContainer.innerHTML = '<p style="text-align: center; color: rgba(var(--text-color), 0.7);">Failed to load sculptures.</p>';
 	}
 }
 // ----------------------------------------------------------------------------------------------------
 // #endregion
 // ----------------------------------------------------------------------------------------------------
 
-// Runs when the DOM is fully loaded
+// ----------------------------------------------------------------------------------------------------
+// #region Welcome Guide (Stage 1 — home page, once per browser)
+// ----------------------------------------------------------------------------------------------------
+function maybeShowWelcomeGuide() {
+	const state = window.__HOME_PAGE_STATE__;
+	if (!state || state.isLoggedIn) return;
+	if (!state.showWelcome) return;
+
+	const alreadySeen = localStorage.getItem("reflections_welcome_seen");
+	if (alreadySeen) return;
+
+	// Short delay so the feed has a chance to render first
+	setTimeout(() => {
+		guideManager.show("welcome");
+		const el = guideManager.getElements();
+		if (!el) return;
+
+		el.btnContinue.addEventListener(
+			"click",
+			() => {
+				localStorage.setItem("reflections_welcome_seen", "1");
+				guideManager.hide();
+			},
+			{ once: true },
+		);
+	}, 800);
+}
+// ----------------------------------------------------------------------------------------------------
+// #endregion
+// ----------------------------------------------------------------------------------------------------
+
+// ----------------------------------------------------------------------------------------------------
+// #region Stage 2 Guide — Pattern Creation and Shard Creation
+// ----------------------------------------------------------------------------------------------------
+function initShardsPageGuide() {
+	const state = window.__SHARDS_PAGE_STATE__;
+	if (!state) return;
+
+	const { stage, hasSculpture, patternLocked, isNewSignup, isFirstSculpture } = state;
+
+	// Stage 3 first time — sculpture just completed
+	if (hasSculpture && isFirstSculpture) {
+		setTimeout(() => {
+			guideManager.show("sculptureComplete");
+			const el = guideManager.getElements();
+			if (!el) return;
+			el.btnOk.addEventListener("click", () => guideManager.hide(), { once: true });
+		}, 600);
+		return;
+	}
+
+	// Stage 2 — no sculpture yet
+	if (!hasSculpture) {
+		if (!patternLocked) {
+			// Stage 2a: pattern creation
+			// Show on new signup, or if pattern not yet locked (always show until locked)
+			setTimeout(() => {
+				guideManager.show("patternCreation");
+				const el = guideManager.getElements();
+				if (!el) return;
+				el.btnContinue.addEventListener("click", () => guideManager.hide(), { once: true });
+			}, 400);
+		} else {
+			// Stage 2b: shard creation — show if we just locked the pattern
+			// This is triggered by the done-with-pattern flow, not on page load
+			// (handled in handleDoneWithPattern below)
+		}
+	}
+}
+
+// ----------------------------------------------------------------------------------------------------
+// #endregion
+// ----------------------------------------------------------------------------------------------------
+
+// ----------------------------------------------------------------------------------------------------
+// #region Done with Pattern Handler
+// ----------------------------------------------------------------------------------------------------
+async function handleDoneWithPattern() {
+	const btn = document.getElementById("done-with-pattern-btn");
+	if (!btn) return;
+
+	btn.addEventListener("click", async () => {
+		try {
+			// Save the current point state to backend
+			const { points, rotationCount } = currentPointsState.get();
+
+			// Check if pattern already exists (PUT) or needs to be created (POST)
+			const checkResponse = await fetch("/api/points");
+			let saveResponse;
+			if (checkResponse.ok) {
+				saveResponse = await fetch("/api/points", {
+					method: "PUT",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({ rotationCount, points }),
+				});
+			} else {
+				saveResponse = await fetch("/api/points", {
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({ rotationCount, points }),
+				});
+			}
+
+			if (!saveResponse.ok) throw new Error("Failed to save pattern");
+
+			// Lock the pattern server-side
+			const lockResponse = await fetch("/shards/api/lock-pattern", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+			});
+			if (!lockResponse.ok) throw new Error("Failed to lock pattern");
+
+			// Hide pattern controls, show shard controls
+			const patternControls = document.getElementById("pattern-controls");
+			const showAndSubmit = document.getElementById("show-and-submit");
+			if (patternControls) patternControls.classList.add("hidden");
+			if (showAndSubmit) showAndSubmit.classList.remove("hidden");
+
+			// Show the shard creation guide message
+			guideManager.show("patternLocked");
+			const el = guideManager.getElements();
+			if (!el) return;
+			el.btnContinue.addEventListener("click", () => guideManager.hide(), { once: true });
+		} catch (err) {
+			console.error("Error in done-with-pattern:", err);
+			guideManager.addStatus("Something went wrong saving your pattern. Please try again.");
+		}
+	});
+}
+// ----------------------------------------------------------------------------------------------------
+// #endregion
+// ----------------------------------------------------------------------------------------------------
+
+// ----------------------------------------------------------------------------------------------------
+// #region Button Pressed Effect
+// ----------------------------------------------------------------------------------------------------
+function initButtonPressedEffect() {
+	const pressables = document.querySelectorAll("button, .button-link");
+	pressables.forEach((pressable) => {
+		pressable.addEventListener("mousedown", () => pressable.classList.add("button-pressed"));
+		pressable.addEventListener("mouseup", () => pressable.classList.remove("button-pressed"));
+		pressable.addEventListener("mouseleave", () => pressable.classList.remove("button-pressed"));
+	});
+}
+// ----------------------------------------------------------------------------------------------------
+// #endregion
+// ----------------------------------------------------------------------------------------------------
+
+// ----------------------------------------------------------------------------------------------------
+// #region Header Scroll
+// ----------------------------------------------------------------------------------------------------
+function initHeaderScroll() {
+	const header = document.querySelector("header");
+	if (!header) return;
+	window.addEventListener("scroll", () => {
+		const doc = document.documentElement;
+		const hasVerticalScroll = doc.scrollHeight > window.innerHeight;
+		if (hasVerticalScroll && window.scrollY > 5) {
+			header.classList.add("shifted-up");
+		} else {
+			header.classList.remove("shifted-up");
+		}
+	});
+}
+// ----------------------------------------------------------------------------------------------------
+// #endregion
+// ----------------------------------------------------------------------------------------------------
+
+// ----------------------------------------------------------------------------------------------------
+// #region DOMContentLoaded
+// ----------------------------------------------------------------------------------------------------
 document.addEventListener("DOMContentLoaded", () => {
 	console.log("Frontend JS loaded.");
 
-	// Fetch and display sculpture feed (only on home page)
 	fetchSculptureFeed();
+	maybeShowWelcomeGuide();
 
-	const editButton = document.querySelector("#show-shard-crud");
-	const hideButton = document.querySelector("#hide-shard-crud");
-	handleAddVoronoiPoint();
-	const shardContainer = document.querySelector("#voronoi-group");
-	const shardCrudContainer = document.querySelector("#shard-crud-container");
+	// Shards page init
+	if (document.getElementById("shards-section")) {
+		const shardContainer = document.querySelector("#voronoi-group");
+		const shardCrudContainer = document.querySelector("#shard-crud-container");
 
-	handleCreateShardClick();
-	handleDeleteShardClick();
-	handleShardHover(shardContainer, shardCrudContainer);
-	handleHideShardCrudClick();
-	handleEditShardClick();
-	handleGlowClick();
-	handleTintClick();
-	handleSparkRefreshClick();
-	enterPointsEditingState(editButton);
-	exitPointsEditingState(hideButton);
-	handleShardClick();
-	handleIncreaseRotationClick();
-	handleDecreaseRotationClick();
-
-	handleSubmitButtonClick();
-	//----------------------------------------------------------------------------------------------------
-	// #region Menu/Nav Setup
-	// Get references to menu button, nav popup, and main content
-	//----------------------------------------------------------------------------------------------------
-
-	const menuButton = document.querySelector(".menu-button");
-	const navPopup = document.getElementById("navPopup");
-	const main = document.querySelector("main");
-	const header = document.querySelector("header");
-	// #endregion
-
-	//----------------------------------------------------------------------------------------------------
-	// #region Nav Popup Toggle
-	// Toggle navigation popup on menu button click
-	//----------------------------------------------------------------------------------------------------
-
-	// If navigation elements exist, set up menu and navigation event listeners
-	if (menuButton && navPopup && main) {
-		console.log("Menu button, navigation popup, and main element found.");
-
-		menuButton.addEventListener("click", () => {
-			console.log("Menu button clicked.");
-			navPopup.classList.toggle("active");
-			updateFooterScrollState();
-			if (navPopup.classList.contains("active")) {
-				console.log("Navigation popup activated.");
-				main.classList.add("slide-right");
-				main.classList.remove("slide-left");
-			} else {
-				console.log("Navigation popup deactivated.");
-				main.classList.remove("slide-right");
-			}
-		});
-
-		// #region Nav Popup Outside Click
-		// Close navigation popup when clicking outside of it
-		document.addEventListener("click", (e) => {
-			if (!navPopup.contains(e.target) && !menuButton.contains(e.target) && navPopup.classList.contains("active")) {
-				console.log("Clicked outside navigation popup. Closing popup.");
-				navPopup.classList.remove("active");
-				main.classList.remove("slide-right");
-				setTimeout(() => {
-					updateFooterScrollState();
-				}, 2000);
-			}
-		});
-		// #endregion
-
-		// #region Nav Link Animation
-		// Animate main content and navigate on nav link click
-		navPopup.querySelectorAll("a").forEach((link) => {
-			link.addEventListener("click", function (e) {
-				const href = this.getAttribute("href");
-				// Prevent navigation to /dashboard or /shards if user is not logged in
-				// const userIsLoggedIn = !!document.body.getAttribute("data-user-logged-in");
-				// if (
-				// 	(href === "/dashboard" || href === "/shards") &&
-				// 	!userIsLoggedIn
-				// ) {
-				// 	e.preventDefault();
-				// 	alert("You must be logged in to access this page.");
-				// 	return;
-				// }
-				e.preventDefault();
-				console.log(`Navigation link clicked: ${href}`);
-				navPopup.classList.remove("active");
-				main.classList.remove("slide-right");
-				main.classList.add("slide-left");
-				setTimeout(() => {
-					if (header) {
-						header.classList.remove("shifted-up");
-					}
-					setTimeout(() => {
-						console.log(`Navigating to: ${href}`);
-						window.location.href = href;
-					}, 500);
-				}, 2000);
-			});
-		});
-		// #endregion
+		handleAddVoronoiPoint();
+		handleCreateShardClick();
+		handleDeleteShardClick();
+		handleShardHover(shardContainer, shardCrudContainer);
+		handleHideShardCrudClick();
+		handleEditShardClick();
+		handleGlowClick();
+		handleTintClick();
+		handleSparkRefreshClick();
+		handleShardClick();
+		handleIncreaseRotationClick();
+		handleDecreaseRotationClick();
+		handleDoneWithPattern();
+		handleSubmitButtonClick();
+		initShardsPageGuide();
 	}
-	// #endregion
 
-	//----------------------------------------------------------------------------------------------------
-	// #region Header Scroll
-	// Shift header up on scroll, return to normal at top
-	//----------------------------------------------------------------------------------------------------
-	window.addEventListener("scroll", () => {
-		if (header) {
-			// Only shift header if there's meaningful content to scroll
-			const doc = document.documentElement;
-			const hasVerticalScroll = doc.scrollHeight > window.innerHeight;
-
-			if (hasVerticalScroll && window.scrollY > 5) {
-				header.classList.add("shifted-up");
-			} else {
-				header.classList.remove("shifted-up");
-			}
-		}
-	});
-	// #endregion
-
-	//----------------------------------------------------------------------------------------------------
-	// #region Footer Scroll State
-	// Updates the footer's scroll state based on nav popup and scroll position
-	//----------------------------------------------------------------------------------------------------
-	function updateFooterScrollState() {
-		const footer = document.querySelector("footer");
-		if (!footer) {
-			console.log("Footer element not found.");
-			return;
-		}
-		if (navPopup.classList.contains("active")) {
-			footer.classList.add("shifted-down");
-			return;
-		}
-
-		const doc = document.documentElement;
-		const hasVerticalScroll = doc.scrollHeight > window.innerHeight;
-
-		// Only apply scroll-based footer logic if there's actually scrollable content
-		if (hasVerticalScroll) {
-			const atBottom = Math.abs(window.innerHeight + window.pageYOffset - doc.scrollHeight) < 5;
-			if (atBottom) {
-				footer.classList.remove("shifted-down");
-			} else {
-				footer.classList.add("shifted-down");
-			}
-		} else {
-			// No scroll needed, keep footer visible
-			footer.classList.remove("shifted-down");
-		}
-	}
-	// #endregion
-
-	//----------------------------------------------------------------------------------------------------
-	// #region Footer Event Listeners
-	// Listen for scroll and resize to update footer state
-	//----------------------------------------------------------------------------------------------------
-	window.addEventListener("scroll", updateFooterScrollState);
-	window.addEventListener("resize", updateFooterScrollState);
-	updateFooterScrollState();
-	// #endregion
-
-	//----------------------------------------------------------------------------------------------------
-	// #region Button Pressed Effect
-	// Add pressed effect to all buttons and .button-link links on mousedown/up
-	//----------------------------------------------------------------------------------------------------
-	const pressables = document.querySelectorAll("button, .button-link");
-
-	// Add .button-pressed class on mousedown
-	pressables.forEach((pressable) => {
-		pressable.addEventListener("mousedown", () => {
-			pressable.classList.add("button-pressed");
-		});
-	});
-	// Remove .button-pressed class on mouseup and mouseleave
-	pressables.forEach((pressable) => {
-		pressable.addEventListener("mouseup", () => {
-			pressable.classList.remove("button-pressed");
-		});
-		pressable.addEventListener("mouseleave", () => {
-			pressable.classList.remove("button-pressed");
-		});
-	});
-	// #endregion
+	initButtonPressedEffect();
+	initHeaderScroll();
 });
+// ----------------------------------------------------------------------------------------------------
+// #endregion
+// ----------------------------------------------------------------------------------------------------

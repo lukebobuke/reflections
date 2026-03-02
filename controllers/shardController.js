@@ -1,29 +1,90 @@
 /** @format */
 
-/** @format */
-
 const shardModel = require("../models/shardModel");
 const sculptureModel = require("../models/sculptureModel");
+const voronoiModel = require("../models/voronoiModel");
 
 // ----------------------------------------------------------------------------------------------------
 // #region Render
 // ----------------------------------------------------------------------------------------------------
 const renderShardsPage = async (req, res) => {
 	try {
-		// DEBUG: Log req.user to see what's available
-		console.log("renderShardsPage req.user:", req.user);
-
 		const user = req.user;
 		if (!user || !user.id) {
 			return res.redirect("/login");
 		}
+
 		const shards = await shardModel.getShardsByUserId(user.id);
 		const sculptures = await sculptureModel.getSculpturesByUserId(user.id);
 		const hasSculpture = sculptures && sculptures.length > 0;
-		res.render("shardsPage", { currentPage: "Mosaic", shards, user, hasSculpture, pageTitle: "Mosaic" });
+
+		// Determine if the voronoi pattern has been saved (locked)
+		let patternLocked = false;
+		try {
+			const pattern = await voronoiModel.getVoronoiPatternByUserId(user.id);
+			// Pattern is locked once it has been explicitly saved by the user
+			// We store a "locked" flag in the DB as rotation_count >= 0 and points exist
+			// More precisely: pattern exists AND user has moved past stage 2a
+			// We use session flag to track this
+			patternLocked = !!(pattern && req.session.patternLocked);
+		} catch (e) {
+			patternLocked = false;
+		}
+
+		// Determine stage
+		// Stage 2: logged in, no sculpture yet
+		// Stage 3: has sculpture
+		const stage = hasSculpture ? "3" : "2";
+
+		// isNewSignup: set by signup flow, consumed once
+		const isNewSignup = req.session.isNewSignup || false;
+		if (isNewSignup) {
+			req.session.isNewSignup = false;
+		}
+
+		// isFirstSculpture: set when sculpture is first completed
+		const isFirstSculpture = req.session.isFirstSculpture || false;
+		if (isFirstSculpture) {
+			req.session.isFirstSculpture = false;
+		}
+
+		res.render("shardsPage", {
+			currentPage: "Mosaic",
+			pageTitle: hasSculpture ? "Sculpture" : "Mosaic",
+			shards,
+			user,
+			hasSculpture,
+			stage,
+			patternLocked,
+			isNewSignup,
+			isFirstSculpture,
+		});
 	} catch (error) {
 		console.error("Error rendering shards page:", error);
 		res.status(500).send("Internal Server Error");
+	}
+};
+// ----------------------------------------------------------------------------------------------------
+// #endregion
+// ----------------------------------------------------------------------------------------------------
+
+// ----------------------------------------------------------------------------------------------------
+// #region Lock Pattern
+// ----------------------------------------------------------------------------------------------------
+const lockPattern = async (req, res) => {
+	try {
+		const user = req.user;
+		if (!user || !user.id) {
+			return res.status(401).json({ error: "Unauthorized" });
+		}
+		req.session.patternLocked = true;
+		req.session.save((err) => {
+			if (err) console.error("Session save error on lockPattern:", err);
+		});
+		res.json({ success: true });
+	} catch (error) {
+		console.error("Error locking pattern:", error);
+		res.status(500).json({ error: "Internal Server Error" });
 	}
 };
 // ----------------------------------------------------------------------------------------------------
@@ -42,13 +103,13 @@ function validateShardData(data) {
 		throw new Error("Invalid shard text");
 	}
 	if (isNaN(tint) || tint < 0 || tint > 8) {
-		throw new Error("validateShardData in shardController.js:  Tint must be a number between 0 and 8.");
+		throw new Error("Tint must be a number between 0 and 8.");
 	}
 	if (isNaN(glow) || glow < 0 || glow > 1) {
-		throw new Error("validateShardData in shardController.js:  Glow must be a number between 0 and 1.");
+		throw new Error("Glow must be a number between 0 and 1.");
 	}
 	if (isNaN(point) || point < 0 || point > 128) {
-		throw new Error("validateShardData in shardController.js:  Point must be a number between 0 and 128.");
+		throw new Error("Point must be a number between 0 and 128.");
 	}
 	return {
 		spark: spark.trim(),
@@ -72,7 +133,6 @@ const createShard = async (req, res) => {
 	try {
 		await shardModel.createShard(userId, validatedShardData);
 		const shards = await shardModel.getShardsByUserId(userId);
-		// Return the new shard as JSON
 		res.json(shards);
 	} catch (error) {
 		console.error("From shardController, error creating shard:", error);
@@ -120,15 +180,15 @@ const getShardsByUserId = async (userId) => {
 // ----------------------------------------------------------------------------------------------------
 
 // ----------------------------------------------------------------------------------------------------
-// #region Get Shard By ID
+// #region Get Shard By ID (API)
 // ----------------------------------------------------------------------------------------------------
-const getShardById = async (shardId) => {
+const getShardById = async (req, res) => {
 	try {
-		const shard = await shardModel.getShardById(shardId);
-		return shard;
+		const shard = await shardModel.getShardById(req.params.shardId);
+		res.json(shard);
 	} catch (error) {
 		console.error("Error fetching shard by ID:", error);
-		throw error;
+		res.status(404).json({ error: "Shard not found" });
 	}
 };
 // ----------------------------------------------------------------------------------------------------
@@ -187,10 +247,7 @@ const fetchUserModel = async (req, res) => {
 			return res.status(401).json({ error: "Unauthorized" });
 		}
 		const sculptures = await sculptureModel.getSculpturesByUserId(user.id);
-		console.log("fetchUserModel sculptures for user:", sculptures);
-		// Use model_url if that's your schema
 		const url = sculptures && sculptures.length > 0 ? sculptures[0].model_url : null;
-		console.log("fetchUserModel: model_url for user:", url);
 		if (!url) {
 			return res.status(404).json({ error: "No model URL found for user" });
 		}
@@ -224,6 +281,7 @@ const fetchUserModel = async (req, res) => {
 
 module.exports = {
 	renderShardsPage,
+	lockPattern,
 	createShard,
 	getShardsByUserId,
 	getShardsAPI,

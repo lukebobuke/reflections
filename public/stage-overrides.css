@@ -1,0 +1,85 @@
+/* ----------------------------------------------------------------------------------------------------*/
+/* #region MARK: Stage 2 — Header Hidden */
+/* ----------------------------------------------------------------------------------------------------*/
+
+/* When body has data-stage="2", the header is not rendered by the server,
+   but if it ever appears (e.g. via JS), hide it */
+body[data-stage="2"] header {
+	display: none !important;
+}
+
+/* Stage 2: body has no header so remove top padding offset */
+body[data-stage="2"] {
+	padding-top: var(--padding);
+}
+/* #endregion */
+
+/* ----------------------------------------------------------------------------------------------------*/
+/* #region MARK: Pattern Controls (inline, stage 2a) */
+/* ----------------------------------------------------------------------------------------------------*/
+#pattern-controls {
+	display: flex;
+	flex-direction: row;
+	gap: var(--padding-small);
+	align-items: center;
+	padding: var(--padding-small) var(--padding);
+	flex-wrap: wrap;
+}
+
+#pattern-controls button {
+	flex-shrink: 0;
+}
+
+#done-with-pattern-btn {
+	margin-left: auto;
+}
+/* #endregion */
+
+/* ----------------------------------------------------------------------------------------------------*/
+/* #region MARK: Remove old nav-popup and footer visual rules */
+/* Footer and nav popup are removed from the DOM entirely.
+   These overrides ensure nothing breaks if any remnant class lingers. */
+/* ----------------------------------------------------------------------------------------------------*/
+.nav-popup {
+	display: none !important;
+}
+
+footer {
+	display: none !important;
+}
+/* #endregion */
+
+/* ----------------------------------------------------------------------------------------------------*/
+/* #region MARK: Header Stage 3 — minimal, just buttons */
+/* ----------------------------------------------------------------------------------------------------*/
+header {
+	/* Inherit base styles, just ensure clean flex layout with only action buttons */
+	justify-content: space-between;
+}
+
+/* Stage 1 (logged out) — sign up is prominent */
+body[data-stage="1"] #signupBtn {
+	font-weight: 700;
+}
+/* #endregion */
+
+/* ----------------------------------------------------------------------------------------------------*/
+/* #region MARK: Guide Popup Typography */
+/* ----------------------------------------------------------------------------------------------------*/
+#main-popup #main-popup-text {
+	white-space: pre-line;
+	line-height: 1.8;
+	font-size: 1rem;
+	text-align: center;
+	color: rgba(var(--text-color));
+}
+/* #endregion */
+
+/* ----------------------------------------------------------------------------------------------------*/
+/* #region MARK: Body padding without footer */
+/* ----------------------------------------------------------------------------------------------------*/
+body {
+	/* Remove the bottom padding that was reserving space for the footer */
+	padding-bottom: var(--padding);
+}
+/* #endregion */
