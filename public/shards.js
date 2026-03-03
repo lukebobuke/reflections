@@ -139,6 +139,10 @@ const createAppState = () => {
 };
 const appState = createAppState();
 appState.set.viewShards();
+// On stage 2a (pattern not yet locked), the canvas is always in points-editing mode
+if (window.__SHARDS_PAGE_STATE__ && !window.__SHARDS_PAGE_STATE__.hasSculpture && !window.__SHARDS_PAGE_STATE__.patternLocked) {
+	appState.set.pointsEditing();
+}
 // Store shards globally for state management
 let currentShards = [];
 
