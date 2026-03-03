@@ -15,6 +15,7 @@ import {
 	handleDecreaseRotationClick,
 	currentPointsState,
 	fetchShards,
+	appState,
 } from "./shards.js";
 
 import { handleSubmitButtonClick } from "./sculptures.js";
@@ -222,6 +223,9 @@ async function handleDoneWithPattern() {
 			if (showAndSubmit) showAndSubmit.classList.remove("hidden");
 
 			console.log("Phase: Pattern locked → transitioning to shard creation");
+
+			// Transition state machine to viewShards so hover and click handlers work correctly
+			appState.set.viewShards();
 
 			// Show the shard creation guide message
 			guideManager.show("patternLocked");

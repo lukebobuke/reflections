@@ -1205,4 +1205,5 @@ export {
 	handleDecreaseRotationClick,
 	fetchShards,
 	currentPointsState,
+	appState,
 };
