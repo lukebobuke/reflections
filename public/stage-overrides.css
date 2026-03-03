@@ -19,19 +19,29 @@ body[data-stage="2"] {
 /* ----------------------------------------------------------------------------------------------------*/
 #pattern-controls {
 	display: flex;
-	flex-direction: row;
-	gap: var(--padding-small);
+	flex-direction: column;
 	align-items: center;
+	gap: var(--padding-small);
 	padding: var(--padding-small) var(--padding);
-	flex-wrap: wrap;
 }
 
-#pattern-controls button {
-	flex-shrink: 0;
+#rotation-control {
+	display: flex;
+	align-items: center;
+	gap: var(--padding-small);
 }
 
-#done-with-pattern-btn {
-	margin-left: auto;
+#rotation-preview line {
+	stroke: rgba(var(--text-color));
+	stroke-width: 2.5;
+	stroke-linecap: round;
+	opacity: 0.85;
+}
+
+#show-and-submit {
+	display: flex;
+	justify-content: center;
+	padding: var(--padding-small) var(--padding);
 }
 /* #endregion */
 

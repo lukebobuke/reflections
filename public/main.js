@@ -288,10 +288,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
 	// Shards page init
 	if (document.getElementById("shards-section")) {
-		const shardContainer = document.querySelector("#voronoi-group");
 		const shardCrudContainer = document.querySelector("#shard-crud-container");
 
-		handleAddVoronoiPoint();
+		handleAddVoronoiPoint(); // Creates #voronoi-group synchronously via setupVoronoiSVG
+		const shardContainer = document.querySelector("#voronoi-group");
 		handleCreateShardClick();
 		handleDeleteShardClick();
 		handleShardHover(shardContainer, shardCrudContainer);

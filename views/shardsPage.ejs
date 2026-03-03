@@ -16,12 +16,17 @@
 	<section id="shards-section" class="liquid-glass">
 		<!-- Stage 2a: Pattern creation controls — visible only before pattern is locked -->
 		<div id="pattern-controls" class="<%= (hasSculpture || (typeof patternLocked !== 'undefined' && patternLocked)) ? 'hidden' : '' %>">
-			<button class="liquid-glass button-link" id="increase-rotation" aria-label="Increase rotation">
-				<span class="carved-glass">+</span>
-			</button>
-			<button class="liquid-glass button-link" id="decrease-rotation" aria-label="Decrease rotation">
-				<span class="carved-glass">−</span>
-			</button>
+			<div id="rotation-control">
+				<button class="glass" id="decrease-rotation" aria-label="Fewer rotations">
+					<i class="carved-glass fa-solid fa-circle-minus"></i>
+				</button>
+				<svg id="rotation-preview" viewBox="-13 -13 26 26" width="48" height="48">
+					<!-- Arms drawn by JS -->
+				</svg>
+				<button class="glass" id="increase-rotation" aria-label="More rotations">
+					<i class="carved-glass fa-solid fa-circle-plus"></i>
+				</button>
+			</div>
 			<button class="liquid-glass button-link" id="done-with-pattern-btn">
 				<span class="carved-glass">Done with Pattern</span>
 			</button>
@@ -29,9 +34,6 @@
 
 		<!-- Stage 2b: Shard creation controls — visible only after pattern locked, before sculpture -->
 		<div id="show-and-submit" class="<%= (hasSculpture || (typeof patternLocked === 'undefined' || !patternLocked)) ? 'hidden' : '' %>">
-			<button class="liquid-glass" id="show-shard-crud" aria-label="Add shard">
-				<i class="carved-glass fa-solid fa-pencil"></i>
-			</button>
 			<button class="liquid-glass button-link" id="submit-shards-btn">
 				<span class="carved-glass">Submit</span>
 			</button>

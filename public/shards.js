@@ -71,7 +71,7 @@ const createAppState = () => {
 					const pointsData = await fetchPointArray();
 					if (!pointsData) {
 						try {
-							await createPointArray([[0, 0]], 0);
+							await createPointArray([[0, 0]], currentPointsState.get().rotationCount);
 						} catch (createError) {
 							console.error("Error creating empty point array:", createError);
 							// Continue anyway - don't block the app from loading
@@ -88,6 +88,7 @@ const createAppState = () => {
 					);
 					currentShards = await fetchShards();
 					updateVoronoiWithShards(currentShards);
+					updateRotationPreview();
 					// Hide loading spinner after everything is ready
 					hideLoadingSpinner();
 				} catch (error) {
@@ -702,22 +703,84 @@ function handleTintClick() {
 }
 function randomSpark() {
 	const sparks = [
+		// Emotion & inner life
 		"Which hue best reflects the emotion you carry today?",
 		"Name a moment that cracked your heart.",
-		"Years later, what memory is still just as clear?",
-		"What is your deepest aspiration?",
-		"Describe a part of yourself that’s been reforged by pressure.",
 		"What makes you glow?",
-		"Which moment do you reflect on daily?",
-		"Has anyone ever made you melt? Are they still in your life?",
-		"If you could etch one truth forever, what would it say?",
-		"Is your home full of light, or dark and moody?",
 		"Which part of you is fragile like glass?",
-		"Name a ritual that smooths your furrowed brow.",
-		"Have you ever broken something beyond repair?",
-		"Some people have a hard exterior, what about you?",
-		"What moment made your path clear?",
+		"What feeling do you keep returning to, like a tongue on a loose tooth?",
+		"Is there an emotion you’ve never let anyone see?",
+		"What does quiet feel like in your body?",
+		"When did you last feel completely at peace?",
+		"Name something that fills you with inexplicable longing.",
+		"What emotion do you carry that has no name?",
+
+		// Memory
+		"Years later, what memory is still just as clear?",
+		"Which moment do you reflect on daily?",
+		"Name a smell that pulls you somewhere else entirely.",
+		"What is the earliest thing you remember wanting?",
+		"Which conversation do you wish you could replay differently?",
+		"What place do you return to only in memory?",
+		"Name a day you’d live again if you could.",
+		"What did childhood sound like?",
+		"Which person from your past do you still carry with you?",
+		"What memory lives in your hands, not your mind?",
+
+		// Relationships
+		"Has anyone ever made you melt? Are they still in your life?",
 		"With whom are you comfortable being transparent?",
+		"Who taught you how to love?",
+		"Who showed you what it looks like to be broken and survive?",
+		"What do you wish someone had said to you when you were young?",
+		"Is there someone you’ve never properly thanked?",
+		"Who sees the version of you that you hide from everyone else?",
+		"What do you give freely that you’ve never been given?",
+		"Name a friendship that changed the shape of your life.",
+		"Have you ever loved someone you couldn’t keep?",
+
+		// Identity & self
+		"Describe a part of yourself that’s been reforged by pressure.",
+		"Some people have a hard exterior, what about you?",
+		"Have you ever broken something beyond repair?",
+		"What part of yourself are you still trying to understand?",
+		"What would your shadow self confess?",
+		"Which version of yourself do you miss?",
+		"What do people assume about you that is completely wrong?",
+		"What are you becoming, slowly, without trying?",
+		"Name something you’ve outgrown but still mourn.",
+		"What does your body know that your mind hasn’t admitted?",
+
+		// Aspiration & meaning
+		"What is your deepest aspiration?",
+		"If you could etch one truth forever, what would it say?",
+		"What moment made your path clear?",
+		"What are you building, even if no one can see it yet?",
+		"What would you do if fear had no vote?",
+		"Name the thing you keep circling but never starting.",
+		"What does a life well-lived look like to you?",
+		"If you left something behind, what would you want it to be?",
+		"What question are you living inside of right now?",
+		"What do you want to be remembered for?",
+
+		// Texture & sensation
+		"Is your home full of light, or dark and moody?",
+		"Name a ritual that smooths your furrowed brow.",
+		"What does comfort feel like to you?",
+		"Describe a texture that takes you back somewhere.",
+		"What time of day belongs to you alone?",
+		"What small thing restores you when everything else fails?",
+		"Where in the world do you breathe the deepest?",
+		"What does your ideal silence look like?",
+
+		// Challenge & growth
+		"What have you survived that you rarely speak about?",
+		"Name a belief you’ve had to unlearn.",
+		"What is the hardest thing you’ve ever chosen?",
+		"When did you disappoint yourself and forgive yourself anyway?",
+		"What wound turned into a window?",
+		"Name something that broke you open in a good way.",
+		"What have you been wrong about for a long time?",
 	];
 	const randomIndex = Math.floor(Math.random() * sparks.length);
 	const randomSpark = sparks[randomIndex];
@@ -741,32 +804,42 @@ function handleSparkRefreshClick() {
 // #region Handle Points Actions
 // ----------------------------------------------------------------------------------------------------
 
+function updateRotationPreview() {
+	const svg = document.getElementById("rotation-preview");
+	if (!svg) return;
+	const arms = currentPointsState.get().rotationCount + 1;
+	const r = 10;
+	let lines = "";
+	for (let i = 0; i < arms; i++) {
+		const angle = (i / arms) * 2 * Math.PI - Math.PI / 2;
+		const x = (Math.cos(angle) * r).toFixed(2);
+		const y = (Math.sin(angle) * r).toFixed(2);
+		lines += `<line x1="0" y1="0" x2="${x}" y2="${y}"/>`;
+	}
+	svg.innerHTML = lines;
+}
+
 function handleIncreaseRotationClick() {
 	const increaseRotationButton = document.querySelector("#increase-rotation");
-	if (!increaseRotationButton) {
-		console.error("Increase rotation button not found!");
-		return;
-	}
+	if (!increaseRotationButton) return;
 	increaseRotationButton.addEventListener("click", () => {
 		const currentState = currentPointsState.get();
 		const newRotationCount = Math.min(currentState.rotationCount + 1, 9);
 		currentPointsState.set(currentState.points, newRotationCount);
 		updateVoronoiPaths(currentPointsState.get().points.length, currentPointsState.get().points);
+		updateRotationPreview();
 	});
 }
 
 function handleDecreaseRotationClick() {
 	const decreaseRotationButton = document.querySelector("#decrease-rotation");
-	if (!decreaseRotationButton) {
-		console.error("Decrease rotation button not found!");
-		return;
-	}
-
+	if (!decreaseRotationButton) return;
 	decreaseRotationButton.addEventListener("click", () => {
 		const currentState = currentPointsState.get();
-		const newRotationCount = Math.max(currentState.rotationCount - 1, 0);
+		const newRotationCount = Math.max(currentState.rotationCount - 1, 1);
 		currentPointsState.set(currentState.points, newRotationCount);
 		updateVoronoiPaths(currentPointsState.get().points.length, currentPointsState.get().points);
+		updateRotationPreview();
 	});
 }
 // ----------------------------------------------------------------------------------------------------
