@@ -151,12 +151,12 @@ class FxFilter {
 
 		if (backdropFilter.trim()) {
 			// Create the structure
-			element.innerHTML += `
+			element.insertAdjacentHTML('beforeend', `
                 <svg style="position: absolute; width: 0; height: 0;">
                     ${svgContent}
                 </svg>
                 <div class="fx-container" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; backdrop-filter: ${backdropFilter}; background: transparent; pointer-events: none; z-index: -1; overflow: hidden; border-radius: inherit;"></div>
-            `;
+            `);
 
 			this.elements.set(element, { filter: filterValue, hasContainer: true });
 		}
