@@ -53,93 +53,130 @@ function handleSubmitButtonClick() {
 	const submitButton = document.querySelector("#submit-shards-btn");
 	if (!submitButton) return;
 
-	submitButton.addEventListener("click", async (e) => {
+	submitButton.addEventListener("click", (e) => {
 		e.preventDefault();
+		// Show confirmation popup — actual submission starts only if user confirms
+		guideManager.show("confirmSubmit", null, {
+			continue: () => {
+				guideManager.hide();
+				startSculptureSubmission();
+			},
+			back: () => guideManager.hide(),
+		});
+	});
+}
 
-		// Show sculpture submitted guide message
-		guideManager.show("sculptureSubmitted");
-		guideManager.showProgressBar();
+async function startSculptureSubmission() {
+	// Hide shards section immediately
+	const shardsSection = document.getElementById("shards-section");
+	if (shardsSection) shardsSection.classList.add("hidden");
 
-		// Start analyzing stage immediately
-		guideManager.activateProgressStage(1, 18000);
+	// Show progress popup
+	guideManager.show("sculptureSubmitted");
+	guideManager.showProgressBar();
+	guideManager.activateProgressStage(1, 18000);
 
-		const el = guideManager.getElements();
+	const el = guideManager.getElements();
 
-		try {
-			const sculptureResponse = await requestCreateSculpture();
+	// Guard against duplicate stage transitions from polling
+	const activated = new Set();
+	const completed = new Set();
 
-			const taskId = sculptureResponse.task_id || sculptureResponse.taskId || sculptureResponse.task || null;
-			const sculptureId = sculptureResponse.id || sculptureResponse.sculpture_id || null;
+	function safeActivate(stage, ms) {
+		if (activated.has(stage)) return;
+		activated.add(stage);
+		guideManager.activateProgressStage(stage, ms);
+	}
+	function safeComplete(stage) {
+		if (completed.has(stage)) return;
+		completed.add(stage);
+		guideManager.completeProgressStage(stage);
+	}
 
-			// Move to sculpting stage
-			guideManager.completeProgressStage(1);
-			guideManager.activateProgressStage(2, 600000);
+	try {
+		console.log("Sculpture: Sending creation request...");
+		const sculptureResponse = await requestCreateSculpture();
 
-			let attempts = 0;
-			const maxAttempts = 120;
-			const pollMs = 5000;
+		const taskId = sculptureResponse.task_id || sculptureResponse.taskId || sculptureResponse.task || null;
+		const sculptureId = sculptureResponse.id || sculptureResponse.sculpture_id || null;
+		console.log("Sculpture: Creation request succeeded", { taskId, sculptureId, status: sculptureResponse.status });
 
-			const pollHandle = setInterval(async () => {
-				attempts++;
-				try {
-					let statusObj = null;
-					if (taskId) {
-						statusObj = await requestReadSculptureStatus(taskId);
-					} else if (sculptureId) {
-						const all = await requestReadSculptures();
-						statusObj = all.find((s) => (s.id || s.sculpture_id) == sculptureId) || null;
-					} else {
-						const all = await requestReadSculptures();
-						statusObj = all && all.length ? all[0] : null;
-					}
+		safeComplete(1);
+		safeActivate(2, 240000); // 4 minutes
+		console.log("Sculpture: Analysis complete — sculpting stage started");
 
-					const statusText = statusObj ? statusObj.status || statusObj.state || statusObj.task_status || "pending" : "pending";
+		let attempts = 0;
+		const maxAttempts = 120;
+		const pollMs = 5000;
 
-					// Update progress stages based on API status
-					if (statusText === "refining") {
-						guideManager.completeProgressStage(2);
-						guideManager.activateProgressStage(3, 540000);
-					} else if (statusText === "completed" || statusText === "done") {
-						guideManager.completeProgressStage(2);
-						guideManager.completeProgressStage(3);
-						clearInterval(pollHandle);
+		const pollHandle = setInterval(async () => {
+			attempts++;
+			try {
+				let statusObj = null;
+				if (taskId) {
+					statusObj = await requestReadSculptureStatus(taskId);
+				} else if (sculptureId) {
+					const all = await requestReadSculptures();
+					statusObj = all.find((s) => (s.id || s.sculpture_id) == sculptureId) || null;
+				} else {
+					const all = await requestReadSculptures();
+					statusObj = all && all.length ? all[0] : null;
+				}
 
-						// Mark session as first sculpture for the guide
-						await fetch("/api/sculptures/mark-first-sculpture", {
-							method: "POST",
-							headers: { "Content-Type": "application/json" },
-						}).catch(() => {}); // non-critical
+				const statusText = statusObj
+					? statusObj.status || statusObj.state || statusObj.task_status || "pending"
+					: "pending";
 
-						// Show OK to reload and see sculpture
-						const line = document.createElement("div");
-						line.style.cssText = "text-align: center; margin-top: 1rem; font-size: 1rem;";
-						line.textContent = "The form has crystallized.";
-						el.status.appendChild(line);
-						guideManager.showOkButton();
-						guideManager.setHandlers({
-							ok: () => window.location.reload(),
-						});
-					} else if (attempts >= maxAttempts) {
-						clearInterval(pollHandle);
-						guideManager.addStatus("This is taking longer than expected. Check back soon.");
-						guideManager.showOkButton();
-						guideManager.setHandlers({ ok: () => guideManager.hide() });
-					}
-				} catch (err) {
-					console.error("Error polling sculpture status:", err);
-					guideManager.addStatus("Error checking status: " + (err.message || err));
+				console.log(`Sculpture: Poll #${attempts}/${maxAttempts} — status="${statusText}"`, {
+					taskId,
+					sculptureId,
+					raw: statusObj,
+				});
+
+				if (statusText === "refining") {
+					safeComplete(2);
+					safeActivate(3, 240000); // 4 minutes
+					console.log("Sculpture: Sculpting complete — refining stage started");
+				} else if (statusText === "completed" || statusText === "done") {
 					clearInterval(pollHandle);
+					safeComplete(2);
+					safeComplete(3);
+					console.log("Sculpture: All stages complete");
+
+					await fetch("/api/sculptures/mark-first-sculpture", {
+						method: "POST",
+						headers: { "Content-Type": "application/json" },
+					}).catch((err) => console.warn("Sculpture: mark-first-sculpture failed (non-critical):", err));
+
+					console.log("Sculpture: Marked as first sculpture — reloading on OK");
+
+					const line = document.createElement("div");
+					line.style.cssText = "text-align: center; margin-top: 1rem; font-size: 1rem;";
+					line.textContent = "The form has crystallized.";
+					el.status.appendChild(line);
+					guideManager.showOkButton();
+					guideManager.setHandlers({ ok: () => window.location.reload() });
+				} else if (attempts >= maxAttempts) {
+					clearInterval(pollHandle);
+					console.warn("Sculpture: Max poll attempts reached without completion");
+					guideManager.addStatus("This is taking longer than expected. Check back soon.");
 					guideManager.showOkButton();
 					guideManager.setHandlers({ ok: () => guideManager.hide() });
 				}
-			}, pollMs);
-		} catch (err) {
-			console.error("Error during sculpture creation:", err);
-			guideManager.addStatus("Failed to start: " + (err.message || err));
-			guideManager.showOkButton();
-			guideManager.setHandlers({ ok: () => guideManager.hide() });
-		}
-	});
+			} catch (err) {
+				console.error("Sculpture: Poll error:", err);
+				guideManager.addStatus("Error checking status: " + (err.message || err));
+				clearInterval(pollHandle);
+				guideManager.showOkButton();
+				guideManager.setHandlers({ ok: () => guideManager.hide() });
+			}
+		}, pollMs);
+	} catch (err) {
+		console.error("Sculpture: Creation request failed:", err);
+		guideManager.addStatus("Failed to start: " + (err.message || err));
+		guideManager.showOkButton();
+		guideManager.setHandlers({ ok: () => guideManager.hide() });
+	}
 }
 // ----------------------------------------------------------------------------------------------------
 // #endregion

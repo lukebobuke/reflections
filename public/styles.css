@@ -986,7 +986,6 @@ body {
 	height: 100%;
 	background: rgba(var(--text-color));
 	border-radius: calc(var(--radius) / 2);
-	transition: width 0.3s ease-out;
 	box-shadow: 0 0 8px rgba(var(--text-color), 0.5);
 }
 

@@ -26,6 +26,12 @@ const GUIDE_MESSAGES = {
 		continueAction: null,
 	},
 
+	// Stage 2b: Confirmation before submitting
+	confirmSubmit: {
+		text: `Once submitted, your mosaic cannot be rebuilt.\n\nForging may take several minutes. You will not be able to return to shard editing.\n\nAre you ready to fuse your shards?`,
+		buttons: { continue: true, back: true, submit: false, ok: false },
+	},
+
 	// Stage 2b → 3: Sculpture submitted, processing
 	sculptureSubmitted: {
 		text: `The fragments are entering the furnace.\n\nYour shards are being drawn together, their edges softening, their tensions resolving. What emerges cannot be untangled back into its parts.\n\nThis will take a few minutes. The sculpture will appear when it is ready.`,
@@ -241,27 +247,32 @@ function createGuideManager() {
 
 	function completeProgressStage(stageNumber) {
 		const el = document.getElementById(`progress-stage-${stageNumber}`);
-		if (!el) return;
+		if (!el || el.classList.contains("complete")) return;
 		const fill = el.querySelector(".progress-bar-fill");
-		if (fill) fill.style.width = "100%";
+		if (fill) {
+			fill.style.transition = "width 0.4s ease-out";
+			fill.style.width = "100%";
+		}
 		el.classList.remove("active");
 		el.classList.add("complete");
 	}
 
 	function activateProgressStage(stageNumber, durationMs) {
 		const el = document.getElementById(`progress-stage-${stageNumber}`);
-		if (!el) return;
+		if (!el || el.classList.contains("active") || el.classList.contains("complete")) return;
 		el.classList.add("active");
 		const fill = el.querySelector(".progress-bar-fill");
 		if (!fill) return;
-
-		const start = Date.now();
-		const tick = setInterval(() => {
-			const elapsed = Date.now() - start;
-			const pct = Math.min((elapsed / durationMs) * 100, 99);
-			fill.style.width = `${pct}%`;
-			if (elapsed >= durationMs) clearInterval(tick);
-		}, 100);
+		// Reset without transition, then use a single long CSS transition to 99%.
+		// The browser handles smooth animation natively — no setInterval jitter.
+		fill.style.transition = "none";
+		fill.style.width = "0%";
+		requestAnimationFrame(() => {
+			requestAnimationFrame(() => {
+				fill.style.transition = `width ${durationMs}ms linear`;
+				fill.style.width = "99%";
+			});
+		});
 	}
 
 	function showOkButton() {
