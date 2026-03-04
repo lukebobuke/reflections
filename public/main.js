@@ -183,56 +183,66 @@ async function handleDoneWithPattern() {
 	const btn = document.getElementById("done-with-pattern-btn");
 	if (!btn) return;
 
-	btn.addEventListener("click", async () => {
-		try {
-			console.log("Pattern: Saving and locking pattern");
+	btn.addEventListener("click", () => {
+		// Show confirmation popup before locking
+		guideManager.show("confirmPattern", null, {
+			back: () => guideManager.hide(),
+			ok: async () => {
+				try {
+					console.log("Pattern: Saving and locking pattern");
 
-			// Save the current point state to backend
-			const { points, rotationCount } = currentPointsState.get();
+					const { points, rotationCount } = currentPointsState.get();
 
-			// Check if pattern already exists (PUT) or needs to be created (POST)
-			const checkResponse = await fetch("/api/points");
-			let saveResponse;
-			if (checkResponse.ok) {
-				saveResponse = await fetch("/api/points", {
-					method: "PUT",
-					headers: { "Content-Type": "application/json" },
-					body: JSON.stringify({ rotationCount, points }),
-				});
-			} else {
-				saveResponse = await fetch("/api/points", {
-					method: "POST",
-					headers: { "Content-Type": "application/json" },
-					body: JSON.stringify({ rotationCount, points }),
-				});
-			}
+					const checkResponse = await fetch("/api/points");
+					let saveResponse;
+					if (checkResponse.ok) {
+						saveResponse = await fetch("/api/points", {
+							method: "PUT",
+							headers: { "Content-Type": "application/json" },
+							body: JSON.stringify({ rotationCount, points }),
+						});
+					} else {
+						saveResponse = await fetch("/api/points", {
+							method: "POST",
+							headers: { "Content-Type": "application/json" },
+							body: JSON.stringify({ rotationCount, points }),
+						});
+					}
 
-			if (!saveResponse.ok) throw new Error("Failed to save pattern");
+					if (!saveResponse.ok) throw new Error("Failed to save pattern");
 
-			// Lock the pattern server-side
-			const lockResponse = await fetch("/shards/api/lock-pattern", {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-			});
-			if (!lockResponse.ok) throw new Error("Failed to lock pattern");
+					const lockResponse = await fetch("/shards/api/lock-pattern", {
+						method: "POST",
+						headers: { "Content-Type": "application/json" },
+					});
+					if (!lockResponse.ok) throw new Error("Failed to lock pattern");
 
-			// Hide pattern controls, show shard controls
-			const patternControls = document.getElementById("pattern-controls");
-			const showAndSubmit = document.getElementById("show-and-submit");
-			if (patternControls) patternControls.classList.add("hidden");
-			if (showAndSubmit) showAndSubmit.classList.remove("hidden");
+					// Hide shards section — popup is the only thing on screen
+					const shardsSection = document.getElementById("shards-section");
+					if (shardsSection) shardsSection.classList.add("hidden");
 
-			console.log("Phase: Pattern locked → transitioning to shard creation");
+					// Update controls for shard-creation stage
+					const patternControls = document.getElementById("pattern-controls");
+					const showAndSubmit = document.getElementById("show-and-submit");
+					if (patternControls) patternControls.classList.add("hidden");
+					if (showAndSubmit) showAndSubmit.classList.remove("hidden");
 
-			// Transition state machine to viewShards so hover and click handlers work correctly
-			appState.set.viewShards();
+					console.log("Phase: Pattern locked → transitioning to shard creation");
+					appState.set.viewShards();
 
-			// Show the shard creation guide message
-			guideManager.show("patternLocked");
-		} catch (err) {
-			console.error("Error in done-with-pattern:", err);
-			guideManager.addStatus("Something went wrong saving your pattern. Please try again.");
-		}
+					// Show second popup explaining shard creation; Continue restores the section
+					guideManager.show("patternLocked", null, {
+						continue: () => {
+							guideManager.hide();
+							if (shardsSection) shardsSection.classList.remove("hidden");
+						},
+					});
+				} catch (err) {
+					console.error("Error in done-with-pattern:", err);
+					guideManager.addStatus("Something went wrong saving your pattern. Please try again.");
+				}
+			},
+		});
 	});
 }
 // ----------------------------------------------------------------------------------------------------

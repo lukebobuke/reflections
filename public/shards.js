@@ -860,7 +860,7 @@ function calculateOriginalIndex(duplicatedIndex, originalLength) {
 
 // Setup the SVG structure for Voronoi rendering
 function setupVoronoiSVG() {
-	const voronoiContainer = document.getElementById("shards-section");
+	const voronoiContainer = document.getElementById("voronoi-area");
 	if (!voronoiContainer) {
 		console.error("Voronoi container not found.");
 		return null;

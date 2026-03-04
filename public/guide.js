@@ -19,6 +19,16 @@ const GUIDE_MESSAGES = {
 		continueAction: null,
 	},
 
+	// Stage 2a: Confirm locking the pattern
+	confirmPattern: {
+		text: `Once you continue, this pattern cannot be changed.
+
+You are about to lock the arrangement of cells that will hold your shards. This shape is permanent.
+
+Are you ready?`,
+		buttons: { continue: false, back: true, submit: false, ok: true },
+	},
+
 	// Stage 2a → 2b: Pattern locked, transition to shard creation
 	patternLocked: {
 		text: `The lattice is set. It will not shift again.\n\nNow the real work begins. Each cell in the pattern can hold a shard — a response to a question, a memory, a truth. Click a cell to place one. Choose its color. Toggle its glow.\n\nThere is no rush. When your shards feel complete, press Submit to fuse them into a sculpture.`,

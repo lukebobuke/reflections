@@ -40,7 +40,7 @@ async function helperGenerateSculpturePrompt(userId) {
 		personalityAnalysis = "Error generating personality analysis.";
 	}
 
-	const sculpturePrompt = `Create a realistic-looking abstract glass sculpture based on the following personality analysis:\n${personalityAnalysis}`;
+	const sculpturePrompt = `Abstract glass sculpture: transparent crystalline glass, clear refractive facets, glass-like translucency, light-bending surfaces. Personality-driven form: ${personalityAnalysis}`;
 
 	console.log("helperGenerateSculpturePrompt: Final sculpture prompt assembled");
 	return {
@@ -78,6 +78,7 @@ const createSculpture = async (req, res) => {
 		const payload = {
 			mode: "preview",
 			prompt: sculpturePrompt,
+			negative_prompt: "opaque, painted, matte, ceramic, plastic, solid color, metallic, rubber",
 			art_style: "realistic",
 			should_remesh: true,
 		};

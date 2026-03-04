@@ -76,8 +76,6 @@ async function startSculptureSubmission() {
 	guideManager.showProgressBar();
 	guideManager.activateProgressStage(1, 18000);
 
-	const el = guideManager.getElements();
-
 	// Guard against duplicate stage transitions from polling
 	const activated = new Set();
 	const completed = new Set();
@@ -127,11 +125,6 @@ async function startSculptureSubmission() {
 					? statusObj.status || statusObj.state || statusObj.task_status || "pending"
 					: "pending";
 
-				console.log(`Sculpture: Poll #${attempts}/${maxAttempts} — status="${statusText}"`, {
-					taskId,
-					sculptureId,
-					raw: statusObj,
-				});
 
 				if (statusText === "refining") {
 					safeComplete(2);
@@ -150,12 +143,7 @@ async function startSculptureSubmission() {
 
 					console.log("Sculpture: Marked as first sculpture — reloading on OK");
 
-					const line = document.createElement("div");
-					line.style.cssText = "text-align: center; margin-top: 1rem; font-size: 1rem;";
-					line.textContent = "The form has crystallized.";
-					el.status.appendChild(line);
-					guideManager.showOkButton();
-					guideManager.setHandlers({ ok: () => window.location.reload() });
+					guideManager.show("sculptureComplete", null, { ok: () => window.location.reload() });
 				} else if (attempts >= maxAttempts) {
 					clearInterval(pollHandle);
 					console.warn("Sculpture: Max poll attempts reached without completion");
