@@ -168,7 +168,7 @@ function handleHideShardCrudClick() {
 // #region API Calls
 // ----------------------------------------------------------------------------------------------------
 async function createShardRequest(data) {
-	const response = await fetch("/shards", {
+	const response = await fetch("/vault", {
 		method: "POST",
 		headers: { "Content-Type": "application/json" },
 		body: JSON.stringify(data),
@@ -180,7 +180,7 @@ async function createShardRequest(data) {
 	return shards;
 }
 async function editShardRequest(shardId, data) {
-	const response = await fetch(`/shards/${shardId}`, {
+	const response = await fetch(`/vault/${shardId}`, {
 		method: "PUT",
 		headers: { "Content-Type": "application/json" },
 		body: JSON.stringify(data),
@@ -192,7 +192,7 @@ async function editShardRequest(shardId, data) {
 	return shards;
 }
 async function deleteShardRequest(shardId) {
-	const response = await fetch(`/shards/${shardId}`, { method: "DELETE" });
+	const response = await fetch(`/vault/${shardId}`, { method: "DELETE" });
 	if (!response.ok) {
 		throw new Error("From shards.js, failed to delete shard");
 	}
@@ -200,7 +200,7 @@ async function deleteShardRequest(shardId) {
 	return shards;
 }
 async function fetchShards() {
-	const response = await fetch("/shards/api/user-shards");
+	const response = await fetch("/vault/api/user-shards");
 	if (!response.ok) {
 		throw new Error("Failed to fetch shards");
 	}

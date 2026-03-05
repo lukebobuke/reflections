@@ -184,7 +184,7 @@ async function handleDoneWithPattern() {
 
 					if (!saveResponse.ok) throw new Error("Failed to save pattern");
 
-					const lockResponse = await fetch("/shards/api/lock-pattern", {
+					const lockResponse = await fetch("/vault/api/lock-pattern", {
 						method: "POST",
 						headers: { "Content-Type": "application/json" },
 					});

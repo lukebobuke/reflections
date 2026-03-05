@@ -98,12 +98,12 @@ body[data-stage="1"] #signupBtn {
 /* ----------------------------------------------------------------------------------------------------*/
 
 /* Header stays above all feed cards while scrolling */
-body[data-current-page="home"] header {
+body[data-current-page="Gallery"] header {
 	z-index: 1000;
 }
 
 /* Kill the global p margin-top inside feed cards so there's no top gap */
-body[data-current-page="home"] .feed-card p {
+body[data-current-page="Gallery"] .feed-card p {
 	margin-top: 0;
 }
 
@@ -112,5 +112,31 @@ body[data-current-page="home"] .feed-card p {
    The inner columns each have their own overflow:hidden to contain their content. */
 .feed-card {
 	overflow: visible;
+}
+/* #endregion */
+
+/* ----------------------------------------------------------------------------------------------------*/
+/* #region MARK: Vault Page — Sculpture + Mosaic Layout */
+/* ----------------------------------------------------------------------------------------------------*/
+
+/* main fills the body flex column so the row children can take full height */
+main.row-layout {
+	flex: 1;
+	flex-direction: row;
+	gap: var(--padding);
+	min-height: 0;
+	align-items: stretch;
+}
+
+/* Sculpture viewer gets half the width and fills available height */
+main.row-layout #sculpture-container {
+	flex: 1;
+	min-height: 0;
+}
+
+/* Shards mosaic gets the other half */
+main.row-layout #shards-section {
+	flex: 1;
+	min-height: 0;
 }
 /* #endregion */

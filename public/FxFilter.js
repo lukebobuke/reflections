@@ -57,6 +57,7 @@ class FxFilter {
 	static scanElements() {
 		// Scan only elements that could have --fx-filter (not our generated containers)
 		document.querySelectorAll("*:not(.fx-container):not(svg)").forEach((element) => {
+			if (!(element instanceof HTMLElement)) return; // skip SVG children (no offsetWidth)
 			const fxFilter = this.getFxFilterValue(element);
 			const storedState = this.elements.get(element);
 
