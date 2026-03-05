@@ -40,30 +40,7 @@ async function helperGenerateSculpturePrompt(userId) {
 		personalityAnalysis = "Error generating personality analysis.";
 	}
 
-	// Compute dominant shard tint (most frequent non-zero tint value)
-	const tintColorNames = {
-		1: "white and pearl",
-		2: "warm red and crimson",
-		3: "amber and orange",
-		4: "golden yellow",
-		5: "emerald green",
-		6: "sapphire blue",
-		7: "deep indigo and violet",
-		8: "amethyst and violet",
-	};
-	const tintCounts = {};
-	shards.forEach((shard) => {
-		const t = parseInt(shard.tint) || 0;
-		if (t > 0) tintCounts[t] = (tintCounts[t] || 0) + 1;
-	});
-	const tintEntries = Object.entries(tintCounts);
-	let colorModifier = "";
-	if (tintEntries.length > 0) {
-		const dominantTint = tintEntries.sort((a, b) => b[1] - a[1])[0][0];
-		colorModifier = `, tinted with ${tintColorNames[dominantTint]} hues`;
-	}
-
-	const sculpturePrompt = `Abstract glass sculpture: transparent crystalline glass, clear refractive facets, glass-like translucency, light-bending surfaces${colorModifier}. Personality-driven form: ${personalityAnalysis}`;
+	const sculpturePrompt = `Abstract glass sculpture: transparent glass, clear refractive shapes, glass-like translucency, light-bending surfaces. Perhaps colorless glass but perhaps lightly tinted to match personality. Personality-driven form: ${personalityAnalysis}`;
 
 	console.log("helperGenerateSculpturePrompt: Final sculpture prompt assembled");
 	return {
@@ -101,7 +78,7 @@ const createSculpture = async (req, res) => {
 		const payload = {
 			mode: "preview",
 			prompt: sculpturePrompt,
-			negative_prompt: "opaque, painted, matte, ceramic, plastic, solid color, metallic, rubber, monochromatic, grey, gray, silver",
+			negative_prompt: "opaque, painted, matte, ceramic, metallic, rubber, grey, gray, silver",
 			art_style: "realistic",
 			should_remesh: true,
 		};
