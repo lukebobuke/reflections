@@ -24,7 +24,7 @@ async function helperGenerateSculpturePrompt(userId) {
 		.map((shard) => `Q: ${shard.spark.trim()}\nA: ${shard.text.trim()}`)
 		.join("\n\n");
 
-	const personalityPrompt = `Pretend that you are an expert psychologist and create a personality analysis regarding character traits such as tendencies, strengths, weaknesses, and deep desires. Use no filler language like as an expert psychologist or strengths with a colon and then the strength. The response must be 600 characters or less from the following questions and answers:\n${assembledShards}`;
+	const personalityPrompt = `Pretend that you are an expert psychologist and create a personality analysis regarding character traits such as tendencies, strengths, weaknesses, and deep desires. Use no filler language like as an expert psychologist or strengths with a colon and then the strength. The response must be 400 characters or less from the following questions and answers:\n${assembledShards}`;
 
 	let personalityAnalysis = "";
 	try {
@@ -40,7 +40,7 @@ async function helperGenerateSculpturePrompt(userId) {
 		personalityAnalysis = "Error generating personality analysis.";
 	}
 
-	const sculpturePrompt = `Abstract glass sculpture: transparent glass, clear refractive shapes, glass-like translucency, light-bending surfaces. Perhaps colorless glass but perhaps lightly tinted to match personality. Personality-driven form: ${personalityAnalysis}`;
+	const sculpturePrompt = `Create a realistic-looking transparent abstract glass sculpture based on the following personality analysis: ${personalityAnalysis}`;
 
 	console.log("helperGenerateSculpturePrompt: Final sculpture prompt assembled");
 	return {

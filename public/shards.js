@@ -70,17 +70,19 @@ const createAppState = () => {
 				try {
 					const pointsData = await fetchPointArray();
 					if (!pointsData) {
-						try {
-							// Start new patterns with 4 random points spread across the canvas
-							const randomPoints = Array.from({ length: 4 }, () => [
-								(Math.random() * 2 - 1) * 0.65,
-								(Math.random() * 2 - 1) * 0.65,
-							]);
-							await createPointArray(randomPoints, currentPointsState.get().rotationCount);
-							currentPointsState.set(randomPoints, currentPointsState.get().rotationCount);
-						} catch (createError) {
-							console.error("Error creating empty point array:", createError);
-							// Continue anyway - don't block the app from loading
+						// Only seed random points if we don't already have some in memory
+						if (currentPointsState.get().points.length === 0) {
+							try {
+								// Start new patterns with 4 random points spread across the canvas
+								const randomPoints = Array.from({ length: 4 }, () => [
+									(Math.random() * 2 - 1) * 0.65,
+									(Math.random() * 2 - 1) * 0.65,
+								]);
+								await createPointArray(randomPoints, currentPointsState.get().rotationCount);
+								currentPointsState.set(randomPoints, currentPointsState.get().rotationCount);
+							} catch (createError) {
+								console.error("Error creating empty point array:", createError);
+							}
 						}
 					} else {
 						// Destructure the response

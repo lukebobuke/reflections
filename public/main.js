@@ -126,9 +126,12 @@ function initShardsPageGuide() {
 				const shardsSection = document.getElementById("shards-section");
 				if (shardsSection) shardsSection.classList.add("hidden");
 				guideManager.show("patternCreation", null, {
-					continue: () => {
+					continue: async () => {
 						guideManager.hide();
 						if (shardsSection) shardsSection.classList.remove("hidden");
+						// Re-render with real dimensions, then restore editing state
+						await appState.set.viewShards();
+						appState.set.pointsEditing();
 					},
 				});
 			}, 400);
@@ -200,8 +203,8 @@ async function handleDoneWithPattern() {
 					guideManager.show("patternLocked", null, {
 						continue: async () => {
 							guideManager.hide();
-							await appState.set.viewShards();
 							if (shardsSection) shardsSection.classList.remove("hidden");
+							await appState.set.viewShards();
 						},
 					});
 				} catch (err) {
