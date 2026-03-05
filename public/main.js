@@ -73,25 +73,28 @@ function initHaikuFooter() {
 // ----------------------------------------------------------------------------------------------------
 
 // ----------------------------------------------------------------------------------------------------
-// #region Welcome Guide (Stage 1 — home page, once per browser)
+// #region Welcome Guide (Stage 1 — gallery page, non-logged-in)
 // ----------------------------------------------------------------------------------------------------
 function maybeShowWelcomeGuide() {
 	const state = window.__HOME_PAGE_STATE__;
 	if (!state || state.isLoggedIn) return;
 	if (!state.showWelcome) return;
 
-	const alreadySeen = localStorage.getItem("reflections_welcome_seen");
-	if (alreadySeen) return;
+	// Hide page content so popup is the only focus
+	const toHide = ["header", "main", "footer"].map((tag) => document.querySelector(tag)).filter(Boolean);
+	toHide.push(document.getElementById("sculpture-feed"));
+	toHide.forEach((el) => el && (el.style.display = "none"));
 
-	// Short delay so the feed has a chance to render first
-	setTimeout(() => {
-		guideManager.show("welcome", null, {
-			continue: () => {
-				localStorage.setItem("reflections_welcome_seen", "1");
-				guideManager.hide();
-			},
-		});
-	}, 800);
+	guideManager.show("welcome", null, {
+		continue: () => {
+			guideManager.hide();
+			toHide.forEach((el) => el && (el.style.display = ""));
+		},
+	});
+
+	// Rename the continue button to "Enter Gallery" for this popup
+	const continueLabel = document.querySelector("#main-popup-continue .carved-glass");
+	if (continueLabel) continueLabel.textContent = "Enter Gallery";
 }
 // ----------------------------------------------------------------------------------------------------
 // #endregion
@@ -104,7 +107,7 @@ function initShardsPageGuide() {
 	const state = window.__SHARDS_PAGE_STATE__;
 	if (!state) return;
 
-	const { stage, hasSculpture, patternLocked, isNewSignup, isFirstSculpture } = state;
+	const { hasSculpture, patternLocked } = state;
 
 	console.log(
 		`Phase: ${
@@ -113,14 +116,6 @@ function initShardsPageGuide() {
 			: "Pattern creation"
 		}`,
 	);
-
-	// Stage 3 first time — sculpture just completed
-	if (hasSculpture && isFirstSculpture) {
-		setTimeout(() => {
-			guideManager.show("sculptureComplete");
-		}, 600);
-		return;
-	}
 
 	// Stage 2 — no sculpture yet
 	if (!hasSculpture) {
@@ -201,12 +196,11 @@ async function handleDoneWithPattern() {
 					if (showAndSubmit) showAndSubmit.classList.remove("hidden");
 
 					console.log("Phase: Pattern locked → transitioning to shard creation");
-					appState.set.viewShards();
-
-					// Show second popup explaining shard creation; Continue restores the section
+					// Show popup explaining shard creation; fetch+render on Continue so shards appear immediately
 					guideManager.show("patternLocked", null, {
-						continue: () => {
+						continue: async () => {
 							guideManager.hide();
+							await appState.set.viewShards();
 							if (shardsSection) shardsSection.classList.remove("hidden");
 						},
 					});

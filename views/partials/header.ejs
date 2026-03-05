@@ -4,6 +4,11 @@
 	<div class="header-actions">
 		<% if (!user) { %>
 			<%/* Stage 1: not logged in */%>
+			<% if (currentPage !== 'Gallery') { %>
+			<a href="/gallery" class="liquid-glass button-link" id="galleryBtn">
+				<span class="carved-glass">Gallery</span>
+			</a>
+			<% } %>
 			<% if (currentPage !== 'signup') { %>
 			<a href="/login/signup" class="liquid-glass button-link" id="signupBtn">
 				<span class="carved-glass">Sign Up</span>

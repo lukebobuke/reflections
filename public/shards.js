@@ -71,7 +71,13 @@ const createAppState = () => {
 					const pointsData = await fetchPointArray();
 					if (!pointsData) {
 						try {
-							await createPointArray([[0, 0]], currentPointsState.get().rotationCount);
+							// Start new patterns with 4 random points spread across the canvas
+							const randomPoints = Array.from({ length: 4 }, () => [
+								(Math.random() * 2 - 1) * 0.65,
+								(Math.random() * 2 - 1) * 0.65,
+							]);
+							await createPointArray(randomPoints, currentPointsState.get().rotationCount);
+							currentPointsState.set(randomPoints, currentPointsState.get().rotationCount);
 						} catch (createError) {
 							console.error("Error creating empty point array:", createError);
 							// Continue anyway - don't block the app from loading
@@ -134,6 +140,8 @@ const createAppState = () => {
 				}
 
 				shardCrudContainer.classList.remove("active");
+				updateRotationPreview();
+				updateClickHint();
 			},
 		},
 	};
@@ -819,6 +827,23 @@ function updateRotationPreview() {
 	svg.innerHTML = lines;
 }
 
+function updateClickHint() {
+	const hint = document.getElementById("voronoi-hint");
+	if (!hint) return;
+	const hasPoints = currentPointsState.get().points.length > 0;
+	hint.classList.toggle("hidden", hasPoints);
+}
+
+function ensureClickHint() {
+	if (document.getElementById("voronoi-hint")) return;
+	const voronoiArea = document.getElementById("voronoi-area");
+	if (!voronoiArea) return;
+	const hint = document.createElement("p");
+	hint.id = "voronoi-hint";
+	hint.textContent = "Click anywhere";
+	voronoiArea.appendChild(hint);
+}
+
 function handleIncreaseRotationClick() {
 	const increaseRotationButton = document.querySelector("#increase-rotation");
 	if (!increaseRotationButton) return;
@@ -1143,6 +1168,7 @@ function handleAddVoronoiPoint() {
 	if (!svgElements) return;
 
 	const { voronoiContainer } = svgElements;
+	ensureClickHint();
 
 	// Debounce the update function to prevent excessive re-rendering
 	const debouncedUpdate = debounce((points, length, width, height) => {
@@ -1169,6 +1195,7 @@ function handleAddVoronoiPoint() {
 				const normalizedY = Math.max(-1, Math.min(1, clickY / maxCoordinate));
 
 				currentPointsState.push([normalizedX, normalizedY]);
+				updateClickHint();
 
 				// Use debounced update
 				debouncedUpdate(currentPointsState.get().points, currentPointsState.get().points.length, width, height);

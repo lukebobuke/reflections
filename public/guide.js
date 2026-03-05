@@ -5,11 +5,11 @@
 // ----------------------------------------------------------------------------------------------------
 
 const GUIDE_MESSAGES = {
-	// Stage 1: Home feed, first visit only (tracked in localStorage)
+	// Stage 1: Home feed, shown for non-logged-in gallery visitors
 	welcome: {
-		text: `Each sculpture you see here began as scattered fragments — questions answered honestly, memories held up to the light.\n\nThis is Reflections. A place where the shards of your inner world are gathered, shaped, and fused into something that endures.\n\nCreate an account to begin forging your own.`,
+		text: `Each sculpture here is a crystallized portrait of a person's inner world — their memories, values, and tensions held together in glass.\n\nCreate an account to begin forging your own.`,
 		buttons: { continue: true, back: false, submit: false, ok: false },
-		continueAction: null, // just dismiss
+		continueAction: null,
 	},
 
 	// Stage 2a: Just signed up — pattern creation

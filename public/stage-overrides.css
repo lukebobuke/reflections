@@ -90,6 +90,20 @@ body[data-stage="1"] #signupBtn {
 #voronoi-area {
 	flex: 1;
 	min-height: 0;
+	position: relative;
+}
+
+/* "Click anywhere" hint — centered overlay, fades away after first point */
+#voronoi-hint {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	pointer-events: none;
+	opacity: 0.5;
+	font-size: 1rem;
+	letter-spacing: 0.12em;
+	z-index: 1;
 }
 /* #endregion */
 
@@ -128,10 +142,17 @@ main.row-layout {
 	align-items: stretch;
 }
 
-/* Sculpture viewer gets half the width and fills available height */
+/* Sculpture viewer gets slightly less than half (shrunk ~10%) */
 main.row-layout #sculpture-container {
-	flex: 1;
+	flex: 0.9;
 	min-height: 0;
+}
+
+/* Smaller analysis text to avoid scrolling */
+#sculpture-analysis {
+	font-size: 0.65rem !important;
+	line-height: 1.4 !important;
+	max-height: 5rem !important;
 }
 
 /* Shards mosaic gets the other half */

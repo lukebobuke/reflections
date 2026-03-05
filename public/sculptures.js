@@ -100,7 +100,7 @@ async function startSculptureSubmission() {
 		console.log("Sculpture: Creation request succeeded", { taskId, sculptureId, status: sculptureResponse.status });
 
 		safeComplete(1);
-		safeActivate(2, 240000); // 4 minutes
+		safeActivate(2, 180000); // 3 minutes
 		console.log("Sculpture: Analysis complete — sculpting stage started");
 
 		let attempts = 0;
@@ -128,7 +128,7 @@ async function startSculptureSubmission() {
 
 				if (statusText === "refining") {
 					safeComplete(2);
-					safeActivate(3, 240000); // 4 minutes
+					safeActivate(3, 90000); // 1.5 minutes
 					console.log("Sculpture: Sculpting complete — refining stage started");
 				} else if (statusText === "completed" || statusText === "done") {
 					clearInterval(pollHandle);
