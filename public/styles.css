@@ -257,9 +257,7 @@ i {
 	width: 4rem;
 	height: 4rem;
 }
-#logoutBtn,
 #submit-shards-btn {
-	width: 7rem;
 	align-items: center;
 	justify-content: center;
 	text-align: center;
@@ -337,6 +335,11 @@ footer {
 	display: flex;
 	align-items: center;
 	justify-content: center;
+	transform: translateY(calc(100% + var(--padding) * 2));
+}
+
+footer.visible {
+	transform: translateY(0);
 }
 
 #haiku-display {

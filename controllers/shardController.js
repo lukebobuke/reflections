@@ -49,8 +49,8 @@ const renderShardsPage = async (req, res) => {
 		}
 
 		res.render("shardsPage", {
-			currentPage: "Mosaic",
-			pageTitle: hasSculpture ? "Sculpture" : "Mosaic",
+			currentPage: "Vault",
+			pageTitle: "Vault",
 			shards,
 			user,
 			hasSculpture,

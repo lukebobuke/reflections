@@ -3,16 +3,21 @@
 const { Router } = require("express");
 const indexRouter = Router();
 
-// Root route — home page
-indexRouter.get("/", (req, res) => {
+// Gallery route
+indexRouter.get("/gallery", (req, res) => {
 	// showWelcome: only for non-logged-in users; tracked in localStorage client-side
 	res.render("index", {
-		currentPage: "home",
-		pageTitle: "Reflections",
+		currentPage: "Gallery",
+		pageTitle: "Gallery",
 		user: req.user,
 		stage: req.user ? "3" : "1",
 		showWelcome: true, // client checks localStorage to decide whether to actually show it
 	});
+});
+
+// Root redirect to gallery
+indexRouter.get("/", (req, res) => {
+	res.redirect(301, "/gallery");
 });
 
 indexRouter.get("/contact", (req, res) => {

@@ -106,4 +106,11 @@ body[data-current-page="home"] header {
 body[data-current-page="home"] .feed-card p {
 	margin-top: 0;
 }
+
+/* Allow the liquid-glass box-shadow to render outside the feed card.
+   overflow:hidden on position:relative + isolation:isolate clips outer shadows in Chromium.
+   The inner columns each have their own overflow:hidden to contain their content. */
+.feed-card {
+	overflow: visible;
+}
 /* #endregion */

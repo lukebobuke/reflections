@@ -19,6 +19,9 @@ sculptureRouter.post("/mark-first-sculpture", (req, res) => {
 // GET /api/sculptures/feed - Get public feed of completed sculptures
 sculptureRouter.get("/feed", sculptureController.readPublicFeed);
 
+// GET /api/sculptures/model/:sculptureId - Proxy GLB from Meshy CDN (bypasses CORS, cached 1hr)
+sculptureRouter.get("/model/:sculptureId", sculptureController.getPublicModel);
+
 // GET /api/sculptures - Get all sculptures for current user
 sculptureRouter.get("/", sculptureController.readSculptures);
 

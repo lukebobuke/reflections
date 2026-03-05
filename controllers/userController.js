@@ -38,7 +38,7 @@ const createUser = async (req, res) => {
 		req.session.patternLocked = false;
 		req.session.save(function (err) {
 			if (err) console.error("Session save error:", err);
-			res.redirect("/shards");
+			res.redirect("/vault");
 		});
 	} catch (err) {
 		if (err.code === "ECONNREFUSED" || (err.message && err.message.includes("ECONNREFUSED"))) {
@@ -83,7 +83,7 @@ const login = async (req, res) => {
 		req.session.userId = user.id;
 		req.session.save(function (err) {
 			if (err) console.error("Session save error:", err);
-			return res.redirect("/shards");
+			return res.redirect("/vault");
 		});
 	} catch (err) {
 		console.error("Error logging in user:", err);

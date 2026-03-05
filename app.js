@@ -148,7 +148,8 @@ app.use(populateUser);
 //route routers
 app.use("/login", loginRouter);
 app.use("/api/points", voronoiRouter);
-app.use("/shards", shardRouter);
+app.use("/vault", shardRouter);
+app.get("/shards", (req, res) => res.redirect(301, "/vault"));
 app.use("/", indexRouter);
 app.use("/api/sculptures", sculptureRouter);
 app.get("/api/user-model", shardController.fetchUserModel);

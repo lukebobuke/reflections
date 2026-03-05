@@ -17,7 +17,6 @@ function renderSculptureFeed(sculptures) {
 		card.className = "liquid-glass feed-card";
 		card.style.cssText = `
 			display: flex;
-			overflow: hidden;
 		`;
 
 		// Left column: 3D model viewer
@@ -33,7 +32,7 @@ function renderSculptureFeed(sculptures) {
 
 		if (sculpture.model_url) {
 			const modelViewer = document.createElement("model-viewer");
-			modelViewer.setAttribute("src", sculpture.model_url);
+			modelViewer.setAttribute("src", `/api/sculptures/model/${sculpture.id}`);
 			modelViewer.setAttribute("alt", `Sculpture by ${sculpture.username}`);
 			modelViewer.setAttribute("camera-controls", "");
 			modelViewer.setAttribute("disable-zoom", "");

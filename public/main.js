@@ -238,6 +238,27 @@ function initButtonPressedEffect() {
 // ----------------------------------------------------------------------------------------------------
 
 // ----------------------------------------------------------------------------------------------------
+// #region Footer Scroll
+// ----------------------------------------------------------------------------------------------------
+function initFooterScroll() {
+	const footer = document.querySelector("footer");
+	if (!footer) return;
+
+	function updateFooter() {
+		const doc = document.documentElement;
+		const hasVerticalScroll = doc.scrollHeight > window.innerHeight + 5;
+		const atBottom = window.scrollY + window.innerHeight >= doc.scrollHeight - 20;
+		footer.classList.toggle("visible", !hasVerticalScroll || atBottom);
+	}
+
+	window.addEventListener("scroll", updateFooter);
+	updateFooter();
+}
+// ----------------------------------------------------------------------------------------------------
+// #endregion
+// ----------------------------------------------------------------------------------------------------
+
+// ----------------------------------------------------------------------------------------------------
 // #region Header Scroll
 // ----------------------------------------------------------------------------------------------------
 function initHeaderScroll() {
@@ -293,6 +314,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 	initButtonPressedEffect();
 	initHeaderScroll();
+	initFooterScroll();
 });
 // ----------------------------------------------------------------------------------------------------
 // #endregion

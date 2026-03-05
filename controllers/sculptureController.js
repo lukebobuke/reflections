@@ -430,6 +430,50 @@ async function pollSculptureTasksInBackground(sculptureId, previewTaskId) {
 // ----------------------------------------------------------------------------------------------------
 
 // ----------------------------------------------------------------------------------------------------
+// #region Public Model Proxy (GLB cache)
+// ----------------------------------------------------------------------------------------------------
+const glbCache = new Map();
+const GLB_CACHE_TTL = 60 * 60 * 1000; // 1 hour
+
+async function getPublicModel(req, res) {
+	try {
+		const { sculptureId } = req.params;
+		const cached = glbCache.get(sculptureId);
+		if (cached && Date.now() - cached.cachedAt < GLB_CACHE_TTL) {
+			res.setHeader("Content-Type", cached.contentType);
+			res.setHeader("Cache-Control", "public, max-age=3600");
+			return res.send(cached.buffer);
+		}
+
+		const sculpture = await sculptureModel.getSculptureById(sculptureId);
+		if (!sculpture || !sculpture.model_url) {
+			return res.status(404).json({ error: "Model not found" });
+		}
+
+		const response = await fetch(sculpture.model_url, {
+			headers: { "User-Agent": "Mozilla/5.0", Accept: "application/octet-stream,*/*" },
+		});
+		if (!response.ok) {
+			return res.status(response.status).json({ error: "Failed to fetch model from CDN" });
+		}
+
+		const contentType = response.headers.get("content-type") || "model/gltf-binary";
+		const buffer = Buffer.from(await response.arrayBuffer());
+		glbCache.set(sculptureId, { buffer, contentType, cachedAt: Date.now() });
+
+		res.setHeader("Content-Type", contentType);
+		res.setHeader("Cache-Control", "public, max-age=3600");
+		res.send(buffer);
+	} catch (error) {
+		console.error("getPublicModel error:", error);
+		res.status(500).json({ error: "Internal server error" });
+	}
+}
+// ----------------------------------------------------------------------------------------------------
+// #endregion
+// ----------------------------------------------------------------------------------------------------
+
+// ----------------------------------------------------------------------------------------------------
 // #region Meshy API Helper Functions
 // ----------------------------------------------------------------------------------------------------
 async function getMeshyTaskStatus(taskId) {
@@ -496,4 +540,5 @@ module.exports = {
 	readPublicFeed,
 	updateSculptureStatus,
 	deleteSculpture,
+	getPublicModel,
 };
