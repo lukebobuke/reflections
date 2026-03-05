@@ -20,7 +20,7 @@ function renderSculptureFeed(sculptures) {
 			overflow: hidden;
 		`;
 
-		// Left column: thumbnail
+		// Left column: 3D model viewer
 		const leftColumn = document.createElement("div");
 		leftColumn.style.cssText = `
 			flex: 1;
@@ -31,18 +31,16 @@ function renderSculptureFeed(sculptures) {
 			overflow: hidden;
 		`;
 
-		if (sculpture.thumbnail_url) {
-			const img = document.createElement("img");
-			img.src = sculpture.thumbnail_url;
-			img.alt = `Sculpture by ${sculpture.username}`;
-			img.style.cssText = `
-				width: 100%;
-				height: 100%;
-				object-fit: cover;
-			`;
-			leftColumn.appendChild(img);
+		if (sculpture.model_url) {
+			const modelViewer = document.createElement("model-viewer");
+			modelViewer.setAttribute("src", sculpture.model_url);
+			modelViewer.setAttribute("alt", `Sculpture by ${sculpture.username}`);
+			modelViewer.setAttribute("camera-controls", "");
+			modelViewer.setAttribute("disable-zoom", "");
+			modelViewer.style.cssText = `width: 100%; height: 100%; display: block;`;
+			leftColumn.appendChild(modelViewer);
 		} else {
-			leftColumn.innerHTML = '<p style="color: rgba(var(--text-color), 0.5);">No Image</p>';
+			leftColumn.innerHTML = '<p style="color: rgba(var(--text-color), 0.5);">No Model</p>';
 		}
 
 		// Right column: metadata and analysis
@@ -55,12 +53,12 @@ function renderSculptureFeed(sculptures) {
 			overflow: hidden;
 		`;
 
-		// Username and date
+		// Date
 		const metadata = document.createElement("p");
 		metadata.style.cssText = `
-			font-size: 0.875rem;
+			font-size: 0.75rem;
 			color: rgba(var(--text-color), 0.7);
-			margin-bottom: var(--padding-small);
+			margin: 0 0 var(--padding-small) 0;
 			flex-shrink: 0;
 		`;
 		const formattedDate = new Date(sculpture.created_at).toLocaleDateString("en-US", {
@@ -68,38 +66,20 @@ function renderSculptureFeed(sculptures) {
 			month: "long",
 			day: "numeric",
 		});
-		metadata.textContent = `by ${sculpture.username} • ${formattedDate}`;
+		metadata.textContent = formattedDate;
 		rightColumn.appendChild(metadata);
 
-		// Personality analysis (scrollable)
+		// Personality analysis
 		if (sculpture.personality_analysis) {
 			const analysisContainer = document.createElement("div");
 			analysisContainer.style.cssText = `
 				flex: 1;
-				overflow-y: auto;
-				margin-bottom: var(--padding-small);
-				line-height: 1.6;
+				overflow: hidden;
+				line-height: 1.5;
+				font-size: 0.75rem;
 			`;
 			analysisContainer.textContent = sculpture.personality_analysis;
 			rightColumn.appendChild(analysisContainer);
-		}
-
-		// View 3D Model link
-		if (sculpture.model_url) {
-			const link = document.createElement("a");
-			link.href = sculpture.model_url;
-			link.target = "_blank";
-			link.className = "liquid-glass button-link";
-			link.style.cssText = `
-				display: inline-block;
-				margin-top: auto;
-				flex-shrink: 0;
-			`;
-			const span = document.createElement("span");
-			span.className = "carved-glass";
-			span.textContent = "View 3D Model";
-			link.appendChild(span);
-			rightColumn.appendChild(link);
 		}
 
 		// Assemble card

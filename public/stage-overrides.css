@@ -46,15 +46,14 @@ body[data-stage="2"] {
 /* #endregion */
 
 /* ----------------------------------------------------------------------------------------------------*/
-/* #region MARK: Remove old nav-popup and footer visual rules */
-/* Footer and nav popup are removed from the DOM entirely.
-   These overrides ensure nothing breaks if any remnant class lingers. */
+/* #region MARK: Nav popup and stage 2 footer */
 /* ----------------------------------------------------------------------------------------------------*/
 .nav-popup {
 	display: none !important;
 }
 
-footer {
+/* Footer is hidden on stage 2 (pattern/shard creation — full viewport layout) */
+body[data-stage="2"] footer {
 	display: none !important;
 }
 /* #endregion */
@@ -86,18 +85,25 @@ body[data-stage="1"] #signupBtn {
 /* #endregion */
 
 /* ----------------------------------------------------------------------------------------------------*/
-/* #region MARK: Body padding without footer */
-/* ----------------------------------------------------------------------------------------------------*/
-body {
-	/* Remove the bottom padding that was reserving space for the footer */
-	padding-bottom: var(--padding);
-}
-/* #endregion */
-/* ----------------------------------------------------------------------------------------------------*/
 /* #region MARK: Voronoi Area */
 /* ----------------------------------------------------------------------------------------------------*/
 #voronoi-area {
 	flex: 1;
 	min-height: 0;
+}
+/* #endregion */
+
+/* ----------------------------------------------------------------------------------------------------*/
+/* #region MARK: Home Page — Feed Layout */
+/* ----------------------------------------------------------------------------------------------------*/
+
+/* Header stays above all feed cards while scrolling */
+body[data-current-page="home"] header {
+	z-index: 1000;
+}
+
+/* Kill the global p margin-top inside feed cards so there's no top gap */
+body[data-current-page="home"] .feed-card p {
+	margin-top: 0;
 }
 /* #endregion */

@@ -173,14 +173,16 @@ async function startSculptureSubmission() {
 // ----------------------------------------------------------------------------------------------------
 // #region Sculpture Viewer
 // ----------------------------------------------------------------------------------------------------
-function renderSculptureViewer(modelUrl) {
+function renderSculptureViewer(modelUrl, personalityAnalysis) {
 	const sculptureContainer = document.getElementById("sculpture-container");
 	const modelEl = document.getElementById("sculpture-model");
+	const analysisEl = document.getElementById("sculpture-analysis");
 	if (!sculptureContainer || !modelEl) return;
 
 	if (modelUrl) {
 		modelEl.setAttribute("src", modelUrl);
 		sculptureContainer.classList.remove("hidden");
+		if (analysisEl) analysisEl.textContent = personalityAnalysis || "";
 	} else {
 		modelEl.removeAttribute("src");
 		sculptureContainer.classList.add("hidden");
@@ -198,7 +200,7 @@ async function fetchAndDisplaySculpture() {
 			} else {
 				modelUrl = sculpture.model_url || "";
 			}
-			renderSculptureViewer(modelUrl);
+			renderSculptureViewer(modelUrl, sculpture.personality_analysis || "");
 		} else {
 			renderSculptureViewer("");
 		}

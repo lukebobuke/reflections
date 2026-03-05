@@ -4,13 +4,14 @@
 
 <main class="<%= hasSculpture ? 'row-layout' : '' %>">
 	<!-- Sculpture container: present in DOM (hidden when no sculpture) so scripts can target it -->
-	<section id="sculpture-container" class="liquid-glass <%= hasSculpture ? '' : 'hidden' %>">
+	<section id="sculpture-container" class="liquid-glass <%= hasSculpture ? '' : 'hidden' %>" style="display: flex; flex-direction: column;">
 		<model-viewer
 			id="sculpture-model"
 			alt="Your Sculpture"
 			camera-controls
 			disable-zoom
-			style="width: 100%; height: 400px; display: block"></model-viewer>
+			style="width: 100%; flex: 1; min-height: 0; display: block"></model-viewer>
+		<p id="sculpture-analysis" style="padding: 1rem; font-size: 0.8rem; line-height: 1.6; overflow-y: auto; max-height: 8rem; text-align: center;"></p>
 	</section>
 
 	<section id="shards-section" class="liquid-glass">
@@ -98,7 +99,7 @@
 	</section>
 
 	<!-- Shard info hover popup -->
-	<div id="shard-info-popup" class="liquid-glass shifted-up <%= hasSculpture ? 'hidden' : '' %>">
+	<div id="shard-info-popup" class="liquid-glass shifted-up">
 		<span id="shard-info-spark" class="spark-text"></span>
 		<span id="shard-info-text"></span>
 	</div>

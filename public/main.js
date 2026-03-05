@@ -24,83 +24,49 @@ import { guideManager } from "./guide.js";
 // ----------------------------------------------------------------------------------------------------
 // #region Sculpture Feed
 // ----------------------------------------------------------------------------------------------------
-function renderSculptureFeed(sculptures) {
-	const feedContainer = document.getElementById("sculpture-feed");
-	if (!feedContainer) return;
-	feedContainer.innerHTML = "";
+// Feed rendering is handled by index.js (home page only).
+// ----------------------------------------------------------------------------------------------------
+// #endregion
+// ----------------------------------------------------------------------------------------------------
 
-	sculptures.forEach((sculpture, index) => {
-		const card = document.createElement("div");
-		card.className = "liquid-glass feed-card";
-		card.style.cssText = `display: flex; overflow: hidden;`;
-		card.style.top = `calc(var(--header-height) + var(--padding) + ${index * 2}rem)`;
-		card.style.zIndex = index + 1;
+// ----------------------------------------------------------------------------------------------------
+// #region Haiku Footer
+// ----------------------------------------------------------------------------------------------------
+const HAIKUS = [
+	["Seen", "through a telescope:", "ten cents worth of fog."],
+	["What a strange thing!", "to be alive", "beneath cherry blossoms."],
+	["Blossoms at night,", "and the faces of people", "moved by music."],
+	["morning glory gazing—", "so many false starts", "on my journey"],
+	["a kimono for a sail", "rushing along...", "little boat"],
+	["trying to pinch", "a bead of dew...", "a child"],
+	["A confusing mix", "of rain and snow", "spring equinox"],
+];
 
-		const leftColumn = document.createElement("div");
-		leftColumn.style.cssText = `flex: 1; display: flex; align-items: center; justify-content: center; background: rgba(var(--glass-rgb-dark)); overflow: hidden;`;
+function initHaikuFooter() {
+	const display = document.getElementById("haiku-display");
+	const line1 = document.getElementById("haiku-line-1");
+	const line2 = document.getElementById("haiku-line-2");
+	const line3 = document.getElementById("haiku-line-3");
+	if (!display || !line1 || !line2 || !line3) return;
 
-		if (sculpture.thumbnail_url) {
-			const img = document.createElement("img");
-			img.src = sculpture.thumbnail_url;
-			img.alt = `Sculpture by ${sculpture.username}`;
-			img.style.cssText = `width: 100%; height: 100%; object-fit: cover;`;
-			leftColumn.appendChild(img);
-		} else {
-			leftColumn.innerHTML = '<p style="color: rgba(var(--text-color), 0.5);">No Image</p>';
-		}
+	let index = Math.floor(Math.random() * HAIKUS.length);
 
-		const rightColumn = document.createElement("div");
-		rightColumn.style.cssText = `flex: 1; padding: var(--padding); display: flex; flex-direction: column; overflow: hidden;`;
-
-		const metadata = document.createElement("p");
-		metadata.style.cssText = `font-size: 0.875rem; color: rgba(var(--text-color), 0.7); margin-bottom: var(--padding-small); flex-shrink: 0;`;
-		const formattedDate = new Date(sculpture.created_at).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
-		metadata.textContent = `by ${sculpture.username} • ${formattedDate}`;
-		rightColumn.appendChild(metadata);
-
-		if (sculpture.personality_analysis) {
-			const analysisContainer = document.createElement("div");
-			analysisContainer.style.cssText = `flex: 1; overflow-y: auto; margin-bottom: var(--padding-small); line-height: 1.6;`;
-			analysisContainer.textContent = sculpture.personality_analysis;
-			rightColumn.appendChild(analysisContainer);
-		}
-
-		if (sculpture.model_url) {
-			const link = document.createElement("a");
-			link.href = sculpture.model_url;
-			link.target = "_blank";
-			link.className = "liquid-glass button-link";
-			link.style.cssText = `display: inline-block; margin-top: auto; flex-shrink: 0;`;
-			const span = document.createElement("span");
-			span.className = "carved-glass";
-			span.textContent = "View 3D Model";
-			link.appendChild(span);
-			rightColumn.appendChild(link);
-		}
-
-		card.appendChild(leftColumn);
-		card.appendChild(rightColumn);
-		feedContainer.appendChild(card);
-	});
-}
-
-async function fetchSculptureFeed() {
-	const feedContainer = document.getElementById("sculpture-feed");
-	if (!feedContainer) return;
-	try {
-		const response = await fetch("/api/sculptures/feed");
-		if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-		const sculptures = await response.json();
-		if (!sculptures || sculptures.length === 0) {
-			feedContainer.innerHTML =
-				'<p style="text-align: center; color: rgba(var(--text-color), 0.7);">No sculptures yet. Be the first to create one!</p>';
-			return;
-		}
-		renderSculptureFeed(sculptures);
-	} catch (error) {
-		console.error("Error fetching sculpture feed:", error);
-		feedContainer.innerHTML = '<p style="text-align: center; color: rgba(var(--text-color), 0.7);">Failed to load sculptures.</p>';
+	function setHaiku([l1, l2, l3]) {
+		line1.textContent = l1;
+		line2.textContent = l2;
+		line3.textContent = l3;
 	}
+
+	setHaiku(HAIKUS[index]);
+
+	setInterval(() => {
+		display.classList.add("fading");
+		setTimeout(() => {
+			index = (index + 1) % HAIKUS.length;
+			setHaiku(HAIKUS[index]);
+			display.classList.remove("fading");
+		}, 800);
+	}, 7000);
 }
 // ----------------------------------------------------------------------------------------------------
 // #endregion
@@ -162,7 +128,14 @@ function initShardsPageGuide() {
 			// Stage 2a: pattern creation
 			// Show on new signup, or if pattern not yet locked (always show until locked)
 			setTimeout(() => {
-				guideManager.show("patternCreation");
+				const shardsSection = document.getElementById("shards-section");
+				if (shardsSection) shardsSection.classList.add("hidden");
+				guideManager.show("patternCreation", null, {
+					continue: () => {
+						guideManager.hide();
+						if (shardsSection) shardsSection.classList.remove("hidden");
+					},
+				});
 			}, 400);
 		} else {
 			// Stage 2b: shard creation — show if we just locked the pattern
@@ -293,8 +266,8 @@ document.addEventListener("DOMContentLoaded", () => {
 	// Initialize guide event listeners
 	guideManager.init();
 
-	fetchSculptureFeed();
 	maybeShowWelcomeGuide();
+	initHaikuFooter();
 
 	// Shards page init
 	if (document.getElementById("shards-section")) {
