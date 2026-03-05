@@ -146,6 +146,8 @@ const createAppState = () => {
 		},
 	};
 };
+const currentPointsState = createCurrentPointsState();
+currentPointsState.set([], 5);
 const appState = createAppState();
 appState.set.viewShards();
 // On stage 2a (pattern not yet locked), the canvas is always in points-editing mode
@@ -480,8 +482,6 @@ function createCurrentPointsState() {
 		},
 	};
 }
-const currentPointsState = createCurrentPointsState();
-currentPointsState.set([], 5);
 function enterPointsEditingState(pressable) {
 	if (!pressable) {
 		console.error("Edit Points button not found.");

@@ -148,11 +148,18 @@ main.row-layout #sculpture-container {
 	min-height: 0;
 }
 
-/* Smaller analysis text to avoid scrolling */
-#sculpture-analysis {
+/* Model viewer takes 70% of the column; leaves natural room for analysis text below */
+main.row-layout #sculpture-model {
+	flex: 0 0 70% !important;
+	min-height: 0;
+}
+
+/* Analysis text flows at its natural height — no scroll */
+main.row-layout #sculpture-analysis {
+	max-height: none !important;
+	overflow-y: visible !important;
 	font-size: 0.65rem !important;
 	line-height: 1.4 !important;
-	max-height: 5rem !important;
 }
 
 /* Shards mosaic gets the other half */
