@@ -24,7 +24,7 @@ async function helperGenerateSculpturePrompt(userId) {
 		.map((shard) => `Q: ${shard.spark.trim()}\nA: ${shard.text.trim()}`)
 		.join("\n\n");
 
-	const personalityPrompt = `Pretend that you are an expert psychologist and create a personality analysis regarding strengths, weaknesses, and character traits with the response being 600 characters or less from the following questions and answers:\n${assembledShards}`;
+	const personalityPrompt = `Pretend that you are an expert psychologist and create a personality analysis regarding character traits such as tendencies, strengths, weaknesses, and deep desires. Use no filler language like as an expert psychologist or strengths with a colon and then the strength. The response must be 600 characters or less from the following questions and answers:\n${assembledShards}`;
 
 	let personalityAnalysis = "";
 	try {

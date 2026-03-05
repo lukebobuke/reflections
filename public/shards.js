@@ -831,7 +831,8 @@ function updateClickHint() {
 	const hint = document.getElementById("voronoi-hint");
 	if (!hint) return;
 	const hasPoints = currentPointsState.get().points.length > 0;
-	hint.classList.toggle("hidden", hasPoints);
+	const isEditing = appState.get() === "pointsEditing";
+	hint.classList.toggle("hidden", !isEditing || hasPoints);
 }
 
 function ensureClickHint() {
@@ -840,6 +841,7 @@ function ensureClickHint() {
 	if (!voronoiArea) return;
 	const hint = document.createElement("p");
 	hint.id = "voronoi-hint";
+	hint.className = "hidden";
 	hint.textContent = "Click anywhere";
 	voronoiArea.appendChild(hint);
 }

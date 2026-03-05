@@ -142,9 +142,9 @@ main.row-layout {
 	align-items: stretch;
 }
 
-/* Sculpture viewer gets slightly less than half (shrunk ~10%) */
+/* Sculpture viewer gets slightly less than half (shrunk ~20%) */
 main.row-layout #sculpture-container {
-	flex: 0.9;
+	flex: 0.8;
 	min-height: 0;
 }
 
