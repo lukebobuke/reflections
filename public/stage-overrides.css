@@ -17,21 +17,6 @@ body[data-stage="2"] header {
 body[data-stage="2"] {
 	padding-top: var(--padding);
 }
-
-/* Stage 2: shards section fills the full viewport (no header/footer) */
-body[data-stage="2"] #shards-section {
-	height: calc(100vh - 2 * var(--padding));
-	min-height: calc(100vh - 2 * var(--padding));
-	max-height: calc(100vh - 2 * var(--padding));
-}
-
-/* Stage 2: shard CRUD container fills the full viewport */
-body[data-stage="2"] #shard-crud-container {
-	top: var(--padding);
-	left: var(--padding);
-	width: calc(100% - 2 * var(--padding));
-	height: calc(100vh - 2 * var(--padding));
-}
 /* #endregion */
 
 /* ----------------------------------------------------------------------------------------------------*/
@@ -52,7 +37,7 @@ body[data-stage="2"] #shard-crud-container {
 }
 
 #rotation-preview line {
-	stroke: rgba(200, 200, 200, 0.85);
+	stroke: rgba(var(--text-color));
 	stroke-width: 2.5;
 	stroke-linecap: round;
 	opacity: 0.85;

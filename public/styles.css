@@ -201,14 +201,11 @@ body {
 } */
 
 #shard-crud-container,
+button,
+.button-link,
 footer,
 .light-background {
 	background: var(--glass-rgb-dark) !important;
-}
-
-button,
-.button-link {
-	background: rgba(200, 200, 200, 0.18) !important;
 }
 
 .carved-glass {

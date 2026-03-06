@@ -122,16 +122,19 @@ function initShardsPageGuide() {
 		if (!patternLocked) {
 			// Stage 2a: pattern creation
 			// Show on new signup, or if pattern not yet locked (always show until locked)
-			const shardsSection = document.getElementById("shards-section");
-			guideManager.show("patternCreation", null, {
-				continue: async () => {
-					guideManager.hide();
-					if (shardsSection) shardsSection.classList.remove("hidden");
-					// Re-render with real dimensions, then restore editing state
-					await appState.set.viewShards();
-					appState.set.pointsEditing();
-				},
-			});
+			setTimeout(() => {
+				const shardsSection = document.getElementById("shards-section");
+				if (shardsSection) shardsSection.classList.add("hidden");
+				guideManager.show("patternCreation", null, {
+					continue: async () => {
+						guideManager.hide();
+						if (shardsSection) shardsSection.classList.remove("hidden");
+						// Re-render with real dimensions, then restore editing state
+						await appState.set.viewShards();
+						appState.set.pointsEditing();
+					},
+				});
+			}, 400);
 		} else {
 			// Stage 2b: shard creation — show if we just locked the pattern
 			// This is triggered by the done-with-pattern flow, not on page load

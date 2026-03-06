@@ -14,7 +14,7 @@
 		<p id="sculpture-analysis" style="padding: 1rem; font-size: 0.8rem; line-height: 1.6; overflow-y: auto; max-height: 8rem; text-align: center;"></p>
 	</section>
 
-	<section id="shards-section" class="liquid-glass <%= (!hasSculpture && !(typeof patternLocked !== 'undefined' && patternLocked)) ? 'hidden' : ''  %>">
+	<section id="shards-section" class="liquid-glass">
 		<!-- Stage 2a: Pattern creation controls — visible only before pattern is locked -->
 		<div id="pattern-controls" class="<%= (hasSculpture || (typeof patternLocked !== 'undefined' && patternLocked)) ? 'hidden' : '' %>">
 			<div id="rotation-control">
