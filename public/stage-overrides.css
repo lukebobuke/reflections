@@ -26,7 +26,7 @@ body[data-stage="2"] #shards-section {
 }
 
 /* Stage 2: shard CRUD container fills the full viewport */
-body[data-stage="2"] #shard-crud-container {
+body[data-stage="2"] #shard-crud-container.active {
 	top: var(--padding);
 	left: var(--padding);
 	width: calc(100% - 2 * var(--padding));

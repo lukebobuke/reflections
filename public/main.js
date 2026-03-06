@@ -127,6 +127,8 @@ function initShardsPageGuide() {
 				continue: async () => {
 					guideManager.hide();
 					if (shardsSection) shardsSection.classList.remove("hidden");
+					// Wait one frame so browser recalculates layout before voronoi renders
+					await new Promise((r) => requestAnimationFrame(r));
 					// Re-render with real dimensions, then restore editing state
 					await appState.set.viewShards();
 					appState.set.pointsEditing();

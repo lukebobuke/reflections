@@ -4,17 +4,21 @@
 
 <main class="<%= hasSculpture ? 'row-layout' : '' %>">
 	<!-- Sculpture container: present in DOM (hidden when no sculpture) so scripts can target it -->
-	<section id="sculpture-container" class="liquid-glass <%= hasSculpture ? '' : 'hidden' %>" style="display: flex; flex-direction: column;">
+	<section id="sculpture-container" class="liquid-glass <%= hasSculpture ? '' : 'hidden' %>" style="display: flex; flex-direction: column">
 		<model-viewer
 			id="sculpture-model"
 			alt="Your Sculpture"
 			camera-controls
 			disable-zoom
 			style="width: 100%; flex: 1; min-height: 0; display: block"></model-viewer>
-		<p id="sculpture-analysis" style="padding: 1rem; font-size: 0.8rem; line-height: 1.6; overflow-y: auto; max-height: 8rem; text-align: center;"></p>
+		<p
+			id="sculpture-analysis"
+			style="padding: 1rem; font-size: 0.8rem; line-height: 1.6; overflow-y: auto; max-height: 8rem; text-align: center"></p>
 	</section>
 
-	<section id="shards-section" class="liquid-glass <%= (!hasSculpture && !(typeof patternLocked !== 'undefined' && patternLocked)) ? 'hidden' : ''  %>">
+	<section
+		id="shards-section"
+		class="liquid-glass <%= (!hasSculpture && !(typeof patternLocked !== 'undefined' && patternLocked)) ? 'hidden' : '' %>">
 		<!-- Stage 2a: Pattern creation controls — visible only before pattern is locked -->
 		<div id="pattern-controls" class="<%= (hasSculpture || (typeof patternLocked !== 'undefined' && patternLocked)) ? 'hidden' : '' %>">
 			<div id="rotation-control">
@@ -44,7 +48,7 @@
 
 	<!-- Shard CRUD form -->
 	<section id="shard-crud-container" class="liquid-glass shifted-up <%= hasSculpture ? 'hidden' : '' %>">
-		<h2 id="shard-crud-form-title">Create New Shard</h2>
+		<h2 id="shard-crud-form-title">Create New Fragment</h2>
 		<div id="spark-container">
 			<span id="spark-text" class="spark-text">Spark text not found.</span>
 			<button id="spark-refresh" class="glass button-small">
@@ -93,17 +97,16 @@
 				</div>
 			</div>
 			<button class="glass" type="submit">
-				<span class="carved-glass" id="shard-form-submit-text">Create Shard</span>
+				<span class="carved-glass" id="shard-form-submit-text">Create Fragment</span>
 			</button>
 		</form>
 	</section>
 
-	<!-- Shard info hover popup -->
+	<!-- Fragment info hover popup -->
 	<div id="shard-info-popup" class="liquid-glass shifted-up">
 		<span id="shard-info-spark" class="spark-text"></span>
 		<span id="shard-info-text"></span>
 	</div>
-
 </main>
 
 <script>
