@@ -126,6 +126,7 @@ body[data-current-page="Gallery"] .feed-card p {
    The inner columns each have their own overflow:hidden to contain their content. */
 .feed-card {
 	overflow: visible;
+	background: rgba(30, 30, 30, 0.45) !important;
 }
 /* #endregion */
 

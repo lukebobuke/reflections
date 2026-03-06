@@ -305,45 +305,43 @@ function validateShardData(data) {
 const hasSculpture = document.body.getAttribute("data-has-sculpture") === "true";
 
 function handleShardClick() {
-	const shardContainer = document.querySelector("#voronoi-group");
 	const shardCrudContainer = document.querySelector("#shard-crud-container");
 	const shardCrudForm = document.querySelector("#shard-crud-form");
-	if (!shardContainer || !shardCrudContainer || !shardCrudForm) {
-		return;
-	}
-	shardContainer.addEventListener("click", function (e) {
-		if (appState.get() === "viewShards") {
-			e.stopPropagation();
-			const voronoiCell = e.target.closest(".voronoi-cell");
-			// display create shard CRUD form
-			if (voronoiCell && shardContainer.contains(voronoiCell) && !voronoiCell.dataset.shardId) {
-				appState.set.shardCreation();
-				currentShardState.set({ point: voronoiCell.dataset.originalIndex });
-			}
-			// display edit shard CRUD form
-			else if (voronoiCell && voronoiCell.dataset.shardId) {
-				// Find the shard data from currentShards array
-				const shardId = voronoiCell.dataset.shardId;
-				const shardData = currentShards.find((shard) => shard.id == shardId);
+	if (!shardCrudContainer || !shardCrudForm) return;
 
-				if (shardData) {
-					currentShardState.set({
-						id: shardData.id,
-						spark: shardData.spark,
-						text: shardData.text,
-						tint: shardData.tint,
-						glow: shardData.glow,
-						point: shardData.point,
-					});
-				} else {
-					currentShardState.set({
-						id: shardId,
-						point: voronoiCell.dataset.originalIndex,
-					});
-				}
-				appState.set.shardEditing();
-				console.log("form:", shardCrudForm);
+	// Use document-level delegation so a stale #voronoi-group reference is never an issue
+	document.addEventListener("click", function (e) {
+		if (appState.get() !== "viewShards") return;
+		const voronoiCell = e.target.closest(".voronoi-cell");
+		if (!voronoiCell) return;
+		const shardContainer = document.querySelector("#voronoi-group");
+		if (!shardContainer || !shardContainer.contains(voronoiCell)) return;
+
+		// display create shard CRUD form
+		if (!voronoiCell.dataset.shardId) {
+			appState.set.shardCreation();
+			currentShardState.set({ point: voronoiCell.dataset.originalIndex });
+		}
+		// display edit shard CRUD form
+		else {
+			const shardId = voronoiCell.dataset.shardId;
+			const shardData = currentShards.find((shard) => shard.id == shardId);
+			if (shardData) {
+				currentShardState.set({
+					id: shardData.id,
+					spark: shardData.spark,
+					text: shardData.text,
+					tint: shardData.tint,
+					glow: shardData.glow,
+					point: shardData.point,
+				});
+			} else {
+				currentShardState.set({
+					id: shardId,
+					point: voronoiCell.dataset.originalIndex,
+				});
 			}
+			appState.set.shardEditing();
 		}
 	});
 }
@@ -817,16 +815,22 @@ function handleSparkRefreshClick() {
 function updateRotationPreview() {
 	const svg = document.getElementById("rotation-preview");
 	if (!svg) return;
-	const arms = currentPointsState.get().rotationCount + 1;
+	// Clear existing arms
+	while (svg.firstChild) svg.removeChild(svg.firstChild);
+	const rotationCount = currentPointsState.get().rotationCount;
+	const arms = (typeof rotationCount === "number" ? rotationCount : 5) + 1;
 	const r = 10;
-	let lines = "";
 	for (let i = 0; i < arms; i++) {
 		const angle = (i / arms) * 2 * Math.PI - Math.PI / 2;
 		const x = (Math.cos(angle) * r).toFixed(2);
 		const y = (Math.sin(angle) * r).toFixed(2);
-		lines += `<line x1="0" y1="0" x2="${x}" y2="${y}"/>`;
+		const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+		line.setAttribute("x1", "0");
+		line.setAttribute("y1", "0");
+		line.setAttribute("x2", x);
+		line.setAttribute("y2", y);
+		svg.appendChild(line);
 	}
-	svg.innerHTML = lines;
 }
 
 function updateClickHint() {

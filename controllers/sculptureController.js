@@ -40,7 +40,7 @@ async function helperGenerateSculpturePrompt(userId) {
 		personalityAnalysis = "Error generating personality analysis.";
 	}
 
-	const sculpturePrompt = `Create a realistic-looking transparent abstract glass sculpture based on the following personality analysis: ${personalityAnalysis}`;
+	const sculpturePrompt = `Create a realistic-looking abstract glass sculpture with an alpha blended material based on the following personality analysis: ${personalityAnalysis}`;
 
 	console.log("helperGenerateSculpturePrompt: Final sculpture prompt assembled");
 	return {
