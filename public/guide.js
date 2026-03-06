@@ -14,7 +14,7 @@ const GUIDE_MESSAGES = {
 
 	// Stage 2a: Just signed up — pattern creation
 	patternCreation: {
-		text: `Before your shards can take form, the mosaic itself must be shaped.\n\nBelow you will find your empty pattern — an arrangement of cells that will hold each fragment of your self. Click anywhere within to place points. Use the plus and minus to rotate and mirror the pattern into something that feels like yours.\n\nWhen it is ready, press Done with Pattern.`,
+		text: `Your mosaic must be shaped.\n\nHere you will create an arrangement of fragments of your self. Click anywhere within until it feels like yours.`,
 		buttons: { continue: true, back: false, submit: false, ok: false },
 		continueAction: null,
 	},
@@ -23,7 +23,7 @@ const GUIDE_MESSAGES = {
 	confirmPattern: {
 		text: `Once you continue, this pattern cannot be changed.
 
-You are about to lock the arrangement of cells that will hold your shards. This shape is permanent.
+You are about to lock the mosaic. This shape is permanent.
 
 Are you ready?`,
 		buttons: { continue: false, back: true, submit: false, ok: true },
@@ -31,27 +31,27 @@ Are you ready?`,
 
 	// Stage 2a → 2b: Pattern locked, transition to shard creation
 	patternLocked: {
-		text: `The lattice is set. It will not shift again.\n\nNow the real work begins. Each cell in the pattern can hold a shard — a response to a question, a memory, a truth. Click a cell to place one. Choose its color. Toggle its glow.\n\nThere is no rush. When your shards feel complete, press Submit to fuse them into a sculpture.`,
+		text: `The mosaic is set. It will not shift again.\n\nNow the real work begins. Each empty fragment can be selected to hold a memory or a truth`,
 		buttons: { continue: true, back: false, submit: false, ok: false },
 		continueAction: null,
 	},
 
 	// Stage 2b: Confirmation before submitting
 	confirmSubmit: {
-		text: `Once submitted, your mosaic cannot be rebuilt.\n\nForging may take several minutes. You will not be able to return to shard editing.\n\nAre you ready to fuse your shards?`,
+		text: `Once submitted, you cannot return to your mosaic.\n\nForging may take several minutes.\n\nAre you ready to fuse your fragments?`,
 		buttons: { continue: true, back: true, submit: false, ok: false },
 	},
 
 	// Stage 2b → 3: Sculpture submitted, processing
 	sculptureSubmitted: {
-		text: `The fragments are entering the furnace.\n\nYour shards are being drawn together, their edges softening, their tensions resolving. What emerges cannot be untangled back into its parts.\n\nThis will take a few minutes. The sculpture will appear when it is ready.`,
+		text: `The fragments are entering the furnace and being drawn together, their edges softening, their tensions resolving. What emerges cannot be untangled back into its parts.\n\nThis will take a few minutes. The sculpture will appear when it is ready.`,
 		buttons: { continue: false, back: false, submit: false, ok: false },
 		// progress bar is shown in the status area; OK button appears when done
 	},
 
 	// Stage 3: First time seeing completed sculpture
 	sculptureComplete: {
-		text: `The form has crystallized.\n\nWhat you see is not a rendering of your answers — it is what emerges when they are held together, under pressure, without separation. A lens ground from your own interior.\n\nIt is yours.`,
+		text: `The form has crystallized.\n\nThis is what your fragments look like when fused together into a cohesive whole.`,
 		buttons: { continue: false, back: false, submit: false, ok: true },
 		continueAction: null,
 	},

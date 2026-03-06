@@ -19,8 +19,8 @@
 
 :root {
 	/* Colors */
-	--glass-rgb: rgba(200, 200, 200, 0.18);
-	--glass-rgb-dark: rgba(255, 255, 255, 0.2);
+	--glass-rgb: rgba(30, 30, 30, 0.45);
+	--glass-rgb-dark: rgba(30, 30, 30, 0.45);
 	--highlight-rgb: 200, 200, 200, 0.3;
 	--border-rgb: 255, 255, 255, 1;
 	--shadow-rgb: 0, 0, 0, 0.35;

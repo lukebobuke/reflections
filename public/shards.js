@@ -143,6 +143,7 @@ const createAppState = () => {
 
 				shardCrudContainer.classList.remove("active");
 				updateRotationPreview();
+				ensureClickHint();
 				updateClickHint();
 			},
 		},

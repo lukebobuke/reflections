@@ -205,6 +205,7 @@ async function handleDoneWithPattern() {
 							guideManager.hide();
 							if (shardsSection) shardsSection.classList.remove("hidden");
 							await appState.set.viewShards();
+							window.location.reload();
 						},
 					});
 				} catch (err) {
