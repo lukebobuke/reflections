@@ -19,8 +19,8 @@
 
 :root {
 	/* Colors */
-	--glass-rgb: rgba(30, 30, 30, 0.45);
-	--glass-rgb-dark: rgba(30, 30, 30, 0.45);
+	--glass-rgb: rgba(60, 60, 60, 0.5);
+	--glass-rgb-dark: rgba(60, 60, 60, 0.5);
 	--highlight-rgb: 200, 200, 200, 0.3;
 	--border-rgb: 255, 255, 255, 1;
 	--shadow-rgb: 0, 0, 0, 0.35;
@@ -205,7 +205,7 @@ button,
 .button-link,
 footer,
 .light-background {
-	background: var(--glass-rgb-dark) !important;
+	background: rgba(100, 100, 100, 0.35) !important;
 }
 
 .carved-glass {
